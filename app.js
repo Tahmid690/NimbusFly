@@ -11,7 +11,12 @@ app.get('/',(req,res)=>{
     res.send('<h1> NimbusFly </h1>'+'<p> We Lift, You Fly </p>');
 });
 
-
+app.use('*', (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: 'Endpoint not found'
+  });
+});
  
 
 
