@@ -10,3 +10,4 @@ router.put('/:id', airlinesController.updateAirline);
 router.delete('/:id', airlinesController.deleteAirline);
 
 module.exports = router;
+

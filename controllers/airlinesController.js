@@ -65,13 +65,10 @@ const createAirline = async (req, res) => {
         message: 'Airline name is required'
       });
     }
-    const koyta = await pool.query(`
-      SELECT *
-      FROM airlines
-      `);
+    
     const result = await pool.query(`
-      INSERT INTO airlines(airline_id, airline_name, logo_url) VALUES ($1, $2, $3) RETURNING *
-    `, [koyta.rowCount+1,airline_name, logo_url]);
+      INSERT INTO airlines(airline_name, logo_url) VALUES ($1, $2) RETURNING *
+    `, [airline_name, logo_url]);
     
     res.status(201).json({
       success: true,
