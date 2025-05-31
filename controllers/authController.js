@@ -21,7 +21,7 @@ const authController = {
                 });
             }
 
-            const hashed_password = bcrypt.hash(password,10);
+            const hashed_password =await bcrypt.hash(password,10);
             const result = await pool.query(`
                 INSERT INTO customer(first_name,last_name,email,password,phone_number,date_of_birth,address) VALUES ($1,$2,$3,$4,$5,$6,$7)
                 RETURNING *
@@ -52,10 +52,49 @@ const authController = {
     login: async (req, res) => {
         try{
             const {email,password} = req.body;
+            const result = await pool.query(`
+                SELECT password,customer_id,first_name,last_name
+                FROM customer
+                WHERE email = $1
+            `,[email]);
+            if(result.rowCount==0){
+                res.json({
+                    "status" : "falied",
+                    "log" : "user not found",
+                });
+            }
+            if(await bcrypt.compare(password,result.rows[0].password)){
+                const token = jwt.sign({ 
+                    customer_id: result.rows[0].customer_id,
+                    email: email 
+                }, JWT_SECRET,{ expiresIn: '24h' });
+                res.json({
+                    "status" : "sucess",
+                    "log" : "logged_in",
+                    "jwt_token" : token,
+                    "user": {
+                        customer_id: result.rows[0].customer_id,
+                        first_name: result.rows[0].first_name,
+                        last_name: result.rows[0].last_name,
+                        email: email
+                    }
+                });
+            }
+            else{
+                res.status(401).json({
+                    "status" : "falied",
+                    "log" : "pass wrong",
+                });
+            }
+
+
             
         }
         catch(error){
-
+            res.status(500).json({
+                    "status" : "falied",
+                    "log" : "database error",
+                });
         }
     }
 };
