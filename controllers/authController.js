@@ -96,6 +96,28 @@ const authController = {
                     "log" : "database error",
                 });
         }
+    },
+
+    getProfile: async (req, res) => {
+        try {
+            const userId = req.user.customer_id;
+            
+            const result = await pool.query(`
+                SELECT customer_id, first_name, last_name, email, phone_number
+                FROM customer 
+                WHERE customer_id = $1
+            `, [userId]);
+            
+            res.json({
+                success: true,
+                user: result.rows[0]
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: 'Error fetching profile'
+            });
+        }
     }
 };
 
