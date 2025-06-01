@@ -4,7 +4,7 @@ const flight = require('./routes/flights')
 const airport = require('./routes/airports');
 const aircraft = require('./routes/aircrafts');
 const authRoutes = require('./routes/auth');
-
+const passenger=require('./routes/passenger')
 const app = express()
 
 app.listen(3000)
@@ -15,7 +15,7 @@ app.use('/airlines',airline);
 app.use('/flights',flight);
 app.use('/airports', airport);
 app.use('/aircraft', aircraft);
-
+app.use('/passenger',passenger);
 app.get('/',(req,res)=>{
     res.send('<h1> NimbusFly </h1>'+'<p> We Lift, You Fly </p>');
 });
