@@ -165,13 +165,12 @@ const createAircraft = async (req, res) => {
     }
     
     // Get next ID (you should set this to SERIAL in your database)
-    const countResult = await pool.query('SELECT COUNT(*) FROM aircraft');
-    const nextId = parseInt(countResult.rows[0].count) + 1;
+    
     
     const result = await pool.query(`
-      INSERT INTO aircraft(aircraft_id, model, total_seats, econ_seats, busi_seats, airline_id) 
-      VALUES ($1, $2, $3, $4, $5, $6) RETURNING *
-    `, [nextId, model, total_seats, econ_seats, busi_seats, airline_id]);
+      INSERT INTO aircraft(model, total_seats, econ_seats, busi_seats, airline_id) 
+      VALUES ($1, $2, $3, $4, $5) RETURNING *
+    `, [model, total_seats, econ_seats, busi_seats, airline_id]);
     
     res.status(201).json({
       success: true,
