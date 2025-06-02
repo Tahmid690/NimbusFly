@@ -51,6 +51,7 @@ const authController = {
     
     login: async (req, res) => {
         try{
+            console.log('req paisi')
             const {email,password} = req.body;
             const result = await pool.query(`
                 SELECT password,customer_id,first_name,last_name
@@ -58,7 +59,7 @@ const authController = {
                 WHERE email = $1
             `,[email]);
             if(result.rowCount==0){
-                res.json({
+                res.status(401).json({
                     "status" : "falied",
                     "log" : "user not found",
                 });
