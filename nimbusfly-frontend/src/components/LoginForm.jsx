@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from 'react-router-dom'
 import axios from 'axios'
 
 function LoginForm(){
@@ -54,6 +55,8 @@ function LoginForm(){
 
         <p>Email: {email}</p>
         <p>Password: {password}</p>
+
+        <p>Don't have an account? <Link to="/register">Register here</Link></p>
         </div>
     )
 }

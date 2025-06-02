@@ -8,14 +8,22 @@ const authController = {
     
     register: async (req, res) => {
         try{
+            console.log('req korse')
             const {first_name,last_name,email,password,phone_number,date_of_birth,address} = req.body;
+
+            if(!first_name || !last_name || !email || !password || !phone_number || !date_of_birth || !address){
+                return res.status(400).json({
+                    "status" : "falied",
+                    "log" : "field missing"
+                });
+            }
 
             const check = await pool.query(`
                 SELECT * FROM customer
                 WHERE email = $1 OR phone_number = $2
             `,[email,phone_number]);
             if(check.rowCount!=0){
-                res.json({
+                return res.status(400).json({
                     "status" : "falied",
                     "log" : "user already exists with same email/phone_number"
                 });
@@ -28,7 +36,7 @@ const authController = {
             `,[first_name,last_name,email,hashed_password,phone_number,date_of_birth,address]);
         
             if(result.rowCount!=0){
-                res.status(201).json({
+                return res.status(201).json({
                     "status" : "sucess",
                     "log" : "user registered",
                     "user": result.rows[0]
@@ -36,7 +44,7 @@ const authController = {
             }
         }
         catch(err){
-            res.status(500).json({
+            return res.status(500).json({
                 "status": "failed",
                 "log": "database error",
                 "error": err.message
@@ -59,7 +67,7 @@ const authController = {
                 WHERE email = $1
             `,[email]);
             if(result.rowCount==0){
-                res.status(401).json({
+                return res.status(401).json({
                     "status" : "falied",
                     "log" : "user not found",
                 });
@@ -69,7 +77,7 @@ const authController = {
                     customer_id: result.rows[0].customer_id,
                     email: email 
                 }, JWT_SECRET,{ expiresIn: '24h' });
-                res.json({
+                return res.json({
                     "status" : "sucess",
                     "log" : "logged_in",
                     "jwt_token" : token,
@@ -82,7 +90,7 @@ const authController = {
                 });
             }
             else{
-                res.status(401).json({
+                return res.status(401).json({
                     "status" : "falied",
                     "log" : "pass wrong",
                 });
@@ -92,7 +100,7 @@ const authController = {
             
         }
         catch(error){
-            res.status(500).json({
+            return res.status(500).json({
                     "status" : "falied",
                     "log" : "database error",
                 });
@@ -109,12 +117,12 @@ const authController = {
                 WHERE customer_id = $1
             `, [userId]);
             
-            res.json({
+            return res.json({
                 success: true,
                 user: result.rows[0]
             });
         } catch (error) {
-            res.status(500).json({
+            return res.status(500).json({
                 success: false,
                 message: 'Error fetching profile'
             });
