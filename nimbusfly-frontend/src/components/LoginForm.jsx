@@ -26,6 +26,8 @@ function LoginForm(){
 
     return(
         <div>
+        <h1>NimbusFly Airlines</h1>
+        <p>Welcome to our airline management system!</p>
         <h2>Login</h2>
         <form>
             <div>
