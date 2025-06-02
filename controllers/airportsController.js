@@ -151,14 +151,11 @@ const createAirport = async (req, res) => {
       });
     }
     
-    // Get next ID (you should set this to SERIAL in your database)
-    const countResult = await pool.query('SELECT COUNT(*) FROM airports');
-    const nextId = parseInt(countResult.rows[0].count) + 1;
     
     const result = await pool.query(`
       INSERT INTO airports(airport_id, airport_name, iata_code, city, country) 
-      VALUES ($1, $2, UPPER($3), $4, $5) RETURNING *
-    `, [nextId, airport_name, iata_code, city, country]);
+      VALUES ($1, UPPER($2), $3, $4) RETURNING *
+    `, [airport_name, iata_code, city, country]);
     
     res.status(201).json({
       success: true,
