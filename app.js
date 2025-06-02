@@ -6,6 +6,10 @@ const airport = require('./routes/airports');
 const aircraft = require('./routes/aircrafts');
 const authRoutes = require('./routes/auth');
 const passenger=require('./routes/passenger')
+const bookings=require('./routes/bookings');
+const ticket=require('./routes/ticket')
+const payment=require('./routes/payment')
+const seat=require('./routes/seat')
 const app = express()
 
 app.listen(3000)
@@ -22,8 +26,10 @@ app.use('/flights',flight);
 app.use('/airports', airport);
 app.use('/aircraft', aircraft);
 app.use('/passenger',passenger);
-
-
+app.use('/booking',bookings);
+app.use('/tickets',ticket);
+app.use('/payments',payment);
+app.use('/seats',seat);
 app.get('/',(req,res)=>{
     res.send('<h1> NimbusFly </h1>'+'<p> We Lift, You Fly </p>');
 });
