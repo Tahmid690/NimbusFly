@@ -37,7 +37,7 @@ const authController = {
         
             if(result.rowCount!=0){
                 return res.status(201).json({
-                    "status" : "sucess",
+                    "status" : "success",
                     "log" : "user registered",
                     "user": result.rows[0]
                 });
