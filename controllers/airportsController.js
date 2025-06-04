@@ -113,6 +113,7 @@ const searchAirportsbyname = async (req,res) =>{
         city ILIKE $1 OR
         country ILIKE $1) AND
         iata_code != $2
+        LIMIT 5
     `,[`%${query}%`,iata_code]);
       // console.log(result.rows);
       res.json(result.rows);
