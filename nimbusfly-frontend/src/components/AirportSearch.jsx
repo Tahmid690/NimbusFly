@@ -111,7 +111,7 @@ function AirportSearch(){
                 placeholder="Origin Airport" 
                 value={queryo}
                 onChange={handleInputChangeo}
-                className="bg-blue-200 text-red-600" 
+                className="bg-blue-200 text-blue-900" 
             />
             
            
@@ -154,7 +154,7 @@ function AirportSearch(){
                 placeholder="Destination Airport" 
                 value={queryd}
                 onChange={handleInputChanged}
-                className="bg-blue-200 text-red-600" 
+                className="bg-blue-200 text-blue-900" 
             />
 
             {   
