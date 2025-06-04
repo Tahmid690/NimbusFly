@@ -10,6 +10,11 @@ function AirportSearch(){
     const [selectedAirporto, setSelectedAirporto] = useState(null); 
     const [selectedAirportd, setSelectedAirportd] = useState(null); 
 
+    const [departure_date,setDepDate] = useState('');
+
+    let trip_typ=0;
+    //0 -> One Way 1->Round-Trip 2->Multi_City
+
     useEffect(()=>{
 
         if(!queryo){
@@ -104,6 +109,10 @@ function AirportSearch(){
         setResultsd([]);
     };
 
+    function flightSearch(){
+
+    }
+
     return(
         <div className="text-center">
             <input
@@ -187,6 +196,19 @@ function AirportSearch(){
                     </div>
                 )
             }
+
+            <br/>
+            <input
+                type="date"
+                value={departure_date}
+                onChange={(e)=>setDepDate(e.target.value)}
+                className="bg-blue-200 text-blue-900" 
+            />
+            <br/>
+            <button 
+                className="bg-white rounded-2xl"
+                onClick={flightSearch}
+            >Search</button>
 
         </div>
     )
