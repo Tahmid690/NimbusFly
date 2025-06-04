@@ -21,6 +21,7 @@ app.use(cors({
   credentials: true
 }));
 
+
 app.use('/auth', authRoutes);
 app.use('/airlines',airline);
 app.use('/flights',flight);

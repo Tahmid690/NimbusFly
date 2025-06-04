@@ -229,5 +229,8 @@ const deleteAdmin = async (req, res) => {
 
 module.exports={
     register,
-    login
+    login,
+    getAdminById,
+    updateAdmin,
+    deleteAdmin
 }
