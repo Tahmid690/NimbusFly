@@ -60,7 +60,7 @@ const SelectedAirport = ({ selectedAirport }) => {
 
 const PassengerCounter = ({ adult, setAdult, child, setChild }) => {
 
-    const [isOpen, setIsOpen] = useState(0);
+    const [isOpen, setIsOpen] = useState(false);
 
      const dropdownRef = useRef(null);
 
