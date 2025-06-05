@@ -86,7 +86,7 @@ const PassengerCounter = ({ adult, setAdult, child, setChild }) => {
 
 
     return (
-        <div>
+        <div ref={dropdownRef}>
             <button
                 className="bg-amber-100 rounded-md"
                 onClick={() => setIsOpen(!isOpen)}
@@ -95,7 +95,7 @@ const PassengerCounter = ({ adult, setAdult, child, setChild }) => {
             </button>
 
             {isOpen && (
-                <div ref={dropdownRef}>
+                <div>
                     <div>
                         <span>Adults:  </span>
                         <button
@@ -178,6 +178,11 @@ function AirportSearch() {
     }, [query_origin, query_destination]);
 
 
+    const getTodayDate = () => {
+        const today = new Date();
+        return today.toISOString().split('T')[0];
+    };
+
 
     function handleInputChangeOrigin(e) {
         setQuery_origin(e.target.value);
@@ -206,6 +211,25 @@ function AirportSearch() {
     }
 
     function flightSearch() {
+        if (!selectedAirport_origin) {
+            alert('Please select an origin airport');
+            return;
+        }
+        
+        if (!selectedAirport_destination) {
+            alert('Please select a destination airport');
+            return;
+        }
+        
+        if (!journeyDate) {
+            alert('Please select a journey date');
+            return;
+        }
+        
+        if (tripType === 'round-trip' && !returnDate) {
+            alert('Please select a return date for round trip');
+            return;
+        }
 
     }
 
@@ -283,6 +307,7 @@ function AirportSearch() {
                 type="date"
                 value={journeyDate}
                 onChange={(e) => setJourneyDate(e.target.value)}
+                max={returnDate || undefined}
                 className="bg-blue-200 text-blue-900"
             />
             <br />
@@ -292,6 +317,7 @@ function AirportSearch() {
                         type="date"
                         value={returnDate}
                         onChange={(e) => setReturnDate(e.target.value)}
+                        min={journeyDate || getTodayDate()}
                         className="bg-blue-200 text-blue-900"
                     />
                 )
