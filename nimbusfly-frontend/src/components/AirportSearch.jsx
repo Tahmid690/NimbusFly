@@ -1,214 +1,201 @@
 import { useEffect, useState } from "react";
 
-function AirportSearch(){
-    const [queryo,setQueryo] = useState('');
-    const [queryd,setQueryd] = useState('');
-
-    const [resultsd,setResultsd] = useState([]);
-    const [resultso,setResultso] = useState([]);
-    
-    const [selectedAirporto, setSelectedAirporto] = useState(null); 
-    const [selectedAirportd, setSelectedAirportd] = useState(null); 
-
-    const [departure_date,setDepDate] = useState('');
-
-    let trip_typ=0;
-    //0 -> One Way 1->Round-Trip 2->Multi_City
-
-    useEffect(()=>{
-
-        if(!queryo){
-            setResultso([]);
-            return;
+const fetch_airport = async (query, selectedAirport, setResults, abortController) => {
+    try {
+        if (query) {
+            let cd = "";
+            if (selectedAirport) cd = selectedAirport.iata_code;
+            const res = await fetch(`http://localhost:3000/airports/search_name?query=${query}&iata_code=${cd}`, { signal: abortController.signal });
+            const data = await res.json();
+            setResults(data);
         }
-        const abortController = new AbortController();
-        // console.log(queryo);
-        const fetch_data = setTimeout(()=>{
-            const fetch_airport = async () =>{
-                try{
-                    let cd="";
-                    if(selectedAirportd) cd=selectedAirportd.iata_code;
-                    const res = await fetch(`http://localhost:3000/airports/search_name?query=${queryo}&iata_code=${cd}`,{ signal: abortController.signal });
-                    const data = await res.json();
-                    setResultso(data);
-                }
-                catch(err){
-                    if (err.name !== 'AbortError') { 
-                    console.error("Error fetching airports:", err);
-                    setResultso([]);
-                }
-                }
-            };
-            fetch_airport();
-            
-        },5);
-
-        
-
-        return ()=> {
-            clearTimeout(fetch_data);
-            abortController.abort();
+        else {
+            setResults([]);
         }
-        
-
-    },[queryo,queryd]);
-
-    useEffect(()=>{
-        if(!queryd){
-            setResultsd([]);
-            return;
-        }
-        const abortController = new AbortController();
-        
-        const fetch_data = setTimeout(()=>{
-            const fetch_airport = async () =>{
-                try{
-                    let cd="";
-                    if(selectedAirporto) cd=selectedAirporto.iata_code;
-                    const res = await fetch(`http://localhost:3000/airports/search_name?query=${queryd}&iata_code=${cd}`,{ signal: abortController.signal });
-                    const data = await res.json();
-                    setResultsd(data);
-                }
-                catch(err){
-                    if (err.name !== 'AbortError') { 
-                        console.error("Error fetching destination airports:", err);
-                        setResultsd([]);
-                    }
-                }
-            };
-            fetch_airport();
-        },5);
-
-        return ()=> {
-            clearTimeout(fetch_data);
-            abortController.abort();
-        }
-    },[queryd,queryo]);
-
-
-
-    function handleInputChangeo(e) {
-        setQueryo(e.target.value);
-        setSelectedAirporto(null); 
     }
-
-    function handleInputChanged(e) {
-        setQueryd(e.target.value);
-        setSelectedAirportd(null); 
+    catch (err) {
+        if (err.name !== 'AbortError') {
+            console.error("Error fetching airports:", err);
+            setResults_origin([]);
+        }
     }
+};
 
-    const handleSelecto = (airport) => {
-        setSelectedAirporto(airport);
-        setQueryo(`${airport.airport_name} (${airport.iata_code}) (${airport.city}) (${airport.country})`);
-        setResultso([]);
-    };
 
-    const handleSelectd = (airport) => {
-        setSelectedAirportd(airport);
-        setQueryd(`${airport.airport_name} (${airport.iata_code})`);
-        setResultsd([]);
-    };
-
-    function flightSearch(){
-
-    }
-
+const AirportList=({results,selectedAirport,handleSelect})=>{
+    if(results.length===0 || selectedAirport) return null;
     return(
+        <ul>
+            {
+                results.map((airport)=>(
+                    <li
+                        key={airport.airport_name}
+                        onClick={()=>handleSelect(airport)}
+                    >
+                        {airport.airport_name}({airport.iata_code}),{airport.city},{airport.country}
+                    </li>
+                ))
+            }
+            
+        </ul>
+    );
+
+}
+
+const SelectedAirport=({selectedAirport})=>{
+    if(!selectedAirport) return null;
+    return(
+        <div className="bg-amber-100">
+            <strong>{selectedAirport.airport_name} </strong>
+            ({selectedAirport.iata_code}) <br/>
+            {selectedAirport.city},{selectedAirport.country} 
+        </div>
+    );    
+    
+}
+
+
+
+
+
+function AirportSearch() {
+    const [query_origin, setQuery_origin] = useState('');
+    const [query_destination, setQuery_destination] = useState('');
+
+    const [results_destination, setResults_destination] = useState([]);
+    const [results_origin, setResults_origin] = useState([]);
+
+    const [selectedAirport_origin, setSelectedAirport_origin] = useState(null);
+    const [selectedAirport_destination, setSelectedAirport_destination] = useState(null);
+
+    const [journeyDate, setJourneyDate] = useState('');
+
+     const [tripType, setTripType] = useState('one-way');
+    
+
+    useEffect(() => {
+        const abortController = new AbortController();
+        const fetch_data = setTimeout(() => {
+            fetch_airport(query_origin, selectedAirport_destination, setResults_origin, abortController);
+            fetch_airport(query_destination, selectedAirport_origin, setResults_destination , abortController);
+        }, 5);
+        return () => {
+            clearTimeout(fetch_data);
+            abortController.abort();
+        }
+    }, [query_origin, query_destination]);
+
+
+
+    function handleInputChangeOrigin(e) {
+        setQuery_origin(e.target.value);
+        setSelectedAirport_origin(null);
+    }
+
+    function handleInputChangeDestination(e) {
+        setQuery_destination(e.target.value);
+        setSelectedAirport_destination(null);
+    }
+
+    const handleSelectOrigin = (airport) => {
+        setSelectedAirport_origin(airport);
+        setQuery_origin(`${airport.airport_name} (${airport.iata_code}) (${airport.city}) (${airport.country})`);
+        setResults_origin([]);
+    };
+
+    const handleSelectDestination = (airport) => {
+        setSelectedAirport_destination(airport);
+        setQuery_destination(`${airport.airport_name} (${airport.iata_code})`);
+        setResults_destination([]);
+    };
+
+    const handleTripTypeChange = (type) => {
+        setTripType(type);
+    }
+
+    function flightSearch() {
+
+    }
+
+    return (
         <div className="text-center">
+
+            <div>
+                <div>
+                    <label>
+                        <input
+                            type="radio"
+                            name="tripType"
+                            value="one-way"
+                            checked={tripType === 'one-way'}
+                            onChange={(e) => handleTripTypeChange(e.target.value)}
+                        />
+                        One Way
+                    </label>
+                    <br/>
+                    <label>
+                        <input
+                            type="radio"
+                            name="tripType"
+                            value="round-trip"
+                            checked={tripType === 'round-trip'}
+                            onChange={(e) => handleTripTypeChange(e.target.value)}
+                        />
+                        Round Trip
+                    </label>
+                </div>
+            </div>
+
+
             <input
                 type="text"
-                placeholder="Origin Airport" 
-                value={queryo}
-                onChange={handleInputChangeo}
-                className="bg-blue-200 text-blue-900" 
+                placeholder="Origin Airport"
+                value={query_origin}
+                onChange={handleInputChangeOrigin}
+                className="bg-blue-200 text-blue-900"
+            />
+
+            <AirportList
+                results={results_origin}
+                selectedAirport={selectedAirport_origin}
+                handleSelect={handleSelectOrigin}
             />
             
-           
-
-            {   
-                
-                resultso.length>0 && !selectedAirporto && (
-
-                    <ul>
-                        {
-                            resultso.map((airport)=>(
-                                
-                                    <li
-                                        key={airport.airport_name}
-                                        onClick={()=> handleSelecto(airport)}
-                                    >
-                                        {airport.airport_name}({airport.iata_code})
-                                    </li>
-                                
-                            ))
-                        }
-                    </ul>
-
-                )
-            }
-            {
-                selectedAirporto && (
-                    <div className="bg-amber-100">
-                        <strong>Selected Airport:</strong><br />
-                        Name: {selectedAirporto.airport_name}<br />
-                        Code: {selectedAirporto.iata_code}
-                    </div>
-                )
-            }
-
+            <SelectedAirport
+                selectedAirport={selectedAirport_origin}
+            />
             <br/>
-            
             <input
                 type="text"
-                placeholder="Destination Airport" 
-                value={queryd}
-                onChange={handleInputChanged}
-                className="bg-blue-200 text-blue-900" 
+                placeholder="Destination Airport"
+                value={query_destination}
+                onChange={handleInputChangeDestination}
+                className="bg-blue-200 text-blue-900"
             />
 
-            {   
-                
-                resultsd.length>0 && !selectedAirportd && (
+            <AirportList
+                results={results_destination}
+                selectedAirport={selectedAirport_destination}
+                handleSelect={handleSelectDestination}
+            />
 
-                    <ul>
-                        {
-                            resultsd.map((airport)=>(
-                                
-                                    <li
-                                        key={airport.airport_name}
-                                        onClick={()=> handleSelectd(airport)}
-                                    >
-                                        {airport.airport_name}({airport.iata_code})
-                                    </li>
-                                
-                            ))
-                        }
-                    </ul>
+            <SelectedAirport
+                selectedAirport={selectedAirport_destination}
+            />
 
-                )
-            }
-            {
-                selectedAirportd && (
-                    <div className="bg-amber-100">
-                        <strong>Selected Airport:</strong><br />
-                        Name: {selectedAirportd.airport_name}<br />
-                        Code: {selectedAirportd.iata_code}
-                    </div>
-                )
-            }
-
-            <br/>
+            <br />
             <input
                 type="date"
-                value={departure_date}
-                onChange={(e)=>setDepDate(e.target.value)}
-                className="bg-blue-200 text-blue-900" 
+                value={journeyDate}
+                onChange={(e) => setJourneyDate(e.target.value)}
+                className="bg-blue-200 text-blue-900"
             />
-            <br/>
-            <button 
+            <br />
+            <button
                 className="bg-white rounded-2xl"
                 onClick={flightSearch}
             >Search</button>
+            
 
         </div>
     )
