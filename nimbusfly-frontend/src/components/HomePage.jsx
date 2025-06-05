@@ -24,10 +24,7 @@ function HomePage() {
                 <h1>Find your Perfect Flight</h1>
                 <p>Search and Book easily</p>
 
-                <Routes>
-                    <Route path="/" element={<AirportSearch />} />
-                    <Route path="/flight-results" element={<FlightResults />} />
-                </Routes>
+                <AirportSearch/>
 
             </div>
 
