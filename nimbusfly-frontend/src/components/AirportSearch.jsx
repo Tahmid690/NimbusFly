@@ -22,36 +22,36 @@ const fetch_airport = async (query, selectedAirport, setResults, abortController
 };
 
 
-const AirportList=({results,selectedAirport,handleSelect})=>{
-    if(results.length===0 || selectedAirport) return null;
-    return(
+const AirportList = ({ results, selectedAirport, handleSelect }) => {
+    if (results.length === 0 || selectedAirport) return null;
+    return (
         <ul>
             {
-                results.map((airport)=>(
+                results.map((airport) => (
                     <li
                         key={airport.airport_name}
-                        onClick={()=>handleSelect(airport)}
+                        onClick={() => handleSelect(airport)}
                     >
                         {airport.airport_name}({airport.iata_code}),{airport.city},{airport.country}
                     </li>
                 ))
             }
-            
+
         </ul>
     );
 
 }
 
-const SelectedAirport=({selectedAirport})=>{
-    if(!selectedAirport) return null;
-    return(
+const SelectedAirport = ({ selectedAirport }) => {
+    if (!selectedAirport) return null;
+    return (
         <div className="bg-amber-100">
             <strong>{selectedAirport.airport_name} </strong>
-            ({selectedAirport.iata_code}) <br/>
-            {selectedAirport.city},{selectedAirport.country} 
+            ({selectedAirport.iata_code}) <br />
+            {selectedAirport.city},{selectedAirport.country}
         </div>
-    );    
-    
+    );
+
 }
 
 
@@ -68,16 +68,17 @@ function AirportSearch() {
     const [selectedAirport_origin, setSelectedAirport_origin] = useState(null);
     const [selectedAirport_destination, setSelectedAirport_destination] = useState(null);
 
-    const [journeyDate, setJourneyDate] = useState('');
+    const [journeyDate, setJourneyDate] = useState(null);
+    const [returnDate, setReturnDate] = useState(null);
 
-     const [tripType, setTripType] = useState('one-way');
-    
+    const [tripType, setTripType] = useState('one-way');
+
 
     useEffect(() => {
         const abortController = new AbortController();
         const fetch_data = setTimeout(() => {
             fetch_airport(query_origin, selectedAirport_destination, setResults_origin, abortController);
-            fetch_airport(query_destination, selectedAirport_origin, setResults_destination , abortController);
+            fetch_airport(query_destination, selectedAirport_origin, setResults_destination, abortController);
         }, 5);
         return () => {
             clearTimeout(fetch_data);
@@ -132,7 +133,7 @@ function AirportSearch() {
                         />
                         One Way
                     </label>
-                    <br/>
+                    <br />
                     <label>
                         <input
                             type="radio"
@@ -160,11 +161,11 @@ function AirportSearch() {
                 selectedAirport={selectedAirport_origin}
                 handleSelect={handleSelectOrigin}
             />
-            
+
             <SelectedAirport
                 selectedAirport={selectedAirport_origin}
             />
-            <br/>
+            <br />
             <input
                 type="text"
                 placeholder="Destination Airport"
@@ -190,11 +191,22 @@ function AirportSearch() {
                 onChange={(e) => setJourneyDate(e.target.value)}
                 className="bg-blue-200 text-blue-900"
             />
+            {
+                tripType === 'round-trip' && (
+                    <input
+                        type="date"
+                        value={returnDate}
+                        onChange={(e) => setReturnDate(e.target.value)}
+                        className="bg-blue-200 text-blue-900"
+                    />
+                )
+            }
             <br />
             <button
                 className="bg-white rounded-2xl"
                 onClick={flightSearch}
             >Search</button>
+
             
 
         </div>
