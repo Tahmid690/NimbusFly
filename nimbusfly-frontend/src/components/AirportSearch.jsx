@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState } from "react";
+import { useNavigate } from 'react-router-dom';
 
 const fetch_airport = async (query, selectedAirport, setResults, abortController) => {
     try {
@@ -145,6 +146,8 @@ const PassengerCounter = ({ adult, setAdult, child, setChild }) => {
 
 
 function AirportSearch() {
+    const navigate = useNavigate();
+    
     const [query_origin, setQuery_origin] = useState('');
     const [query_destination, setQuery_destination] = useState('');
 
@@ -231,10 +234,24 @@ function AirportSearch() {
             return;
         }
 
+        const searchParams = new URLSearchParams({
+            origin: selectedAirport_origin.iata_code,
+            destination: selectedAirport_destination.iata_code,
+            journeyDate: journeyDate,
+            tripType: tripType,
+            adults: adult.toString(),
+            children: child.toString()
+        });
+
+        if (tripType === 'round-trip' && returnDate) {
+            searchParams.append('returnDate', returnDate);
+        }
+        navigate(`/flight-results?${searchParams.toString()}`);
+
     }
 
     return (
-        <div className="text-center">
+        <div className="text-center bg-blue-900">
 
             <div>
                 <div>

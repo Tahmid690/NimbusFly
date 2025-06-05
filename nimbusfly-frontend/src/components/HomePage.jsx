@@ -1,4 +1,6 @@
 import AirportSearch from "./AirportSearch";
+import FlightResults from "./FlightResults";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 function HomePage() {
 
@@ -22,20 +24,21 @@ function HomePage() {
                 <h1>Find your Perfect Flight</h1>
                 <p>Search and Book easily</p>
 
-                <div className="bg-blue-900">
-                    <AirportSearch/>
-                </div>
+                <Routes>
+                    <Route path="/" element={<AirportSearch />} />
+                    <Route path="/flight-results" element={<FlightResults />} />
+                </Routes>
 
             </div>
 
 
-            
 
-            
+
+
 
         </div>
 
-        
+
     )
 }
 
