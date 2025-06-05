@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 
 const fetch_airport = async (query, selectedAirport, setResults, abortController) => {
     try {
@@ -42,6 +42,9 @@ const AirportList = ({ results, selectedAirport, handleSelect }) => {
 
 }
 
+
+
+
 const SelectedAirport = ({ selectedAirport }) => {
     if (!selectedAirport) return null;
     return (
@@ -54,6 +57,89 @@ const SelectedAirport = ({ selectedAirport }) => {
 
 }
 
+
+const PassengerCounter = ({ adult, setAdult, child, setChild }) => {
+
+    const [isOpen, setIsOpen] = useState(0);
+
+     const dropdownRef = useRef(null);
+
+    useEffect(() => {
+        console.log(603);
+        const handleClickOutside = (e) => {
+            if (
+                dropdownRef.current &&
+                !dropdownRef.current.contains(e.target)
+            ) {
+                setIsOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
+
+
+
+    return (
+        <div>
+            <button
+                className="bg-amber-100 rounded-md"
+                onClick={() => setIsOpen(!isOpen)}
+            >
+                {adult} Adults, {child} Children
+            </button>
+
+            {isOpen && (
+                <div ref={dropdownRef}>
+                    <div>
+                        <span>Adults:  </span>
+                        <button
+                            className="bg-white rounded-md px-2 py-1"
+                            onClick={() => setAdult(Math.max(1, adult - 1))}
+                        >
+                            -
+                        </button>
+                        <span> {adult} </span>
+                        <button
+                            className="bg-white rounded-md px-2 py-1"
+                            onClick={() => setAdult(adult + 1)}
+                        >
+                            +
+                        </button>
+                    </div>
+
+                    <div>
+                        <span>Children:  </span>
+                        <button
+                            className="bg-white rounded-md px-2 py-1"
+                            onClick={() => setChild(Math.max(0, child - 1))}
+                        >
+                            -
+                        </button>
+                        <span> {child} </span>
+                        <button
+                            className="bg-white rounded-md px-2 py-1"
+                            onClick={() => setChild(child + 1)}
+                        >
+                            +
+                        </button>
+                    </div>
+
+                </div>
+            )}
+
+
+
+
+
+        </div>
+    );
+}
 
 
 
@@ -72,6 +158,11 @@ function AirportSearch() {
     const [returnDate, setReturnDate] = useState(null);
 
     const [tripType, setTripType] = useState('one-way');
+
+    const [adult, setAdult] = useState(1);
+    const [child, setChild] = useState(0);
+
+   
 
 
     useEffect(() => {
@@ -147,14 +238,16 @@ function AirportSearch() {
                 </div>
             </div>
 
+            <br />
 
             <input
                 type="text"
                 placeholder="Origin Airport"
                 value={query_origin}
                 onChange={handleInputChangeOrigin}
-                className="bg-blue-200 text-blue-900"
+                className="bg-blue-200 text-blue-900 rounded-md"
             />
+            <br />
 
             <AirportList
                 results={results_origin}
@@ -171,8 +264,9 @@ function AirportSearch() {
                 placeholder="Destination Airport"
                 value={query_destination}
                 onChange={handleInputChangeDestination}
-                className="bg-blue-200 text-blue-900"
+                className="bg-blue-200 text-blue-900 rounded-md"
             />
+            <br />
 
             <AirportList
                 results={results_destination}
@@ -191,6 +285,7 @@ function AirportSearch() {
                 onChange={(e) => setJourneyDate(e.target.value)}
                 className="bg-blue-200 text-blue-900"
             />
+            <br />
             {
                 tripType === 'round-trip' && (
                     <input
@@ -202,12 +297,19 @@ function AirportSearch() {
                 )
             }
             <br />
+            <PassengerCounter
+                adult={adult}
+                setAdult={setAdult}
+                child={child}
+                setChild={setChild}
+            />
+            <br />
             <button
-                className="bg-white rounded-2xl"
+                className="bg-white rounded-md"
                 onClick={flightSearch}
             >Search</button>
 
-            
+
 
         </div>
     )
