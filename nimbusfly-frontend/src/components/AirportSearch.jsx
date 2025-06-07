@@ -1,5 +1,7 @@
 import { useRef, useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
+import { Users } from 'lucide-react';
+import { Car } from "lucide-react";
 
 const fetch_airport = async (query, selectedAirport, setResults, abortController) => {
     try {
@@ -26,33 +28,29 @@ const fetch_airport = async (query, selectedAirport, setResults, abortController
 const AirportList = ({ results, selectedAirport, handleSelect }) => {
     if (results.length === 0 || selectedAirport) return null;
     return (
-    <ul className="absolute z-50 bg-white/98 backdrop-blur-lg rounded-xl shadow-2xl mt-2 max-h-52 overflow-y-auto max-w-2xl border border-white/40 scrollbar-thin scrollbar-thumb-gray-300">
-        {
-            results.map((airport) => (
-                <li
-                    key={airport.airport_name}
-                    onClick={() => handleSelect(airport)}
-                    className="px-5 py-4 hover:bg-blue-50 cursor-pointer text-gray-800 border-b border-gray-50 last:border-b-0 transition-colors duration-200"
-                >
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <div className="font-bold text-gray-900 text-sm">{airport.airport_name}</div>
-                            <div className="text-gray-500 text-xs mt-1 flex items-center">
-                                <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs font-medium mr-2">{airport.iata_code}</span>
-                                {airport.city}, {airport.country}
+        <ul className="absolute z-50 bg-white/98 backdrop-blur-lg rounded-xl shadow-2xl mt-2 max-h-52 overflow-y-auto max-w-2xl border border-white/40 scrollbar-thin scrollbar-thumb-gray-300">
+            {
+                results.map((airport) => (
+                    <li
+                        key={airport.airport_name}
+                        onClick={() => handleSelect(airport)}
+                        className="px-5 py-4 hover:bg-blue-50 cursor-pointer text-gray-800 border-b border-gray-50 last:border-b-0 transition-colors duration-200"
+                    >
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <div className="font-bold text-gray-900 text-sm">{airport.airport_name}</div>
+                                <div className="text-gray-500 text-xs mt-1 flex items-center">
+                                    <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs font-medium mr-2">{airport.iata_code}</span>
+                                    {airport.city}, {airport.country}
+                                </div>
                             </div>
+
                         </div>
-                        <div className="text-gray-400">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                        </div>
-                    </div>
-                </li>
-            ))
-        }
-    </ul>
-);
+                    </li>
+                ))
+            }
+        </ul>
+    );
 
 }
 
@@ -62,10 +60,17 @@ const AirportList = ({ results, selectedAirport, handleSelect }) => {
 const SelectedAirport = ({ selectedAirport }) => {
     if (!selectedAirport) return null;
     return (
-        <div className="bg-amber-100">
-            <strong>{selectedAirport.airport_name} </strong>
-            ({selectedAirport.iata_code}) <br />
-            {selectedAirport.city},{selectedAirport.country}
+        <div className="mt-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg shadow-sm">
+            <div className="flex items-center gap-3">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <div>
+                    <div className="font-bold text-green-800 text-sm">{selectedAirport.airport_name}</div>
+                    <div className="text-green-600 text-xs mt-1 flex items-center gap-2">
+                        <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-medium">{selectedAirport.iata_code}</span>
+                        <span>{selectedAirport.city}, {selectedAirport.country}</span>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 
@@ -100,51 +105,139 @@ const PassengerCounter = ({ adult, setAdult, child, setChild }) => {
 
 
     return (
-        <div ref={dropdownRef}>
+        <div ref={dropdownRef} className="relative w-full" >
+
             <button
-                className="bg-amber-100 rounded-md"
+                className="w-full text-sm px-25 py-1 rounded-lg bg-white/10 backdrop-blur-sm placeholder-white/70 text-white border border-white/30  hover:bg-white/20 transition-all duration-300 shadow-lg font-bold text-shadow-lg"
                 onClick={() => setIsOpen(!isOpen)}
             >
-                {adult} Adults, {child} Children
+                <Users className="inline w-6 h-6 text-blue-600" /> {adult} Adult, {child} Child
+                <svg className={`inline w-4 h-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
             </button>
 
             {isOpen && (
-                <div>
-                    <div>
-                        <span>Adults:  </span>
-                        <button
-                            className="bg-white rounded-md px-2 py-1"
-                            onClick={() => setAdult(Math.max(1, adult - 1))}
-                        >
-                            -
-                        </button>
-                        <span> {adult} </span>
-                        <button
-                            className="bg-white rounded-md px-2 py-1"
-                            onClick={() => setAdult(adult + 1)}
-                        >
-                            +
-                        </button>
-                    </div>
+                <ul className="absolute z-50 left-0 right-0 bg-white rounded-xl shadow-2xl mt-2 border border-gray-200 divide-y divide-gray-100 overflow-hidden">
+                    <li className="">
+                        <div className="flex items-center justify-between px-4 py-4">
+                            <div>
+                                Adult
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div>
+                                    <button
+                                        className="w-8 h-8 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center transition-colors duration-200 font-bold text-lg"
+                                        onClick={() => setAdult(adult + 1)}
+                                    >
+                                        +
+                                    </button>
+                                </div>
+                                <div className="min-w-[2rem] text-center font-semibold text-gray-700">{adult}</div>
+                                <div>
+                                    <button
+                                        className="w-8 h-8 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center transition-colors duration-200 font-bold text-lg"
+                                        onClick={() => setAdult(Math.max(1, adult - 1))}
+                                    >
+                                        −
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
 
-                    <div>
-                        <span>Children:  </span>
-                        <button
-                            className="bg-white rounded-md px-2 py-1"
-                            onClick={() => setChild(Math.max(0, child - 1))}
-                        >
-                            -
-                        </button>
-                        <span> {child} </span>
-                        <button
-                            className="bg-white rounded-md px-2 py-1"
-                            onClick={() => setChild(child + 1)}
-                        >
-                            +
-                        </button>
-                    </div>
+                    <li className="">
+                        <div className="flex items-center justify-between px-4 py-4">
+                            <div>
+                                Child
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div>
+                                    <button
+                                        className="w-8 h-8 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center transition-colors duration-200 font-bold text-lg"
+                                        onClick={() => setChild(child + 1)}
+                                    >
+                                        +
+                                    </button>
+                                </div>
+                                <div className="min-w-[2rem] text-center font-semibold text-gray-700">{child}</div>
+                                <div>
+                                    <button
+                                        className="w-8 h-8 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center transition-colors duration-200 font-bold text-lg"
+                                        onClick={() => setChild(Math.max(0, child - 1))}
+                                    >
+                                        −
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
 
-                </div>
+                </ul>
+
+            )}
+
+
+
+
+
+        </div>
+    );
+}
+
+
+const SeatClass = ({ seatClass, setSeatClass }) => {
+
+    const [isOpen, setIsOpen] = useState(false);
+
+    const dropdownRef = useRef(null);
+
+    useEffect(() => {
+        console.log(603);
+        const handleClickOutside = (e) => {
+            if (
+                dropdownRef.current &&
+                !dropdownRef.current.contains(e.target)
+            ) {
+                setIsOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
+
+
+
+    return (
+        <div ref={dropdownRef} className="relative w-full" >
+
+            <button
+                className="w-full text-sm px-25 py-1 rounded-lg bg-white/10 backdrop-blur-sm placeholder-white/70 text-white border border-white/30  hover:bg-white/20 transition-all duration-300 shadow-lg font-bold text-shadow-lg "
+                onClick={() => setIsOpen(!isOpen)}
+            >
+                <svg className="inline w-6 h-6 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M6 12V8c0-1.1.9-2 2-2h8c1.1 0 2 .9 2 2v4h2c1.1 0 2 .9 2 2v2c0 .55-.45 1-1 1s-1-.45-1-1v-2h-2v4c0 .55-.45 1-1 1H7c-.55 0-1-.45-1-1v-4H4v2c0 .55-.45 1-1 1s-1-.45-1-1v-2c0-1.1.9-2 2-2h2z" />
+                </svg> {seatClass} Class
+                <svg className={`inline w-4 h-4 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+
+            {isOpen && (
+                <ul className="absolute z-50 left-0 right-0 bg-white rounded-xl shadow-2xl mt-2 border border-gray-200 divide-y divide-gray-100 overflow-hidden">
+                    <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer transition-colors" onClick={() => { setSeatClass('Economy'); setIsOpen(!isOpen) }}>
+                        Economy Class
+                    </li>
+                    <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer transition-colors" onClick={() => { setSeatClass('Business'); setIsOpen(!isOpen) }}>
+                        Business Class
+                    </li>
+
+                </ul>
             )}
 
 
@@ -178,6 +271,16 @@ function AirportSearch() {
     const [adult, setAdult] = useState(1);
     const [child, setChild] = useState(0);
 
+    const [seatClass, setSeatClass] = useState('Economy');
+
+
+    const [errors, setErrors] = useState({
+        origin: false,
+        destination: false,
+        journeyDate: false,
+        returnDate: false
+    });
+
 
 
 
@@ -201,25 +304,27 @@ function AirportSearch() {
 
 
     function handleInputChangeOrigin(e) {
+        setErrors(prev => ({...prev, origin: false}));
         setQuery_origin(e.target.value);
         setSelectedAirport_origin(null);
     }
 
     function handleInputChangeDestination(e) {
+        setErrors(prev => ({...prev, destination: false}));
         setQuery_destination(e.target.value);
         setSelectedAirport_destination(null);
     }
 
     const handleSelectOrigin = (airport) => {
         setSelectedAirport_origin(airport);
-        setQuery_origin(`${airport.city} (${airport.iata_code})`);
+        setQuery_origin(`${airport.city},${airport.country} (${airport.iata_code})`);
 
         setResults_origin([]);
     };
 
     const handleSelectDestination = (airport) => {
         setSelectedAirport_destination(airport);
-        setQuery_destination(`${airport.airport_name} (${airport.iata_code})`);
+        setQuery_destination(`${airport.city},${airport.country} (${airport.iata_code})`);
         setResults_destination([]);
     };
 
@@ -229,25 +334,20 @@ function AirportSearch() {
     }
 
     function flightSearch() {
-        if (!selectedAirport_origin) {
-            alert('Please select an origin airport');
+
+        const newErrors = {
+            origin: !selectedAirport_origin,
+            destination: !selectedAirport_destination,
+            journeyDate: !journeyDate,
+            returnDate: tripType === 'round-trip' && !returnDate
+        };
+
+        setErrors(newErrors);
+        if (Object.values(newErrors).some(error => error)) {
             return;
         }
 
-        if (!selectedAirport_destination) {
-            alert('Please select a destination airport');
-            return;
-        }
-
-        if (!journeyDate) {
-            alert('Please select a journey date');
-            return;
-        }
-
-        if (tripType === 'round-trip' && !returnDate) {
-            alert('Please select a return date for round trip');
-            return;
-        }
+        
 
         const searchParams = new URLSearchParams({
             origin: selectedAirport_origin.iata_code,
@@ -255,7 +355,8 @@ function AirportSearch() {
             journeyDate: journeyDate,
             tripType: tripType,
             adults: adult.toString(),
-            children: child.toString()
+            children: child.toString(),
+            seatClass: seatClass
         });
 
         if (tripType === 'round-trip' && returnDate) {
@@ -294,13 +395,17 @@ function AirportSearch() {
                     </label>
                 </div>
 
-                <div>
+
+                <div className="grid grid-cols-2 gap-5">
+                    <SeatClass
+                        seatClass={seatClass}
+                        setSeatClass={setSeatClass}
+                    />
                     <PassengerCounter
                         adult={adult}
                         setAdult={setAdult}
                         child={child}
                         setChild={setChild}
-                        className="justify-end"
                     />
                 </div>
 
@@ -313,12 +418,13 @@ function AirportSearch() {
             <div className="grid grid-cols-4 gap-8">
                 <div className="w-full">
                     <label className="block text-white font-medium mb-2">From </label>
+                    
                     <input
                         type="text"
                         placeholder="Origin Airport"
                         value={query_origin}
                         onChange={handleInputChangeOrigin}
-                        className="w-full px-3 py-3 rounded-lg bg-white/10 backdrop-blur-sm placeholder-white/70 text-white border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/60 focus:bg-white/20 hover:bg-white/20 transition-all duration-300 shadow-lg"
+                        className={`w-full px-3 py-3 rounded-lg backdrop-blur-sm placeholder-white/70 text-white border transition-all duration-300 shadow-lg focus:outline-none focus:ring-2 hover:bg-white/20 ${selectedAirport_origin ? 'bg-green-500/20 border-green-400 font-bold' : 'bg-white/10 border-white/30'} ${errors.origin ? 'border-red-500 bg-red-500/20 focus:ring-red-300' : 'focus:ring-white/50 focus:border-white/60 focus:bg-white/20'}`}
                     />
 
                     <AirportList
@@ -327,9 +433,9 @@ function AirportSearch() {
                         handleSelect={handleSelectOrigin}
                     />
 
-                    <SelectedAirport
+                    {/* <SelectedAirport
                         selectedAirport={selectedAirport_origin}
-                    />
+                    /> */}
                 </div>
 
                 <div className="w-full">
@@ -339,7 +445,7 @@ function AirportSearch() {
                         placeholder="Destination Airport"
                         value={query_destination}
                         onChange={handleInputChangeDestination}
-                        className="w-full px-3 py-3 rounded-lg bg-white/10 backdrop-blur-sm placeholder-white/70 text-white border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/60 focus:bg-white/20 hover:bg-white/20 transition-all duration-300 shadow-lg"
+                        className={`w-full px-3 py-3 rounded-lg backdrop-blur-sm placeholder-white/70 text-white border transition-all duration-300 shadow-lg focus:outline-none focus:ring-2 hover:bg-white/20 ${selectedAirport_destination ? 'bg-green-500/20 border-green-400 font-bold' : 'bg-white/10 border-white/30'} ${errors.destination ? 'border-red-500 bg-red-500/20 focus:ring-red-300' : 'focus:ring-white/50 focus:border-white/60 focus:bg-white/20'}`}
                     />
 
                     <AirportList
@@ -348,19 +454,20 @@ function AirportSearch() {
                         handleSelect={handleSelectDestination}
                     />
 
-                    <SelectedAirport
+                    {/* <SelectedAirport
                         selectedAirport={selectedAirport_destination}
-                    />
+                    /> */}
                 </div>
 
                 <div className="w-full">
                     <label className="block text-white font-medium mb-2">Departure Date </label>
                     <input
                         type="date"
+                        placeholder="Select date"
                         value={journeyDate}
-                        onChange={(e) => setJourneyDate(e.target.value)}
+                        onChange={(e) =>{ setJourneyDate(e.target.value); setErrors(prev => ({...prev, journeyDate: false}));} }
                         max={returnDate || undefined}
-                        className="w-full px-3 py-3 rounded-lg bg-white/10 backdrop-blur-sm placeholder-white/70 text-white border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/60 focus:bg-white/20 hover:bg-white/20 transition-all duration-300 shadow-lg"
+                        className={`w-full px-3 py-3 rounded-lg bg-white/10 backdrop-blur-sm placeholder-white/70 text-white border transition-all duration-300 shadow-lg focus:outline-none focus:ring-2 hover:bg-white/20 ${errors.journeyDate ? 'border-red-500 bg-red-500/20 focus:ring-red-300' : 'border-white/30 focus:ring-white/50 focus:border-white/60 focus:bg-white/20'}`}
                     />
                 </div>
 
@@ -370,9 +477,9 @@ function AirportSearch() {
                     <input
                         type="date"
                         value={returnDate}
-                        onChange={(e) => { setReturnDate(e.target.value); setTripType("round-trip") }}
+                        onChange={(e) => { setReturnDate(e.target.value); setTripType("round-trip"); setErrors(prev => ({...prev, returnDate: false})); }}
                         min={journeyDate || getTodayDate()}
-                        className="w-full px-3 py-3 rounded-lg bg-white/10 backdrop-blur-sm placeholder-white/70 text-white border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/60 focus:bg-white/20 hover:bg-white/20 transition-all duration-300 shadow-lg"
+                        className={`w-full px-3 py-3 rounded-lg bg-white/10 backdrop-blur-sm placeholder-white/70 text-white border transition-all duration-300 shadow-lg focus:outline-none focus:ring-2 hover:bg-white/20 ${errors.returnDate ? 'border-red-500 bg-red-500/20 focus:ring-red-300' : 'border-white/30 focus:ring-white/50 focus:border-white/60 focus:bg-white/20'}`}
                     />
                 </div>
 
@@ -382,10 +489,15 @@ function AirportSearch() {
 
             <br />
             <div className="flex justify-center items-center">
-                <button
-                    className="bg-white rounded-md"
+                <button className="relative overflow-hidden px-8 py-3 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-600 text-white font-bold text-sm rounded-xl shadow-lg hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300 group focus:outline-none focus:ring-4 focus:ring-blue-300/50
+                "
                     onClick={flightSearch}
-                >Search</button>
+                >
+                    <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></span>
+                    <span className="relative flex items-center space-x-2">
+                        <span>Search</span>
+                    </span>
+                </button>
             </div>
 
 
