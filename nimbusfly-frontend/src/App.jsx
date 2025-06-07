@@ -6,6 +6,7 @@ import HomePage from './components/HomePage'
 import FlightResults from './components/FlightResults'
 import AirlineLogin from './components/AirlineLogin'
 import AirlineReg from './components/AirlineReg'
+import Navbar from './components/Navbar'
 
 function App() {
   return (
