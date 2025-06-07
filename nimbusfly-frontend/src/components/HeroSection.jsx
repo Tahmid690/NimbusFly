@@ -69,7 +69,7 @@ const HeroSection = () => {
             <div
                 className="absolute inset-0 bg-cover bg-center bg-no-repeat transform scale-110 transition-transform duration-[20s] ease-out hover:scale-105"
                 style={{
-                    backgroundImage: `url('/bkg3.jpg')`
+                    backgroundImage: `url('/bkg3c.jpg')`
                 }}
             />
             
@@ -81,7 +81,7 @@ const HeroSection = () => {
             <div className="absolute inset-0 bg-gradient-to-t from-teal-900/60 via-transparent to-cyan-500/20"></div>
             <div className="absolute inset-0 bg-gradient-to-br from-transparent via-cyan-600/10 to-blue-800/30"></div>
 
-            <div className="mb-8 pt-80">
+            <div className="mb-8 pt-50">
                 <h1 className="text-3xl md:text-5xl lg:text-7xl font-black leading-tight min-h-[150px] flex items-center justify-center">
                     <span className="text-white text-shadow-lg drop-shadow-[0_0_30px_rgba(59,130,246,0.4)]">
                         {displayText}

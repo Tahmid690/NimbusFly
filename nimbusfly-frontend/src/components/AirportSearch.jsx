@@ -26,20 +26,33 @@ const fetch_airport = async (query, selectedAirport, setResults, abortController
 const AirportList = ({ results, selectedAirport, handleSelect }) => {
     if (results.length === 0 || selectedAirport) return null;
     return (
-        <ul>
-            {
-                results.map((airport) => (
-                    <li
-                        key={airport.airport_name}
-                        onClick={() => handleSelect(airport)}
-                    >
-                        {airport.airport_name}({airport.iata_code}),{airport.city},{airport.country}
-                    </li>
-                ))
-            }
-
-        </ul>
-    );
+    <ul className="absolute z-50 bg-white/98 backdrop-blur-lg rounded-xl shadow-2xl mt-2 max-h-52 overflow-y-auto max-w-2xl border border-white/40 scrollbar-thin scrollbar-thumb-gray-300">
+        {
+            results.map((airport) => (
+                <li
+                    key={airport.airport_name}
+                    onClick={() => handleSelect(airport)}
+                    className="px-5 py-4 hover:bg-blue-50 cursor-pointer text-gray-800 border-b border-gray-50 last:border-b-0 transition-colors duration-200"
+                >
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <div className="font-bold text-gray-900 text-sm">{airport.airport_name}</div>
+                            <div className="text-gray-500 text-xs mt-1 flex items-center">
+                                <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs font-medium mr-2">{airport.iata_code}</span>
+                                {airport.city}, {airport.country}
+                            </div>
+                        </div>
+                        <div className="text-gray-400">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                        </div>
+                    </div>
+                </li>
+            ))
+        }
+    </ul>
+);
 
 }
 
@@ -254,7 +267,6 @@ function AirportSearch() {
 
     return (
         <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl pt-6 pb-6 pl-12 pr-12 max-w-6xl mx-auto border border-white/20">
-
             <div className="flex justify-between items-center">
                 <div className="flex gap-2 mb-2">
                     <label className="flex items-center gap-1 cursor-pointer">
