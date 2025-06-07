@@ -63,7 +63,7 @@ const PassengerCounter = ({ adult, setAdult, child, setChild }) => {
 
     const [isOpen, setIsOpen] = useState(false);
 
-     const dropdownRef = useRef(null);
+    const dropdownRef = useRef(null);
 
     useEffect(() => {
         console.log(603);
@@ -147,7 +147,7 @@ const PassengerCounter = ({ adult, setAdult, child, setChild }) => {
 
 function AirportSearch() {
     const navigate = useNavigate();
-    
+
     const [query_origin, setQuery_origin] = useState('');
     const [query_destination, setQuery_destination] = useState('');
 
@@ -165,7 +165,7 @@ function AirportSearch() {
     const [adult, setAdult] = useState(1);
     const [child, setChild] = useState(0);
 
-   
+
 
 
     useEffect(() => {
@@ -199,7 +199,8 @@ function AirportSearch() {
 
     const handleSelectOrigin = (airport) => {
         setSelectedAirport_origin(airport);
-        setQuery_origin(`${airport.airport_name} (${airport.iata_code}) (${airport.city}) (${airport.country})`);
+        setQuery_origin(`${airport.city} (${airport.iata_code})`);
+
         setResults_origin([]);
     };
 
@@ -211,6 +212,7 @@ function AirportSearch() {
 
     const handleTripTypeChange = (type) => {
         setTripType(type);
+        if (type === 'one-way') setReturnDate('');
     }
 
     function flightSearch() {
@@ -218,17 +220,17 @@ function AirportSearch() {
             alert('Please select an origin airport');
             return;
         }
-        
+
         if (!selectedAirport_destination) {
             alert('Please select a destination airport');
             return;
         }
-        
+
         if (!journeyDate) {
             alert('Please select a journey date');
             return;
         }
-        
+
         if (tripType === 'round-trip' && !returnDate) {
             alert('Please select a return date for round trip');
             return;
@@ -251,106 +253,129 @@ function AirportSearch() {
     }
 
     return (
-        <div className="text-center bg-amber-100">
+        <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl pt-6 pb-6 pl-12 pr-12 max-w-6xl mx-auto border border-white/20">
 
-            <div>
-                <div>
-                    <label>
+            <div className="flex justify-between items-center">
+                <div className="flex gap-2 mb-2">
+                    <label className="flex items-center gap-1 cursor-pointer">
                         <input
                             type="radio"
                             name="tripType"
                             value="one-way"
                             checked={tripType === 'one-way'}
                             onChange={(e) => handleTripTypeChange(e.target.value)}
+                            className="w-4 h-4 text-white accent-cyan-400"
                         />
-                        One Way
+                        <span className="font-medium text-white">One Way</span>
                     </label>
                     <br />
-                    <label>
+                    <label className="flex items-center gap-1 cursor-pointer">
                         <input
                             type="radio"
                             name="tripType"
                             value="round-trip"
                             checked={tripType === 'round-trip'}
                             onChange={(e) => handleTripTypeChange(e.target.value)}
+                            className="w-4 h-4 text-white accent-cyan-400"
                         />
-                        Round Trip
+                        <span className="font-medium text-white">Round Trip</span>
                     </label>
                 </div>
+
+                <div>
+                    <PassengerCounter
+                        adult={adult}
+                        setAdult={setAdult}
+                        child={child}
+                        setChild={setChild}
+                        className="justify-end"
+                    />
+                </div>
+
+
+
             </div>
 
             <br />
 
-            <input
-                type="text"
-                placeholder="Origin Airport"
-                value={query_origin}
-                onChange={handleInputChangeOrigin}
-                className="bg-blue-200 text-blue-900 rounded-md"
-            />
-            <br />
+            <div className="grid grid-cols-4 gap-8">
+                <div className="w-full">
+                    <label className="block text-white font-medium mb-2">From </label>
+                    <input
+                        type="text"
+                        placeholder="Origin Airport"
+                        value={query_origin}
+                        onChange={handleInputChangeOrigin}
+                        className="w-full px-3 py-3 rounded-lg bg-white/10 backdrop-blur-sm placeholder-white/70 text-white border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/60 focus:bg-white/20 hover:bg-white/20 transition-all duration-300 shadow-lg"
+                    />
 
-            <AirportList
-                results={results_origin}
-                selectedAirport={selectedAirport_origin}
-                handleSelect={handleSelectOrigin}
-            />
+                    <AirportList
+                        results={results_origin}
+                        selectedAirport={selectedAirport_origin}
+                        handleSelect={handleSelectOrigin}
+                    />
 
-            <SelectedAirport
-                selectedAirport={selectedAirport_origin}
-            />
-            <br />
-            <input
-                type="text"
-                placeholder="Destination Airport"
-                value={query_destination}
-                onChange={handleInputChangeDestination}
-                className="bg-blue-200 text-blue-900 rounded-md"
-            />
-            <br />
+                    <SelectedAirport
+                        selectedAirport={selectedAirport_origin}
+                    />
+                </div>
 
-            <AirportList
-                results={results_destination}
-                selectedAirport={selectedAirport_destination}
-                handleSelect={handleSelectDestination}
-            />
+                <div className="w-full">
+                    <label className="block text-white font-medium mb-2">To </label>
+                    <input
+                        type="text"
+                        placeholder="Destination Airport"
+                        value={query_destination}
+                        onChange={handleInputChangeDestination}
+                        className="w-full px-3 py-3 rounded-lg bg-white/10 backdrop-blur-sm placeholder-white/70 text-white border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/60 focus:bg-white/20 hover:bg-white/20 transition-all duration-300 shadow-lg"
+                    />
 
-            <SelectedAirport
-                selectedAirport={selectedAirport_destination}
-            />
+                    <AirportList
+                        results={results_destination}
+                        selectedAirport={selectedAirport_destination}
+                        handleSelect={handleSelectDestination}
+                    />
 
-            <br />
-            <input
-                type="date"
-                value={journeyDate}
-                onChange={(e) => setJourneyDate(e.target.value)}
-                max={returnDate || undefined}
-                className="bg-blue-200 text-blue-900"
-            />
-            <br />
-            {
-                tripType === 'round-trip' && (
+                    <SelectedAirport
+                        selectedAirport={selectedAirport_destination}
+                    />
+                </div>
+
+                <div className="w-full">
+                    <label className="block text-white font-medium mb-2">Departure Date </label>
+                    <input
+                        type="date"
+                        value={journeyDate}
+                        onChange={(e) => setJourneyDate(e.target.value)}
+                        max={returnDate || undefined}
+                        className="w-full px-3 py-3 rounded-lg bg-white/10 backdrop-blur-sm placeholder-white/70 text-white border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/60 focus:bg-white/20 hover:bg-white/20 transition-all duration-300 shadow-lg"
+                    />
+                </div>
+
+
+                <div className="w-full">
+                    <label className="block text-white font-medium mb-2">Return Date </label>
                     <input
                         type="date"
                         value={returnDate}
-                        onChange={(e) => setReturnDate(e.target.value)}
+                        onChange={(e) => { setReturnDate(e.target.value); setTripType("round-trip") }}
                         min={journeyDate || getTodayDate()}
-                        className="bg-blue-200 text-blue-900"
+                        className="w-full px-3 py-3 rounded-lg bg-white/10 backdrop-blur-sm placeholder-white/70 text-white border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-white/60 focus:bg-white/20 hover:bg-white/20 transition-all duration-300 shadow-lg"
                     />
-                )
-            }
+                </div>
+
+
+            </div>
+
+
             <br />
-            <PassengerCounter
-                adult={adult}
-                setAdult={setAdult}
-                child={child}
-                setChild={setChild}
-            />
-            <br />
-            <button
-                className="bg-white rounded-md"
-                onClick={flightSearch}
-            >Search</button>
+            <div className="flex justify-center items-center">
+                <button
+                    className="bg-white rounded-md"
+                    onClick={flightSearch}
+                >Search</button>
+            </div>
+
 
 
 

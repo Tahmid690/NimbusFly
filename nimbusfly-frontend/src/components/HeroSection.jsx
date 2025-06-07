@@ -82,7 +82,7 @@ const HeroSection = () => {
             <div className="absolute inset-0 bg-gradient-to-br from-transparent via-cyan-600/10 to-blue-800/30"></div>
 
             <div className="mb-8 pt-80">
-                <h1 className="text-4xl md:text-6xl lg:text-7xl font-black leading-tight min-h-[150px] flex items-center justify-center">
+                <h1 className="text-3xl md:text-5xl lg:text-7xl font-black leading-tight min-h-[150px] flex items-center justify-center">
                     <span className="text-white text-shadow-lg drop-shadow-[0_0_30px_rgba(59,130,246,0.4)]">
                         {displayText}
                     </span>
