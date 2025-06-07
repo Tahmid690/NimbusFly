@@ -35,9 +35,9 @@ const Navbar = () => {
                             <div className="relative">
                                 <div className="absolute inset-0 bg-blue-500/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                                 <img
-                                    src="/logo (1).png"
+                                    src="/lgg.png"
                                     alt="NimbusFly Logo"
-                                    className="h-12 w-auto relative z-10 transition-transform duration-300 group-hover:scale-105"
+                                    className="h-12 w-auto relative z-10 transition-transform duration-300 group-hover:scale-105 shadow-xl"
                                 />
                             </div>
                             <div className="flex flex-col">
