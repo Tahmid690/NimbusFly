@@ -60,6 +60,7 @@ const HeroSection = () => {
     }, []);
 
 
+
     
 
     return (
@@ -68,27 +69,27 @@ const HeroSection = () => {
             <div
                 className="absolute inset-0 bg-cover bg-center bg-no-repeat transform scale-110 transition-transform duration-[20s] ease-out hover:scale-105"
                 style={{
-                    backgroundImage: `url('/shei.jpeg')`
+                    backgroundImage: `url('/bkg3.jpg')`
                 }}
             />
             
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-950/50 via-slate-800/30 to-sky-900/50"></div>
+            {/* <div className="absolute inset-0 bg-gradient-to-r from-blue-950/50 via-slate-800/30 to-sky-900/50"></div>
             <div className="absolute inset-0 bg-gradient-to-t from-slate-900/70 via-transparent to-sky-500/20"></div>
-            <div className="absolute inset-0 bg-gradient-to-br from-transparent via-blue-600/10 to-slate-800/40"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-transparent via-blue-600/10 to-slate-800/40"></div> */}
 
-            {/* <div className="absolute inset-0 bg-gradient-to-r from-teal-900/40 via-cyan-800/20 to-blue-900/40"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-teal-900/40 via-cyan-800/20 to-blue-900/40"></div>
             <div className="absolute inset-0 bg-gradient-to-t from-teal-900/60 via-transparent to-cyan-500/20"></div>
-            <div className="absolute inset-0 bg-gradient-to-br from-transparent via-cyan-600/10 to-blue-800/30"></div> */}
+            <div className="absolute inset-0 bg-gradient-to-br from-transparent via-cyan-600/10 to-blue-800/30"></div>
 
             <div className="mb-8 pt-80">
                 <h1 className="text-4xl md:text-6xl lg:text-7xl font-black leading-tight min-h-[150px] flex items-center justify-center">
                     <span className="text-white text-shadow-lg drop-shadow-[0_0_30px_rgba(59,130,246,0.4)]">
                         {displayText}
                     </span>
-                    <span className={`inline-block w-1 h-12 md:h-16 lg:h-20 bg-cyan-400 ml-2 transition-opacity duration-100 ${showCursor ? 'opacity-100' : 'opacity-0'}`}></span>
+                    <span className={`inline-block w-1 h-20 bg-white ml-2 transition-opacity duration-100 ${showCursor ? 'opacity-100' : 'opacity-0'}`}></span>
                 </h1>
                 <p className="flex text-xl md:text-2xl lg:text-3xl font-medium text-white/90 drop-shadow-lg mb-12 animate-fade-in items-center justify-center text-shadow-lg">
-                    Discover Amazing Destinations Around the Globe
+                    Soar Above the Clouds to Amazing Destinations
                 </p>
             </div>
         </div>

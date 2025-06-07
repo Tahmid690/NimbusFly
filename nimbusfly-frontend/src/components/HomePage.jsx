@@ -8,21 +8,15 @@ function HomePage() {
 
 
     return (
-        <div >
+        <div>
             <Navbar/>
             <div>
                 <HeroSection/>
-
-                <AirportSearch/>
+                <div className="hidden absolute top-150 left-200">
+                    <AirportSearch/>
+                </div>
                 
-
             </div>
-
-
-
-
-
-
         </div>
 
 
