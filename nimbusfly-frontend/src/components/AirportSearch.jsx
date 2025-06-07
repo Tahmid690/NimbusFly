@@ -251,7 +251,7 @@ function AirportSearch() {
     }
 
     return (
-        <div className="text-center bg-blue-900">
+        <div className="text-center">
 
             <div>
                 <div>
