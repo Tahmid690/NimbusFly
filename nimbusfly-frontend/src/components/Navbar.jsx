@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const Navbar = () => {
+const Navbar = ({overlay,setOverlay}) => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [activeLink, setActiveLink] = useState('Home');
 
@@ -35,7 +35,7 @@ const Navbar = () => {
                             <div className="relative">
                                 <div className="absolute inset-0 bg-blue-500/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                                 <img
-                                    src="/lgg.png"
+                                    src={`${isScrolled ? '/lggd.png' : '/lgg.png'}`}
                                     alt="NimbusFly Logo"
                                     className="h-12 w-auto relative z-10 transition-transform duration-300 group-hover:scale-105 shadow-xl"
                                 />
@@ -77,7 +77,9 @@ const Navbar = () => {
                             ))}
 
                             <div className="flex items-center space-x-3">
-                                <button className="relative overflow-hidden px-8 py-3 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-600 text-white font-bold text-sm rounded-xl shadow-lg hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300 group focus:outline-none focus:ring-4 focus:ring-blue-300/50" >
+                                <button className="relative overflow-hidden px-8 py-3 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-600 text-white font-bold text-sm rounded-xl shadow-lg hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300 group focus:outline-none focus:ring-4 focus:ring-blue-300/50"
+                                    onClick={()=>setOverlay(!overlay)}
+                                >
                                     <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></span>
                                     <span className="relative flex items-center space-x-2">
                                         <span>Get Started</span>
