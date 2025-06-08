@@ -7,6 +7,7 @@ import FlightResults from './components/FlightResults'
 import AirlineLogin from './components/AirlineLogin'
 import AirlineReg from './components/AirlineReg'
 import Navbar from './components/Navbar'
+import AdminDashboard from './components/admin/AdminDashboard'
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Route path="/register" element={<RegisterForm/>}/>
         <Route path="/admin/login" element={<AirlineLogin/>}/>
         <Route path="/admin/register" element={<AirlineReg/>}/>
+        <Route path="/admin/dashboard" element={<AdminDashboard/>}/>
       </Routes>
     </div>
   )
