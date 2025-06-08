@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Tailwind Flex & Grid Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-6xl mx-auto space-y-12">
+        
+        <!-- Header -->
+        <div class="text-center">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">Complete Tailwind Layout Guide</h1>
+            <p class="text-gray-600">Flexbox & CSS Grid in Tailwind CSS</p>
+            <div class="flex justify-center gap-4 mt-6">
+                <a href="#flexbox" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Jump to Flexbox</a>
+                <a href="#grid" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Jump to Grid</a>
+            </div>
+        </div>
+
+        <!-- FLEXBOX SECTION -->
+        <div id="flexbox" class="bg-gradient-to-r from-blue-50 to-indigo-50 p-8 rounded-xl">
+            <h2 class="text-3xl font-bold text-blue-700 mb-8 text-center">FLEXBOX LAYOUTS</h2>
+
+            <!-- Basic Flex -->
+            <section class="bg-white p-6 rounded-lg shadow-md mb-8">
+                <h3 class="text-2xl font-bold mb-4 text-blue-600">1. Basic Flex Container</h3>
+                
+                <div class="mb-6">
+                    <h4 class="text-lg font-semibold mb-2">Horizontal Layout (default)</h4>
+                    <div class="flex gap-4 bg-blue-50 p-4 rounded mb-2">
+                        <div class="bg-blue-200 p-4 rounded">Item 1</div>
+                        <div class="bg-blue-300 p-4 rounded">Item 2</div>
+                        <div class="bg-blue-400 p-4 rounded">Item 3</div>
+                    </div>
+                    <code class="bg-gray-100 p-2 rounded text-sm">flex gap-4</code>
+                </div>
+
+                <div class="mb-6">
+                    <h4 class="text-lg font-semibold mb-2">Vertical Layout</h4>
+                    <div class="flex flex-col gap-4 bg-blue-50 p-4 rounded mb-2 h-48">
+                        <div class="bg-purple-200 p-4 rounded">Item 1</div>
+                        <div class="bg-purple-300 p-4 rounded">Item 2</div>
+                        <div class="bg-purple-400 p-4 rounded">Item 3</div>
+                    </div>
+                    <code class="bg-gray-100 p-2 rounded text-sm">flex flex-col gap-4</code>
+                </div>
+            </section>
+
+            <!-- Justify Content -->
+            <section class="bg-white p-6 rounded-lg shadow-md mb-8">
+                <h3 class="text-2xl font-bold mb-4 text-blue-600">2. Justify Content (Main Axis)</h3>
+                
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-semibold mb-2">justify-start (default)</h4>
+                        <div class="flex justify-start gap-2 bg-gray-50 p-4 rounded">
+                            <div class="bg-red-200 p-3 rounded">A</div>
+                            <div class="bg-red-300 p-3 rounded">B</div>
+                            <div class="bg-red-400 p-3 rounded">C</div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold mb-2">justify-center</h4>
+                        <div class="flex justify-center gap-2 bg-gray-50 p-4 rounded">
+                            <div class="bg-green-200 p-3 rounded">A</div>
+                            <div class="bg-green-300 p-3 rounded">B</div>
+                            <div class="bg-green-400 p-3 rounded">C</div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold mb-2">justify-between</h4>
+                        <div class="flex justify-between gap-2 bg-gray-50 p-4 rounded">
+                            <div class="bg-blue-200 p-3 rounded">A</div>
+                            <div class="bg-blue-300 p-3 rounded">B</div>
+                            <div class="bg-blue-400 p-3 rounded">C</div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold mb-2">justify-around</h4>
+                        <div class="flex justify-around gap-2 bg-gray-50 p-4 rounded">
+                            <div class="bg-yellow-200 p-3 rounded">A</div>
+                            <div class="bg-yellow-300 p-3 rounded">B</div>
+                            <div class="bg-yellow-400 p-3 rounded">C</div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold mb-2">justify-evenly</h4>
+                        <div class="flex justify-evenly gap-2 bg-gray-50 p-4 rounded">
+                            <div class="bg-purple-200 p-3 rounded">A</div>
+                            <div class="bg-purple-300 p-3 rounded">B</div>
+                            <div class="bg-purple-400 p-3 rounded">C</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Align Items -->
+            <section class="bg-white p-6 rounded-lg shadow-md mb-8">
+                <h3 class="text-2xl font-bold mb-4 text-blue-600">3. Align Items (Cross Axis)</h3>
+                
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-semibold mb-2">items-start</h4>
+                        <div class="flex items-start gap-2 bg-gray-50 p-4 rounded h-24">
+                            <div class="bg-indigo-200 p-3 rounded">Short</div>
+                            <div class="bg-indigo-300 p-3 rounded h-16 flex items-center">Tall</div>
+                            <div class="bg-indigo-400 p-3 rounded">Short</div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold mb-2">items-center</h4>
+                        <div class="flex items-center gap-2 bg-gray-50 p-4 rounded h-24">
+                            <div class="bg-teal-200 p-3 rounded">Short</div>
+                            <div class="bg-teal-300 p-3 rounded h-16 flex items-center">Tall</div>
+                            <div class="bg-teal-400 p-3 rounded">Short</div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold mb-2">items-stretch (default)</h4>
+                        <div class="flex items-stretch gap-2 bg-gray-50 p-4 rounded h-24">
+                            <div class="bg-orange-200 p-3 rounded flex items-center">Stretch</div>
+                            <div class="bg-orange-300 p-3 rounded flex items-center">Stretch</div>
+                            <div class="bg-orange-400 p-3 rounded flex items-center">Stretch</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Flex Item Properties -->
+            <section class="bg-white p-6 rounded-lg shadow-md mb-8">
+                <h3 class="text-2xl font-bold mb-4 text-blue-600">4. Flex Item Properties</h3>
+                
+                <div class="space-y-6">
+                    <div>
+                        <h4 class="font-semibold mb-2">flex-1 (grow and shrink equally)</h4>
+                        <div class="flex gap-4 bg-gray-50 p-4 rounded">
+                            <div class="flex-1 bg-pink-200 p-4 rounded text-center">flex-1</div>
+                            <div class="flex-1 bg-pink-300 p-4 rounded text-center">flex-1</div>
+                            <div class="bg-pink-400 p-4 rounded">Fixed width</div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold mb-2">flex-auto (grow/shrink with content)</h4>
+                        <div class="flex gap-4 bg-gray-50 p-4 rounded">
+                            <div class="flex-auto bg-cyan-200 p-4 rounded text-center">Short</div>
+                            <div class="flex-auto bg-cyan-300 p-4 rounded text-center">Much longer content here</div>
+                            <div class="bg-cyan-400 p-4 rounded">Fixed</div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold mb-2">flex-none (no grow/shrink)</h4>
+                        <div class="flex gap-4 bg-gray-50 p-4 rounded">
+                            <div class="flex-1 bg-emerald-200 p-4 rounded text-center">flex-1</div>
+                            <div class="flex-none bg-emerald-300 p-4 rounded text-center">flex-none</div>
+                            <div class="flex-1 bg-emerald-400 p-4 rounded text-center">flex-1</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Wrap -->
+            <section class="bg-white p-6 rounded-lg shadow-md mb-8">
+                <h3 class="text-2xl font-bold mb-4 text-blue-600">5. Flex Wrap</h3>
+                
+                <div class="space-y-6">
+                    <div>
+                        <h4 class="font-semibold mb-2">flex-nowrap (default)</h4>
+                        <div class="flex flex-nowrap gap-4 bg-gray-50 p-4 rounded overflow-x-auto">
+                            <div class="bg-violet-200 p-4 rounded whitespace-nowrap">Item 1</div>
+                            <div class="bg-violet-300 p-4 rounded whitespace-nowrap">Item 2</div>
+                            <div class="bg-violet-400 p-4 rounded whitespace-nowrap">Item 3</div>
+                            <div class="bg-violet-500 p-4 rounded whitespace-nowrap">Item 4</div>
+                            <div class="bg-violet-600 p-4 rounded whitespace-nowrap">Item 5</div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold mb-2">flex-wrap</h4>
+                        <div class="flex flex-wrap gap-4 bg-gray-50 p-4 rounded">
+                            <div class="bg-rose-200 p-4 rounded min-w-[150px]">Item 1</div>
+                            <div class="bg-rose-300 p-4 rounded min-w-[150px]">Item 2</div>
+                            <div class="bg-rose-400 p-4 rounded min-w-[150px]">Item 3</div>
+                            <div class="bg-rose-500 p-4 rounded min-w-[150px]">Item 4</div>
+                            <div class="bg-rose-600 p-4 rounded min-w-[150px]">Item 5</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Common Patterns -->
+            <section class="bg-white p-6 rounded-lg shadow-md mb-8">
+                <h3 class="text-2xl font-bold mb-4 text-blue-600">6. Common Flex Patterns</h3>
+                
+                <div class="space-y-6">
+                    <div>
+                        <h4 class="font-semibold mb-2">Centered Content</h4>
+                        <div class="flex items-center justify-center bg-gray-50 p-8 rounded h-32">
+                            <div class="bg-blue-500 text-white p-4 rounded">Perfectly Centered</div>
+                        </div>
+                        <code class="bg-gray-100 p-2 rounded text-sm block mt-2">flex items-center justify-center</code>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold mb-2">Header Layout</h4>
+                        <div class="flex items-center justify-between bg-gray-800 text-white p-4 rounded">
+                            <div class="font-bold">Logo</div>
+                            <nav class="flex gap-4">
+                                <a href="#" class="hover:text-blue-300">Home</a>
+                                <a href="#" class="hover:text-blue-300">About</a>
+                                <a href="#" class="hover:text-blue-300">Contact</a>
+                            </nav>
+                            <button class="bg-blue-500 px-4 py-2 rounded">Login</button>
+                        </div>
+                        <code class="bg-gray-100 p-2 rounded text-sm block mt-2">flex items-center justify-between</code>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold mb-2">Card Layout</h4>
+                        <div class="flex flex-col bg-white border rounded-lg overflow-hidden max-w-sm">
+                            <div class="bg-gradient-to-r from-purple-400 to-pink-400 h-32"></div>
+                            <div class="p-4 flex-1">
+                                <h5 class="font-bold mb-2">Card Title</h5>
+                                <p class="text-gray-600 mb-4">Card content goes here...</p>
+                            </div>
+                            <div class="p-4 pt-0">
+                                <button class="w-full bg-blue-500 text-white py-2 rounded">Action</button>
+                            </div>
+                        </div>
+                        <code class="bg-gray-100 p-2 rounded text-sm block mt-2">flex flex-col</code>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Responsive Flex -->
+            <section class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-2xl font-bold mb-4 text-blue-600">7. Responsive Flexbox</h3>
+                
+                <div class="flex flex-col md:flex-row gap-4 bg-gray-50 p-4 rounded mb-4">
+                    <div class="flex-1 bg-amber-200 p-4 rounded text-center">Stack on mobile</div>
+                    <div class="flex-1 bg-amber-300 p-4 rounded text-center">Row on desktop</div>
+                    <div class="flex-1 bg-amber-400 p-4 rounded text-center">Responsive layout</div>
+                </div>
+                <code class="bg-gray-100 p-2 rounded text-sm">flex flex-col md:flex-row</code>
+            </section>
+        </div>
+
+        <!-- GRID SECTION -->
+        <div id="grid" class="bg-gradient-to-r from-green-50 to-emerald-50 p-8 rounded-xl">
+            <h2 class="text-3xl font-bold text-green-700 mb-8 text-center">CSS GRID LAYOUTS</h2>
+
+            <!-- Basic Grid -->
+            <section class="bg-white p-6 rounded-lg shadow-md mb-8">
+                <h3 class="text-2xl font-bold mb-4 text-green-600">1. Basic Grid</h3>
+                
+                <div class="mb-4">
+                    <h4 class="text-lg font-semibold mb-2">Simple 3-Column Grid</h4>
+                    <div class="grid grid-cols-3 gap-4 mb-4">
+                        <div class="bg-blue-100 p-4 rounded">Item 1</div>
+                        <div class="bg-blue-200 p-4 rounded">Item 2</div>
+                        <div class="bg-blue-300 p-4 rounded">Item 3</div>
+                    </div>
+                    <code class="bg-gray-100 p-2 rounded text-sm">grid grid-cols-3 gap-4</code>
+                </div>
+
+                <div class="mb-4">
+                    <h4 class="text-lg font-semibold mb-2">Different Column Counts</h4>
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-green-100 p-4 rounded">2 Cols - 1</div>
+                            <div class="bg-green-200 p-4 rounded">2 Cols - 2</div>
+                        </div>
+                        <div class="grid grid-cols-4 gap-4">
+                            <div class="bg-purple-100 p-4 rounded">4 Cols - 1</div>
+                            <div class="bg-purple-200 p-4 rounded">4 Cols - 2</div>
+                            <div class="bg-purple-300 p-4 rounded">4 Cols - 3</div>
+                            <div class="bg-purple-400 p-4 rounded">4 Cols - 4</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Column Spanning -->
+            <section class="bg-white p-6 rounded-lg shadow-md mb-8">
+                <h3 class="text-2xl font-bold mb-4 text-green-600">2. Column Spanning</h3>
+                
+                <div class="grid grid-cols-4 gap-4 mb-4">
+                    <div class="bg-red-100 p-4 rounded">Normal</div>
+                    <div class="bg-red-200 p-4 rounded col-span-2">Spans 2 columns</div>
+                    <div class="bg-red-300 p-4 rounded">Normal</div>
+                    <div class="bg-red-400 p-4 rounded col-span-3">Spans 3 columns</div>
+                    <div class="bg-red-500 p-4 rounded">Normal</div>
+                </div>
+                <code class="bg-gray-100 p-2 rounded text-sm">col-span-2, col-span-3, etc.</code>
+            </section>
+
+            <!-- Complex Layout -->
+            <section class="bg-white p-6 rounded-lg shadow-md mb-8">
+                <h3 class="text-2xl font-bold mb-4 text-green-600">3. Complex Layout Example</h3>
+                
+                <div class="grid grid-cols-4 grid-rows-4 gap-4 h-96">
+                    <div class="bg-gradient-to-r from-blue-400 to-blue-600 text-white p-4 rounded col-span-4 flex items-center justify-center font-bold">
+                        Header (col-span-4)
+                    </div>
+                    <div class="bg-gradient-to-r from-green-400 to-green-600 text-white p-4 rounded row-span-2 flex items-center justify-center font-bold">
+                        Sidebar<br>(row-span-2)
+                    </div>
+                    <div class="bg-gradient-to-r from-purple-400 to-purple-600 text-white p-4 rounded col-span-2 flex items-center justify-center font-bold">
+                        Main Content (col-span-2)
+                    </div>
+                    <div class="bg-gradient-to-r from-red-400 to-red-600 text-white p-4 rounded flex items-center justify-center font-bold">
+                        Widget
+                    </div>
+                    <div class="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white p-4 rounded col-span-3 flex items-center justify-center font-bold">
+                        Content Area (col-span-3)
+                    </div>
+                    <div class="bg-gradient-to-r from-indigo-400 to-indigo-600 text-white p-4 rounded col-span-4 flex items-center justify-center font-bold">
+                        Footer (col-span-4)
+                    </div>
+                </div>
+            </section>
+
+            <!-- Responsive Grid -->
+            <section class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-2xl font-bold mb-4 text-green-600">4. Responsive Grid</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                    <div class="bg-violet-100 p-4 rounded">Responsive</div>
+                    <div class="bg-violet-200 p-4 rounded">Grid</div>
+                    <div class="bg-violet-300 p-4 rounded">Layout</div>
+                    <div class="bg-violet-400 p-4 rounded">Items</div>
+                </div>
+                <code class="bg-gray-100 p-2 rounded text-sm">grid-cols-1 md:grid-cols-2 lg:grid-cols-4</code>
+            </section>
+        </div>
+
+        <!-- Quick Reference -->
+        <section class="bg-gray-800 text-white p-8 rounded-lg">
+            <h2 class="text-3xl font-bold mb-8 text-center text-green-400">Quick Reference</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Flexbox Reference -->
+                <div class="bg-gray-700 p-6 rounded-lg">
+                    <h3 class="text-xl font-bold text-blue-300 mb-4">Flexbox Classes</h3>
+                    <div class="space-y-3 text-sm">
+                        <div>
+                            <h4 class="font-semibold text-blue-200">Container:</h4>
+                            <code class="bg-gray-800 px-2 py-1 rounded">flex, inline-flex</code>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-blue-200">Direction:</h4>
+                            <code class="bg-gray-800 px-2 py-1 rounded">flex-row, flex-col, flex-row-reverse, flex-col-reverse</code>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-blue-200">Wrap:</h4>
+                            <code class="bg-gray-800 px-2 py-1 rounded">flex-wrap, flex-nowrap, flex-wrap-reverse</code>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-blue-200">Justify:</h4>
+                            <code class="bg-gray-800 px-2 py-1 rounded">justify-start, justify-center, justify-between, justify-around, justify-evenly</code>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-blue-200">Align:</h4>
+                            <code class="bg-gray-800 px-2 py-1 rounded">items-start, items-center, items-end, items-stretch, items-baseline</code>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-blue-200">Flex Items:</h4>
+                            <code class="bg-gray-800 px-2 py-1 rounded">flex-1, flex-auto, flex-initial, flex-none</code>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grid Reference -->
+                <div class="bg-gray-700 p-6 rounded-lg">
+                    <h3 class="text-xl font-bold text-green-300 mb-4">Grid Classes</h3>
+                    <div class="space-y-3 text-sm">
+                        <div>
+                            <h4 class="font-semibold text-green-200">Container:</h4>
+                            <code class="bg-gray-800 px-2 py-1 rounded">grid, inline-grid</code>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-green-200">Template:</h4>
+                            <code class="bg-gray-800 px-2 py-1 rounded">grid-cols-{1-12}, grid-rows-{1-6}</code>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-green-200">Span:</h4>
+                            <code class="bg-gray-800 px-2 py-1 rounded">col-span-{1-12}, row-span-{1-6}, col-span-full</code>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-green-200">Start/End:</h4>
+                            <code class="bg-gray-800 px-2 py-1 rounded">col-start-{1-13}, col-end-{1-13}, row-start-{1-7}, row-end-{1-7}</code>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-green-200">Gap:</h4>
+                            <code class="bg-gray-800 px-2 py-1 rounded">gap-{size}, gap-x-{size}, gap-y-{size}</code>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-green-200">Alignment:</h4>
+                            <code class="bg-gray-800 px-2 py-1 rounded">justify-items-{value}, items-{value}, place-items-{value}</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- When to Use What -->
+            <div class="mt-8 bg-gray-700 p-6 rounded-lg">
+                <h3 class="text-xl font-bold text-yellow-300 mb-4">When to Use Flexbox vs Grid</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                    <div>
+                        <h4 class="font-semibold text-blue-300 mb-2">Use Flexbox for:</h4>
+                        <ul class="space-y-1 text-gray-300">
+                            <li>• One-dimensional layouts (row or column)</li>
+                            <li>• Navigation bars and headers</li>
+                            <li>• Centering content</li>
+                            <li>• Distributing space between items</li>
+                            <li>• Form layouts</li>
+                            <li>• Card components</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-green-300 mb-2">Use Grid for:</h4>
+                        <ul class="space-y-1 text-gray-300">
+                            <li>• Two-dimensional layouts</li>
+                            <li>• Complex page layouts</li>
+                            <li>• Image galleries</li>
+                            <li>• Dashboard layouts</li>
+                            <li>• Magazine-style layouts</li>
+                            <li>• Overlapping elements</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</body>
+</html>

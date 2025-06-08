@@ -19,7 +19,7 @@ const fetch_airport = async (query, selectedAirport, setResults, abortController
     catch (err) {
         if (err.name !== 'AbortError') {
             console.error("Error fetching airports:", err);
-            setResults_origin([]);
+            setResults([]);
         }
     }
 };
@@ -263,8 +263,8 @@ function AirportSearch() {
     const [selectedAirport_origin, setSelectedAirport_origin] = useState(null);
     const [selectedAirport_destination, setSelectedAirport_destination] = useState(null);
 
-    const [journeyDate, setJourneyDate] = useState(null);
-    const [returnDate, setReturnDate] = useState(null);
+    const [journeyDate, setJourneyDate] = useState('');
+    const [returnDate, setReturnDate] = useState('');
 
     const [tripType, setTripType] = useState('one-way');
 
@@ -318,7 +318,6 @@ function AirportSearch() {
     const handleSelectOrigin = (airport) => {
         setSelectedAirport_origin(airport);
         setQuery_origin(`${airport.city},${airport.country} (${airport.iata_code})`);
-
         setResults_origin([]);
     };
 
@@ -332,6 +331,18 @@ function AirportSearch() {
         setTripType(type);
         if (type === 'one-way') setReturnDate('');
     }
+    
+    const getInputClasses = (hasError, isSelected) => {
+        const baseClasses = "w-full px-3 py-3 rounded-lg backdrop-blur-sm placeholder-white/70 text-white border transition-all duration-300 shadow-lg focus:outline-none focus:ring-2 hover:bg-white/20";
+        
+        if (hasError) {
+            return `${baseClasses} border-red-500 bg-red-500/20 focus:ring-red-300`;
+        } else if (isSelected) {
+            return `${baseClasses} bg-green-500/20 border-green-400 font-bold focus:ring-white/50 focus:border-white/60 focus:bg-white/20`;
+        } else {
+            return `${baseClasses} bg-white/10 border-white/30 focus:ring-white/50 focus:border-white/60 focus:bg-white/20`;
+        }
+    };
 
     function flightSearch() {
 
@@ -341,6 +352,9 @@ function AirportSearch() {
             journeyDate: !journeyDate,
             returnDate: tripType === 'round-trip' && !returnDate
         };
+
+        console.log(selectedAirport_origin);
+        console.log(newErrors);
 
         setErrors(newErrors);
         if (Object.values(newErrors).some(error => error)) {
@@ -424,7 +438,7 @@ function AirportSearch() {
                         placeholder="Origin Airport"
                         value={query_origin}
                         onChange={handleInputChangeOrigin}
-                        className={`w-full px-3 py-3 rounded-lg backdrop-blur-sm placeholder-white/70 text-white border transition-all duration-300 shadow-lg focus:outline-none focus:ring-2 hover:bg-white/20 ${selectedAirport_origin ? 'bg-green-500/20 border-green-400 font-bold' : 'bg-white/10 border-white/30'} ${errors.origin ? 'border-red-500 bg-red-500/20 focus:ring-red-300' : 'focus:ring-white/50 focus:border-white/60 focus:bg-white/20'}`}
+                        className={getInputClasses(errors.origin, selectedAirport_origin)}
                     />
 
                     <AirportList
@@ -445,7 +459,7 @@ function AirportSearch() {
                         placeholder="Destination Airport"
                         value={query_destination}
                         onChange={handleInputChangeDestination}
-                        className={`w-full px-3 py-3 rounded-lg backdrop-blur-sm placeholder-white/70 text-white border transition-all duration-300 shadow-lg focus:outline-none focus:ring-2 hover:bg-white/20 ${selectedAirport_destination ? 'bg-green-500/20 border-green-400 font-bold' : 'bg-white/10 border-white/30'} ${errors.destination ? 'border-red-500 bg-red-500/20 focus:ring-red-300' : 'focus:ring-white/50 focus:border-white/60 focus:bg-white/20'}`}
+                        className={getInputClasses(errors.destination, selectedAirport_destination)}
                     />
 
                     <AirportList
@@ -467,7 +481,7 @@ function AirportSearch() {
                         value={journeyDate}
                         onChange={(e) =>{ setJourneyDate(e.target.value); setErrors(prev => ({...prev, journeyDate: false}));} }
                         max={returnDate || undefined}
-                        className={`w-full px-3 py-3 rounded-lg bg-white/10 backdrop-blur-sm placeholder-white/70 text-white border transition-all duration-300 shadow-lg focus:outline-none focus:ring-2 hover:bg-white/20 ${errors.journeyDate ? 'border-red-500 bg-red-500/20 focus:ring-red-300' : 'border-white/30 focus:ring-white/50 focus:border-white/60 focus:bg-white/20'}`}
+                        className={getInputClasses(errors.journeyDate, false)}
                     />
                 </div>
 
@@ -479,7 +493,7 @@ function AirportSearch() {
                         value={returnDate}
                         onChange={(e) => { setReturnDate(e.target.value); setTripType("round-trip"); setErrors(prev => ({...prev, returnDate: false})); }}
                         min={journeyDate || getTodayDate()}
-                        className={`w-full px-3 py-3 rounded-lg bg-white/10 backdrop-blur-sm placeholder-white/70 text-white border transition-all duration-300 shadow-lg focus:outline-none focus:ring-2 hover:bg-white/20 ${errors.returnDate ? 'border-red-500 bg-red-500/20 focus:ring-red-300' : 'border-white/30 focus:ring-white/50 focus:border-white/60 focus:bg-white/20'}`}
+                        className={getInputClasses(errors.returnDate, false)}
                     />
                 </div>
 
