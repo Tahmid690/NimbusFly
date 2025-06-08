@@ -65,23 +65,8 @@ const LoadingScreen = () => {
 };
 
 
-const fetchFlights = async () => {
-    try {
-        setLoading(true);
 
-        const apiUrl = `http://localhost:3000/flights/search?${searchParams.toString()}`;
 
-        const response = await fetch(apiUrl);
-        const data = await response.json();
-
-        setFlights(data);
-        setLoading(false);
-    } catch (err) {
-        setError('Failed to fetch flights');
-        setLoading(false);
-        console.error('Error fetching flights:', err);
-    }
-};
 
 
 function FlightResults() {
@@ -91,6 +76,7 @@ function FlightResults() {
 
     const [flights, setFlights] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [orderType, setorderType] = useState('cheapest');
 
 
     const searchData = {
@@ -101,7 +87,24 @@ function FlightResults() {
         tripType: searchParams.get('tripType'),
         adults: parseInt(searchParams.get('adults')) || 1,
         children: parseInt(searchParams.get('children')) || 0,
-        seatClass: searchParams.get('seatClass')
+        seatClass: searchParams.get('seatClass'),
+        orderType: orderType
+    };
+
+    
+    const fetchFlights = async () => {
+        try {
+            setLoading(true);
+            const apiUrl = `http://localhost:3000/flights/search?${searchParams.toString()}`;
+            const response = await fetch(apiUrl);
+            const data = await response.json();
+            setFlights(data);
+            setLoading(false);
+        } catch (err) {
+            setError('Failed to fetch flights');
+            setLoading(false);
+            console.error('Error fetching flights:', err);
+        }
     };
 
 
@@ -109,6 +112,7 @@ function FlightResults() {
         fetchFlights();
     }, []);
 
+    console.log(flights);
 
 
 

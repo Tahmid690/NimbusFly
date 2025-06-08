@@ -4,13 +4,13 @@ const pool = require('../config/database');
 const getAllflights = async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM flights');
-    
+
     res.json({
       success: true,
       data: result.rows,
       count: result.rowCount
     });
-    
+
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -141,46 +141,60 @@ const deleteFlight = async (req, res) => {
 
 
 const searchFlights = async (req, res) => {
-  const { from, to, date } = req.query;
+  const {
+    origin,
+    destination,
+    journeyDate,
+    returnDate,
+    tripType,
+    adults,
+    children,
+    seatClass,
+    orderType
+  } = req.query;
+
+  console.log("yeppi");
 
   try {
-    const query = `
-      SELECT * FROM flights
-      WHERE origin_airport_id = $1
-      AND destination_airport_id = $2
-      AND DATE(departure_time) = $3
-    `;
-    
 
-    const result = await pool.query(query, [from, to, date]);
+    let flights = [];
 
-    res.json({
-      success: true,
-      count: result.rowCount,
-      data: result.rows
+    //One-Way
+
+    const query1=`SELECT * FROM flights`;
+    const result=await pool.query(query1);
+    return res.json({
+      data:result.rows
     });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Failed to search flights', error: error.message });
+
+  }
+  catch (error) {
+    console.error('Flight search error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to search flights',
+      error: error.message
+    });
   }
 };
 
-const airlineFlights = async (req,res) => {
+const airlineFlights = async (req, res) => {
   const { airline_id } = req.params;
-  try{
+  try {
     const query = `
       SELECT *
       FROM flights f
       JOIN aircraft ac ON ac.aircraft_id=f.aircraft_id
       WHERE ac.airline_id = $1
     `;
-    const result = await pool.query(query,[airline_id]);
+    const result = await pool.query(query, [airline_id]);
     res.json({
       success: true,
       count: result.rowCount,
       data: result.rows
     });
   }
-  catch(error){
+  catch (error) {
     res.status(500).json({ success: false, message: 'Failed to fetch flights', error: error.message });
   }
 
@@ -190,11 +204,11 @@ const airlineFlights = async (req,res) => {
 
 
 module.exports = {
-    getAllflights,
-    getFlightById,
-    createFlight,
-    updateFlight,
-    deleteFlight,
-    searchFlights,
-    airlineFlights
+  getAllflights,
+  getFlightById,
+  createFlight,
+  updateFlight,
+  deleteFlight,
+  searchFlights,
+  airlineFlights
 };
