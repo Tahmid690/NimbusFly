@@ -153,7 +153,7 @@ const searchFlights = async (req, res) => {
     orderType
   } = req.query;
 
-  console.log("yeppi");
+  // console.log("yeppi");
 
   try {
 
