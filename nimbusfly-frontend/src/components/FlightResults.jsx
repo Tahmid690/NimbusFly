@@ -1,7 +1,10 @@
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import Navbar from "./Navbar";
 import { Plane, Search } from 'lucide-react';
+import FlightCard from './FlightCard';
+import AirportSearch from './AirportSearch'
+import { over } from 'lodash';
 
 const LoadingScreen = () => {
     return (
@@ -74,18 +77,23 @@ function FlightResults() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
 
+    const [overLay, setOverLay] = useState(false);
     const [flights, setFlights] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     const [selectedOption, setSelectedOption] = useState('Cheapest');
-    const options = ['Cheapest', 'Fastest'];
+    const options = ['Cheapest', 'Fastest', 'Earliest'];
 
     const [originCity, setOriginCity] = useState('');
     const [destinationCity, setDestinationCity] = useState('');
 
+    const [Origin_Airport,setOrigin_Airport] = useState('');
+    const [Dest_Airport,setDest_Airport] =useState('');
 
 
-    const searchData = {
+
+    const [searchData, setSearchData] = useState({
         origin: searchParams.get('origin'),
         destination: searchParams.get('destination'),
         journeyDate: searchParams.get('journeyDate'),
@@ -94,14 +102,17 @@ function FlightResults() {
         adults: parseInt(searchParams.get('adults')) || 1,
         children: parseInt(searchParams.get('children')) || 0,
         seatClass: searchParams.get('seatClass'),
-        orderType: options
-    };
+        orderType: selectedOption
+    });
+
+
+
 
 
     const fetchFlights = async () => {
         try {
             setLoading(true);
-            const apiUrl = `http://localhost:3000/flights/search?${searchParams.toString()}`;
+            const apiUrl = `http://localhost:3000/flights/search?${searchParams.toString() + `&orderType=${selectedOption}`}`;
             const response = await fetch(apiUrl);
             const data = await response.json();
 
@@ -113,7 +124,15 @@ function FlightResults() {
             const qct = await dct.json();
             setDestinationCity(qct);
 
-            setFlights(data);
+            const oap = await (await fetch(`http://localhost:3000/airports/iata?iata_code=`+searchData.origin)).json();
+            setOrigin_Airport(oap[0]);
+            const dap = await ((await fetch(`http://localhost:3000/airports/iata?iata_code=`+searchData.destination)).json());
+            setDest_Airport(dap[0]);
+            
+            // console.log(Origin_Airport[0]);
+            // console.log(Dest_Airport[0]);
+
+            setFlights(data.data);
             setLoading(false);
 
         } catch (err) {
@@ -125,8 +144,19 @@ function FlightResults() {
 
 
     useEffect(() => {
+        
         fetchFlights();
     }, []);
+    
+    useEffect(() => {
+        setSearchData(prev => ({
+            ...prev,
+            orderType: selectedOption
+        }));
+        fetchFlights();
+        // console.log(selectedOption);
+    }, [selectedOption]);
+
 
     const jrnydate = new Date(searchData.journeyDate);
 
@@ -137,7 +167,10 @@ function FlightResults() {
         year: 'numeric'
     });
 
-    // console.log(formattedDateJour);
+
+    // console.log(flights);
+    
+    console.log(Origin_Airport);
 
 
 
@@ -152,13 +185,36 @@ function FlightResults() {
 
 
 
-
-
     return (
         <div>
             <Navbar
                 flg={true}
             />
+
+            {
+                overLay && (
+                    <div className='fixed inset-0 bg-black/70 z-50 flex justify-center '
+                        onClick={() => setOverLay(false)}
+                    >
+                        <div
+                            className='mt-25 mb-160'
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <AirportSearch 
+                                origin_select={Origin_Airport}
+                                dest_select={Dest_Airport}
+                                journey_date={searchData.journeyDate}
+                                return_date={searchData.returnDate}
+                                trip_type={searchData.tripType}
+                                adulT={searchData.adults}
+                                chilD={searchData.children}
+                                seat_class={searchData.seatClass}
+                            />
+                        </div>
+                    </div>
+
+                )
+            }
 
             <div className='grid grid-cols-7 gap-4 px-6 lg:px-8 mt-20'>
                 <div className='col-span-2 bg-white p-4 h-500 ml-30'>
@@ -178,14 +234,16 @@ function FlightResults() {
                                     <div className='text-blue-100 text-sm'>
                                         <span>{formattedDateJour}</span>
                                         <span className='mx-3 text-blue-200'>|</span>
-                                        <span>{searchData.adults} passenger(s)</span>
+                                        <span>{searchData.adults + searchData.children} passenger(s)</span>
                                         <span className='mx-3 text-blue-200'>|</span>
                                         <span>{searchData.seatClass}</span>
                                     </div>
                                 </div>
 
                                 <div className='ml-6'>
-                                    <button className='bg-white/20 hover:bg-white/30 text-white px-6 py-2.5 rounded-xl font-medium transition-all duration-200 flex items-center gap-2 backdrop-blur-sm border border-white/20'>
+                                    <button className='bg-white/20 hover:bg-white/30 text-white px-6 py-2.5 rounded-xl font-medium transition-all duration-200 flex items-center gap-2 backdrop-blur-sm border border-white/20'
+                                        onClick={() => setOverLay(!overLay)}
+                                    >
                                         <span>Change search</span>
                                         <Search className='w-4 h-4' />
                                     </button>
@@ -212,7 +270,23 @@ function FlightResults() {
                                 ))}
                             </div>
                         </div>
+                        <div className='space-y-4'>
+                            {flights.map((flight, index) => (
+                                <FlightCard
+                                    key={index}
+                                    flight={flight}
+                                    origin={searchData.origin}
+                                    destination={searchData.destination}
+                                    adult={searchData.adults}
+                                    child={searchData.children}
+                                />
+                            ))}
+                        </div>
+
+
                     </div>
+
+
                 </div>
 
             </div>

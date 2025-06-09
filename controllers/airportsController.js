@@ -39,6 +39,8 @@ const getAirportCity = async (req, res) => {
   }
 };
 
+
+
 const getAirportById = async (req, res) => {
   try {
     const id = parseInt(req.params.id);
@@ -140,6 +142,30 @@ const searchAirportsbyname = async (req, res) => {
 
 
 
+  }
+  catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to search airports',
+      error: error.message
+    });
+
+  }
+};
+
+
+const searchAirportiata = async (req, res) => {
+  const { iata_code } = req.query;
+  try {
+
+    const result = await pool.query(`
+      SELECT airport_name,iata_code,city,country
+      FROM airports
+      WHERE
+        iata_code ILIKE $1
+    `, [iata_code]);
+    // console.log(result.rows);
+    res.json(result.rows);
   }
   catch (error) {
     res.status(500).json({
@@ -362,5 +388,6 @@ module.exports = {
   updateAirport,
   deleteAirport,
   searchAirportsbyname,
-  getAirportCity
+  getAirportCity,
+  searchAirportiata
 };

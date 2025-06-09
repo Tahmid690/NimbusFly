@@ -251,7 +251,7 @@ const SeatClass = ({ seatClass, setSeatClass }) => {
 
 
 
-function AirportSearch() {
+function AirportSearch({ origin_select = null, dest_select = null, journey_date=null, return_date=null,trip_type='one-way',adulT=1,chilD=0,seat_class='Economy'}) {
     const navigate = useNavigate();
 
     const [query_origin, setQuery_origin] = useState('');
@@ -263,15 +263,19 @@ function AirportSearch() {
     const [selectedAirport_origin, setSelectedAirport_origin] = useState(null);
     const [selectedAirport_destination, setSelectedAirport_destination] = useState(null);
 
+
+
     const [journeyDate, setJourneyDate] = useState('');
     const [returnDate, setReturnDate] = useState('');
 
-    const [tripType, setTripType] = useState('one-way');
+    const [tripType, setTripType] = useState(trip_type);
 
-    const [adult, setAdult] = useState(1);
-    const [child, setChild] = useState(0);
+    const [adult, setAdult] = useState(adulT);
+    const [child, setChild] = useState(chilD);
 
-    const [seatClass, setSeatClass] = useState('Economy');
+    const [seatClass, setSeatClass] = useState(seat_class);
+
+
 
 
     const [errors, setErrors] = useState({
@@ -304,13 +308,13 @@ function AirportSearch() {
 
 
     function handleInputChangeOrigin(e) {
-        setErrors(prev => ({...prev, origin: false}));
+        setErrors(prev => ({ ...prev, origin: false }));
         setQuery_origin(e.target.value);
         setSelectedAirport_origin(null);
     }
 
     function handleInputChangeDestination(e) {
-        setErrors(prev => ({...prev, destination: false}));
+        setErrors(prev => ({ ...prev, destination: false }));
         setQuery_destination(e.target.value);
         setSelectedAirport_destination(null);
     }
@@ -326,15 +330,22 @@ function AirportSearch() {
         setQuery_destination(`${airport.city},${airport.country} (${airport.iata_code})`);
         setResults_destination([]);
     };
+    useEffect(() => {
+        if (origin_select != null) handleSelectOrigin(origin_select);
+        if(dest_select !=null) handleSelectDestination(dest_select);
+        if(journey_date !=null) setJourneyDate(journey_date);
+        if(return_date !=null) setReturnDate(return_date);
+    }, []);
+
 
     const handleTripTypeChange = (type) => {
         setTripType(type);
         if (type === 'one-way') setReturnDate('');
     }
-    
+
     const getInputClasses = (hasError, isSelected) => {
         const baseClasses = "w-full px-3 py-3 rounded-lg backdrop-blur-sm placeholder-white/70 text-white border transition-all duration-300 shadow-lg focus:outline-none focus:ring-2 hover:bg-white/20";
-        
+
         if (hasError) {
             return `${baseClasses} border-red-500 bg-red-500/20 focus:ring-red-300`;
         } else if (isSelected) {
@@ -345,7 +356,7 @@ function AirportSearch() {
     };
 
     function flightSearch() {
-
+        console.log('Ei Kiree');
         const newErrors = {
             origin: !selectedAirport_origin,
             destination: !selectedAirport_destination,
@@ -361,7 +372,7 @@ function AirportSearch() {
             return;
         }
 
-        
+
 
         const searchParams = new URLSearchParams({
             origin: selectedAirport_origin.iata_code,
@@ -432,7 +443,7 @@ function AirportSearch() {
             <div className="grid grid-cols-4 gap-8">
                 <div className="w-full">
                     <label className="block text-white font-medium mb-2">From </label>
-                    
+
                     <input
                         type="text"
                         placeholder="Origin Airport"
@@ -479,7 +490,7 @@ function AirportSearch() {
                         type="date"
                         placeholder="Select date"
                         value={journeyDate}
-                        onChange={(e) =>{ setJourneyDate(e.target.value); setErrors(prev => ({...prev, journeyDate: false}));} }
+                        onChange={(e) => { setJourneyDate(e.target.value); setErrors(prev => ({ ...prev, journeyDate: false })); }}
                         max={returnDate || undefined}
                         className={getInputClasses(errors.journeyDate, false)}
                     />
@@ -491,7 +502,7 @@ function AirportSearch() {
                     <input
                         type="date"
                         value={returnDate}
-                        onChange={(e) => { setReturnDate(e.target.value); setTripType("round-trip"); setErrors(prev => ({...prev, returnDate: false})); }}
+                        onChange={(e) => { setReturnDate(e.target.value); setTripType("round-trip"); setErrors(prev => ({ ...prev, returnDate: false })); }}
                         min={journeyDate || getTodayDate()}
                         className={getInputClasses(errors.returnDate, false)}
                     />
