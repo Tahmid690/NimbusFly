@@ -325,6 +325,8 @@ function FlightResults() {
                                                 destination={searchData.destination}
                                                 adult={searchData.adults}
                                                 child={searchData.children}
+                                                Origin_Airport={Origin_Airport}
+                                                Dest_Airport={Dest_Airport}
                                             />
                                         </div>
                                     ))

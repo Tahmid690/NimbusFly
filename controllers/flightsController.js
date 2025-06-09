@@ -179,13 +179,18 @@ const searchFlights = async (req, res) => {
         f.departure_time as departure_time,
         f.arrival_time as arrival_time,
         (f.arrival_time - f.departure_time) as flight_time,
+        ROUND((CASE 
+            WHEN $4 = 'Business' THEN f.business_ticket_price 
+            ELSE f.economy_ticket_price 
+        END)*($6),2) as ticket_price,
         (CASE 
             WHEN $4 = 'Business' THEN f.business_ticket_price 
             ELSE f.economy_ticket_price 
-        END)*($6) as ticket_price,
+        END) as base_price,
         f.baggage_limit as baggage_limit,
         ac.model as aircraft_name,
         f.flight_number as flight_number
+        
     FROM
         flights f
         JOIN aircraft ac ON ac.aircraft_id = f.aircraft_id
