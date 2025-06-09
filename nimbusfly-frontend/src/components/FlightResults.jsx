@@ -179,7 +179,7 @@ function FlightResults() {
             const crs = [Math.round(actualMin), Math.round(actualMax)];
             
 
-            if(flights.length===0 || crs===rangeprice) return;
+            if(allflights.length===0 || crs===rangeprice) return;
             setFiltering(true); 
             await new Promise(resolve => setTimeout(resolve, 200));
             const filtered = allflights.filter(f => parseFloat(f.ticket_price) >= crs[0] && parseFloat(f.ticket_price) <= crs[1]);
