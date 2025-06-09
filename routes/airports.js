@@ -4,6 +4,7 @@ const airportsController = require('../controllers/airportsController');
 
 router.get('/', airportsController.getAllAirports);
 router.get('/city',airportsController.getAirportCity);
+router.get('/iata',airportsController.searchAirportiata);
 router.get('/search', airportsController.searchAirports);
 router.get('/search_name',airportsController.searchAirportsbyname);
 router.get('/:id', airportsController.getAirportById);

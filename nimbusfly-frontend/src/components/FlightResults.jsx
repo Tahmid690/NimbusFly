@@ -93,7 +93,8 @@ function FlightResults() {
 
     const [filteredFlights, setFilteredFlights] = useState([]);
     const [rangeprice, setrange] = useState([0, 10000]);
-
+    const[min,setmin]=useState(0);
+    const [max,setmax]=useState(10000);
 
 
     const [searchData, setSearchData] = useState({
@@ -134,11 +135,11 @@ function FlightResults() {
 
 
             const prices = (data.data).map(f => parseFloat(f.ticket_price));
-            const min = Math.min(...prices);
-            const max = Math.max(...prices);
+            setmin(Math.min(...prices));
+            setmax(Math.max(...prices));
 
             setrange([min, max]);
-            setFilteredFlights(data.data);
+            setFlights(data.data);
 
             setFlights(data.data);
             setLoading(false);
@@ -167,7 +168,7 @@ function FlightResults() {
         const updt_flights = async () => {
             const [mn, mx] = rangeprice;
             const filtered = flights.filter(f => parseFloat(f.ticket_price) >= mn && parseFloat(f.ticket_price) <= mx);
-            setFlights(filtered);   
+            setFilteredFlights(filtered);   
             console.log(flights); 
         }
         updt_flights();
@@ -238,9 +239,9 @@ function FlightResults() {
                     {/* Eikhane Filter Thakbe */}
                     <div className='col-span-2 bg-white p-4 h-fit rounded shadow'>
                         <PriceRange
-                            minprice={rangeprice[0]}
-                            maxprice={rangeprice[1]}
-                            selectedprice={rangeprice}
+                            minprice={min}
+                            maxprice={max}
+                        //    selectedprice={rangeprice}
                             onrangechange={handleRangeChange}
                         />
                     </div>
