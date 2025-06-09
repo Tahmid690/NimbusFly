@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronDown, Heart, Plane, Clock, Users, Luggage, Star, Wifi, Coffee, Search, Filter, SlidersHorizontal } from 'lucide-react';
+import { ChevronDown, Heart, Plane, Clock, Users, Luggage, Star, Wifi, Coffee, Search, Filter, SlidersHorizontal, MapPin, Calendar, CreditCard, Shield, Utensils } from 'lucide-react';
 
-
-const FlightCard = ({ flight, origin, destination ,adult,child}) => {
+const FlightCard = ({ flight, origin, destination, adult, child }) => {
+    const [showDetails, setShowDetails] = useState(false);
 
     const formatTime = (timeString) => {
         const date = new Date(timeString);
@@ -10,6 +10,15 @@ const FlightCard = ({ flight, origin, destination ,adult,child}) => {
             hour: '2-digit',
             minute: '2-digit',
             hour12: false
+        });
+    };
+
+    const formatDate = (timeString) => {
+        const date = new Date(timeString);
+        return date.toLocaleDateString('en-US', {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric'
         });
     };
 
@@ -25,16 +34,16 @@ const FlightCard = ({ flight, origin, destination ,adult,child}) => {
         return `${hours}h ${minutes}m`;
     };
 
-
     const flightData = flight;
     const departureTime = formatTime(flightData.departure_time);
     const arrivalTime = formatTime(flightData.arrival_time);
+    const departureDate = formatDate(flightData.departure_time);
+    const arrivalDate = formatDate(flightData.arrival_time);
     const duration = calculateDuration(flightData.departure_time, flightData.arrival_time);
-    // const price = parseFloat(flightData.base_price)*parseInt(adult)+parseFloat(flightData.base_price)*parseInt(child)*0.75;
 
     return (
         <div className="group relative bg-white border border-sky-100 rounded-3xl mb-3 overflow-hidden hover:shadow-xl hover:shadow-sky-200/50 hover:border-sky-200 transition-all duration-500 hover:-translate-y-1">
-            <div className="absolute inset-0 bg-gradient-to-r from-sky-50/0 via-blue-50/0 to-cyan-50/0 group-hover:from-sky-50/60 group-hover:via-blue-50/40 group-hover:to-cyan-50/60 transition-all duration-700 pointer-events-none"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-sky-50/0 via-blue-50/0 to-cyan-50/0  transition-all duration-700 pointer-events-none"></div>
             <div className="relative flex">
                 <div className="flex-1 p-4 lg:p-6">
                     <div className="flex items-center space-x-3 lg:space-x-4 mb-4 lg:mb-5">
@@ -62,7 +71,6 @@ const FlightCard = ({ flight, origin, destination ,adult,child}) => {
                                 <div className="text-xs text-gray-500 mt-1">Departure</div>
                             </div>
 
-
                             <div className="flex-1 mx-4 lg:mx-6 relative">
                                 <div className="absolute -top-14 left-1/2 transform -translate-x-1/2">
                                     <div className="bg-white border-2 border-sky-200 px-2 py-1 rounded-full shadow-lg">
@@ -83,7 +91,6 @@ const FlightCard = ({ flight, origin, destination ,adult,child}) => {
                                     </div>
                                 </div>
 
-                                
                                 <br/>
 
                                 <div className="absolute -bottom-4 lg:-bottom-5 left-1/2 transform -translate-x-1/2">
@@ -142,10 +149,95 @@ const FlightCard = ({ flight, origin, destination ,adult,child}) => {
                             </div>
                         </button>
 
-                        <button className="w-full text-sky-700 hover:text-sky-900 py-2 text-xs lg:text-sm font-bold flex items-center justify-center space-x-2 hover:bg-white/70 rounded-lg transition-all duration-200 border border-sky-200 hover:border-sky-300">
+                        <button 
+                            onClick={() => setShowDetails(!showDetails)}
+                            className="w-full text-sky-700 hover:text-sky-900 py-2 text-xs lg:text-sm font-bold flex items-center justify-center space-x-2 hover:bg-white/70 rounded-lg transition-all duration-200 border border-sky-200 hover:border-sky-300"
+                        >
                             <span>View Details</span>
-                            <ChevronDown className="w-3 h-3" />
+                            <ChevronDown className={`w-3 h-3 transition-transform duration-300 ${showDetails ? 'rotate-180' : ''}`} />
                         </button>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div className={`overflow-hidden transition-all duration-500 ease-in-out ${showDetails ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+                <div className="border-t border-sky-100 bg-gradient-to-r from-sky-50/30 to-blue-50/30 p-4 lg:p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+                        <div className="space-y-3">
+                            <h3 className="font-bold text-gray-900 text-sm lg:text-base flex items-center space-x-2">
+                                <Plane className="w-4 h-4 text-sky-600" />
+                                <span>Flight Information</span>
+                            </h3>
+                            <div className="space-y-2 text-xs lg:text-sm">
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600">Flight Number:</span>
+                                    <span className="font-medium text-gray-900">{flightData.flight_number}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600">Aircraft:</span>
+                                    <span className="font-medium text-gray-900">{flightData.aircraft_name}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600">Departure Date:</span>
+                                    <span className="font-medium text-gray-900">{departureDate}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600">Arrival Date:</span>
+                                    <span className="font-medium text-gray-900">{arrivalDate}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-3">
+                            <h3 className="font-bold text-gray-900 text-sm lg:text-base flex items-center space-x-2">
+                                <Luggage className="w-4 h-4 text-sky-600" />
+                                <span>Baggage & Services</span>
+                            </h3>
+                            <div className="space-y-2 text-xs lg:text-sm">
+                                <div className="flex items-center space-x-2 text-emerald-700">
+                                    <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                                    <span>Carry-on bag included</span>
+                                </div>
+                                <div className="flex items-center space-x-2 text-emerald-700">
+                                    <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                                    <span>{flightData.baggage_limit}kg checked baggage</span>
+                                </div>
+                                <div className="flex items-center space-x-2 text-emerald-700">
+                                    <Coffee className="w-3 h-3" />
+                                    <span>Complimentary meals</span>
+                                </div>
+                                <div className="flex items-center space-x-2 text-emerald-700">
+                                    <Wifi className="w-3 h-3" />
+                                    <span>In-flight WiFi available</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-3">
+                            <h3 className="font-bold text-gray-900 text-sm lg:text-base flex items-center space-x-2">
+                                <Shield className="w-4 h-4 text-sky-600" />
+                                <span>Policies</span>
+                            </h3>
+                            <div className="space-y-2 text-xs lg:text-sm">
+                                <div className="flex items-center space-x-2 text-emerald-700">
+                                    <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                                    <span>Free cancellation</span>
+                                </div>
+                                <div className="flex items-center space-x-2 text-emerald-700">
+                                    <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                                    <span>Date change allowed</span>
+                                </div>
+                                <div className="flex items-center space-x-2 text-amber-700">
+                                    <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                                    <span>Name change fee applies</span>
+                                </div>
+                                <div className="flex justify-between items-center pt-2 border-t border-sky-200">
+                                    <span className="text-gray-600">Total Price:</span>
+                                    <span className="font-bold text-gray-900">${flightData.base_price || flightData.ticket_price}</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
