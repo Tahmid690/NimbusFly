@@ -67,10 +67,6 @@ const LoadingScreen = () => {
     );
 };
 
-
-
-
-
 const NoResults = ({ totalFlights, filteredCount }) => (
     <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center">
         <div className="w-24 h-24 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
@@ -87,14 +83,14 @@ const NoResults = ({ totalFlights, filteredCount }) => (
 );
 
 function FlightResults() {
-    const [searchParams] = useSearchParams();
+    const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
 
     const [overLay, setOverLay] = useState(false);
     const [allflights, setAllFlights] = useState([]);
     const [flights, setFlights] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [filtering, setFiltering] = useState(false); // New state for filtering
+    const [filtering, setFiltering] = useState(false);
     const [error, setError] = useState(null);
 
     const [selectedOption, setSelectedOption] = useState('Cheapest');
@@ -110,37 +106,60 @@ function FlightResults() {
     const [rangeprice, setrange] = useState([0, 10000]);
     const [rangeValues, setRangeValues] = useState([0, 1000000]);
 
+    // Initialize searchData directly from searchParams
     const [searchData, setSearchData] = useState({
-        origin: searchParams.get('origin'),
-        destination: searchParams.get('destination'),
-        journeyDate: searchParams.get('journeyDate'),
-        returnDate: searchParams.get('returnDate'),
-        tripType: searchParams.get('tripType'),
+        origin: searchParams.get('origin') || '',
+        destination: searchParams.get('destination') || '',
+        journeyDate: searchParams.get('journeyDate') || '',
+        returnDate: searchParams.get('returnDate') || '',
+        tripType: searchParams.get('tripType') || '',
         adults: parseInt(searchParams.get('adults')) || 1,
         children: parseInt(searchParams.get('children')) || 0,
-        seatClass: searchParams.get('seatClass'),
+        seatClass: searchParams.get('seatClass') || '',
         orderType: selectedOption
     });
 
     const fetchFlights = async () => {
         try {
             setLoading(true);
-            const apiUrl = `http://localhost:3000/flights/search?${searchParams.toString() + `&orderType=${selectedOption}`}`;
+            setOverLay(false);
+            // Get current search parameters
+            const currentSearchData = {
+                origin: searchParams.get('origin'),
+                destination: searchParams.get('destination'),
+                journeyDate: searchParams.get('journeyDate'),
+                returnDate: searchParams.get('returnDate'),
+                tripType: searchParams.get('tripType'),
+                adults: parseInt(searchParams.get('adults')) || 1,
+                children: parseInt(searchParams.get('children')) || 0,
+                seatClass: searchParams.get('seatClass'),
+                orderType: selectedOption
+            };
+
+            setSearchData(currentSearchData);
+
+            console.log('Search params:', searchParams.toString());
+            
+            const apiUrl = `http://localhost:3000/flights/search?${searchParams.toString()}&orderType=${selectedOption}`;
             const response = await fetch(apiUrl);
             const data = await response.json();
 
-            const oct = await fetch(`http://localhost:3000/airports/city?iata=${searchData.origin}`);
+            // Fetch city and airport information
+            const oct = await fetch(`http://localhost:3000/airports/city?iata=${currentSearchData.origin}`);
             const pct = await oct.json();
             setOriginCity(pct);
-            const dct = await fetch(`http://localhost:3000/airports/city?iata=${searchData.destination}`);
+            
+            const dct = await fetch(`http://localhost:3000/airports/city?iata=${currentSearchData.destination}`);
             const qct = await dct.json();
             setDestinationCity(qct);
 
-            const oap = await (await fetch(`http://localhost:3000/airports/iata?iata_code=` + searchData.origin)).json();
+            const oap = await (await fetch(`http://localhost:3000/airports/iata?iata_code=${currentSearchData.origin}`)).json();
             setOrigin_Airport(oap[0]);
-            const dap = await ((await fetch(`http://localhost:3000/airports/iata?iata_code=` + searchData.destination)).json());
+            
+            const dap = await (await fetch(`http://localhost:3000/airports/iata?iata_code=${currentSearchData.destination}`)).json();
             setDest_Airport(dap[0]);
 
+            // Set up price filtering
             const prices = (data.data).map(f => parseFloat(f.ticket_price));
             const min = Math.min(...prices);
             const max = Math.max(...prices);
@@ -159,32 +178,41 @@ function FlightResults() {
         }
     };
 
-    // useEffect(() => {
-    //     fetchFlights();
-    // }, []);
-
+    // Initial load effect - UNCOMMENTED AND FIXED
     useEffect(() => {
-        setSearchData(prev => ({
-            ...prev,
-            orderType: selectedOption
-        }));
-        fetchFlights();
+        // Only fetch if we have the required search parameters
+        if (searchParams.get('origin') && searchParams.get('destination')) {
+            fetchFlights();
+        }
+    }, [searchParams]); // Added searchParams as dependency
+
+    // Effect for handling sorting option changes
+    useEffect(() => {
+        if (searchParams.get('origin') && searchParams.get('destination')) {
+            fetchFlights();
+        }
     }, [selectedOption]);
 
-
+    // Effect for price filtering
     useEffect(() => {
         const updt_flights = async () => {
             const actualMin = Math.min(rangeValues[0], rangeValues[1]);
             const actualMax = Math.max(rangeValues[0], rangeValues[1]);
             const crs = [Math.round(actualMin), Math.round(actualMax)];
             
-
-            if(allflights.length===0 || crs===rangeprice) return;
-            setFiltering(true); 
+            if (allflights.length === 0 || JSON.stringify(crs) === JSON.stringify(rangeprice)) return;
+            
+            setFiltering(true);
             await new Promise(resolve => setTimeout(resolve, 200));
-            const filtered = allflights.filter(f => parseFloat(f.ticket_price) >= crs[0] && parseFloat(f.ticket_price) <= crs[1]);
-            if(filtered!=flights) setFlights(filtered);
-            setFiltering(false); 
+            
+            const filtered = allflights.filter(f => 
+                parseFloat(f.ticket_price) >= crs[0] && parseFloat(f.ticket_price) <= crs[1]
+            );
+            
+            if (JSON.stringify(filtered) !== JSON.stringify(flights)) {
+                setFlights(filtered);
+            }
+            setFiltering(false);
         }
         updt_flights();
     }, [rangeValues, allflights]);
@@ -209,9 +237,25 @@ function FlightResults() {
         );
     }
 
+    if (error) {
+        return (
+            <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+                <div className="bg-white rounded-lg p-8 shadow-lg">
+                    <h2 className="text-xl font-semibold text-red-600 mb-2">Error</h2>
+                    <p className="text-gray-600">{error}</p>
+                    <button 
+                        onClick={() => navigate('/')} 
+                        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    >
+                        Go Back to Search
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div>
-            {/* <div className="fixed inset-0 -z-10 bg-gray-100" /> */}
             <Navbar flg={true} />
 
             {overLay && (
@@ -245,7 +289,6 @@ function FlightResults() {
                             rangeValues={rangeValues}
                             setRangeValues={setRangeValues}
                         />
-                        
                     </div>
                 </div>
 
