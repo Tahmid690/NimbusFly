@@ -2,7 +2,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import Navbar from "./Navbar";
 import { Clock, Plane, Users, Calendar } from 'lucide-react';
-
+import PriceRange from './Bookingfilter/Pricerange';
 const LoadingScreen = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 flex items-center justify-center relative overflow-hidden">
@@ -67,7 +67,7 @@ const LoadingScreen = () => {
 
 const fetchFlights = async () => {
     try {
-        setLoading(true);
+        setLoading(false);
 
         const apiUrl = `http://localhost:3000/flights/search?${searchParams.toString()}`;
 
@@ -75,6 +75,7 @@ const fetchFlights = async () => {
         const data = await response.json();
 
         setFlights(data);
+        setfilteredflight(data);
         setLoading(false);
     } catch (err) {
         setError('Failed to fetch flights');
@@ -90,9 +91,9 @@ function FlightResults() {
     const navigate = useNavigate();
 
     const [flights, setFlights] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-
+    const [loading, setLoading] = useState(false);
+    const [filteredflight,setfilteredflight]=useState([])
+   
     const searchData = {
         origin: searchParams.get('origin'),
         destination: searchParams.get('destination'),
@@ -123,9 +124,18 @@ function FlightResults() {
     }
 
 
-
-
-
+   const prices=flights.map(flight=>flight.price);
+   const minprice=Math.min(...prices);
+   const maxprice=Math.max(...prices);
+   const [rangeprice,setrange]=useState([minprice,maxprice]);
+   const handleRangeChange=(newval)=>{
+           setrange(newval);
+   }
+   useEffect(()=>{
+    const [mn,mx]=rangeprice;
+    const filteredflight=flights.filter(f=>f.price>=mn&&f.price<=mx);
+   },[rangeprice,flights])
+    
     return (
         <div>
             <Navbar
@@ -135,6 +145,13 @@ function FlightResults() {
             <div className='grid grid-cols-7 gap-4 px-6 lg:px-8 mt-20'>
                 <div className='col-span-2 bg-red-600 p-4 h-500 ml-30'>
                     {/* Eikhane Filter Thakbe */}
+
+                    <PriceRange
+                    // minprice={minprice}
+                    // maxprice={maxprice}
+                    // onpricechange={handleRangeChange}
+                    
+                    />
 
                 </div>
 
