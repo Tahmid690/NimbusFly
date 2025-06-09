@@ -371,6 +371,7 @@ function FlightResults() {
                                                 child={searchData.children}
                                                 Origin_Airport={Origin_Airport}
                                                 Dest_Airport={Dest_Airport}
+                                                tripType={searchData.tripType}
                                             />
                                         </div>
                                     ))
