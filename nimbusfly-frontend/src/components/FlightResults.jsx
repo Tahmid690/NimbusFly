@@ -211,6 +211,7 @@ function FlightResults() {
 
     return (
         <div>
+            {/* <div className="fixed inset-0 -z-10 bg-gray-100" /> */}
             <Navbar flg={true} />
 
             {overLay && (
@@ -235,9 +236,9 @@ function FlightResults() {
                 </div>
             )}
 
-            <div className='grid grid-cols-7 gap-4 px-6 lg:px-8 mt-20'>
-                <div className='col-span-2 bg-white p-4 h-500 ml-30'>
-                    <div className='col-span-2 bg-white p-4 h-fit rounded shadow'>
+            <div className='grid grid-cols-7 px-6 lg:px-8 mt-20'>
+                <div className='col-span-2 p-4 ml-30'>
+                    <div className='col-span-2 p-4 h-fit rounded shadow'>
                         <PriceRange
                             minprice={rangeprice[0]}
                             maxprice={rangeprice[1]}
