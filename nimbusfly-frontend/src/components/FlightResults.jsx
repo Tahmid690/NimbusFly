@@ -71,15 +71,30 @@ const LoadingScreen = () => {
 
 
 
+const NoResults = ({ totalFlights, filteredCount }) => (
+    <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center">
+        <div className="w-24 h-24 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+            <Plane className="w-12 h-12 text-gray-400" />
+        </div>
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">No flights found</h3>
+        <p className="text-gray-600 mb-4">
+            No flights match your current price filter.
+        </p>
+        <p className="text-sm text-gray-500">
+            Showing 0 of {totalFlights} available flights
+        </p>
+    </div>
+);
 
 function FlightResults() {
-
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
 
     const [overLay, setOverLay] = useState(false);
+    const [allflights, setAllFlights] = useState([]);
     const [flights, setFlights] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [filtering, setFiltering] = useState(false); // New state for filtering
     const [error, setError] = useState(null);
 
     const [selectedOption, setSelectedOption] = useState('Cheapest');
@@ -93,8 +108,7 @@ function FlightResults() {
 
     const [filteredFlights, setFilteredFlights] = useState([]);
     const [rangeprice, setrange] = useState([0, 10000]);
-
-
+    const [rangeValues, setRangeValues] = useState([0, 1000000]);
 
     const [searchData, setSearchData] = useState({
         origin: searchParams.get('origin'),
@@ -108,17 +122,12 @@ function FlightResults() {
         orderType: selectedOption
     });
 
-
-
-
-
     const fetchFlights = async () => {
         try {
             setLoading(true);
             const apiUrl = `http://localhost:3000/flights/search?${searchParams.toString() + `&orderType=${selectedOption}`}`;
             const response = await fetch(apiUrl);
             const data = await response.json();
-
 
             const oct = await fetch(`http://localhost:3000/airports/city?iata=${searchData.origin}`);
             const pct = await oct.json();
@@ -132,14 +141,14 @@ function FlightResults() {
             const dap = await ((await fetch(`http://localhost:3000/airports/iata?iata_code=` + searchData.destination)).json());
             setDest_Airport(dap[0]);
 
-
             const prices = (data.data).map(f => parseFloat(f.ticket_price));
             const min = Math.min(...prices);
             const max = Math.max(...prices);
 
             setrange([min, max]);
+            setRangeValues([min, max]);
             setFilteredFlights(data.data);
-
+            setAllFlights(data.data);
             setFlights(data.data);
             setLoading(false);
 
@@ -150,10 +159,9 @@ function FlightResults() {
         }
     };
 
-
-    useEffect(() => {
-        fetchFlights();
-    }, []);
+    // useEffect(() => {
+    //     fetchFlights();
+    // }, []);
 
     useEffect(() => {
         setSearchData(prev => ({
@@ -163,16 +171,23 @@ function FlightResults() {
         fetchFlights();
     }, [selectedOption]);
 
+
     useEffect(() => {
         const updt_flights = async () => {
-            const [mn, mx] = rangeprice;
-            const filtered = flights.filter(f => parseFloat(f.ticket_price) >= mn && parseFloat(f.ticket_price) <= mx);
-            setFlights(filtered);   
-            console.log(flights); 
+            const actualMin = Math.min(rangeValues[0], rangeValues[1]);
+            const actualMax = Math.max(rangeValues[0], rangeValues[1]);
+            const crs = [Math.round(actualMin), Math.round(actualMax)];
+            
+
+            if(flights.length===0 || crs===rangeprice) return;
+            setFiltering(true); 
+            await new Promise(resolve => setTimeout(resolve, 200));
+            const filtered = allflights.filter(f => parseFloat(f.ticket_price) >= crs[0] && parseFloat(f.ticket_price) <= crs[1]);
+            if(filtered!=flights) setFlights(filtered);
+            setFiltering(false); 
         }
         updt_flights();
-    }, [rangeprice]);
-
+    }, [rangeValues, allflights]);
 
     const jrnydate = new Date(searchData.journeyDate);
     const formattedDateJour = jrnydate.toLocaleDateString('en-US', {
@@ -182,13 +197,9 @@ function FlightResults() {
         year: 'numeric'
     });
 
-
     const handleRangeChange = (newval) => {
         setrange(newval);
     };
-
-
-
 
     if (loading) {
         return (
@@ -198,57 +209,46 @@ function FlightResults() {
         );
     }
 
-    
-
-
-
     return (
         <div>
-            <Navbar
-                flg={true}
-            />
+            <Navbar flg={true} />
 
-            {
-                overLay && (
-                    <div className='fixed inset-0 bg-black/70 z-50 flex justify-center '
-                        onClick={() => setOverLay(false)}
+            {overLay && (
+                <div className='fixed inset-0 bg-black/70 z-50 flex justify-center'
+                    onClick={() => setOverLay(false)}
+                >
+                    <div
+                        className='mt-25 mb-160'
+                        onClick={(e) => e.stopPropagation()}
                     >
-                        <div
-                            className='mt-25 mb-160'
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <AirportSearch
-                                origin_select={Origin_Airport}
-                                dest_select={Dest_Airport}
-                                journey_date={searchData.journeyDate}
-                                return_date={searchData.returnDate}
-                                trip_type={searchData.tripType}
-                                adulT={searchData.adults}
-                                chilD={searchData.children}
-                                seat_class={searchData.seatClass}
-                            />
-                        </div>
+                        <AirportSearch
+                            origin_select={Origin_Airport}
+                            dest_select={Dest_Airport}
+                            journey_date={searchData.journeyDate}
+                            return_date={searchData.returnDate}
+                            trip_type={searchData.tripType}
+                            adulT={searchData.adults}
+                            chilD={searchData.children}
+                            seat_class={searchData.seatClass}
+                        />
                     </div>
-
-                )
-            }
+                </div>
+            )}
 
             <div className='grid grid-cols-7 gap-4 px-6 lg:px-8 mt-20'>
                 <div className='col-span-2 bg-white p-4 h-500 ml-30'>
-                    {/* Eikhane Filter Thakbe */}
                     <div className='col-span-2 bg-white p-4 h-fit rounded shadow'>
                         <PriceRange
                             minprice={rangeprice[0]}
                             maxprice={rangeprice[1]}
-                            selectedprice={rangeprice}
-                            onrangechange={handleRangeChange}
+                            rangeValues={rangeValues}
+                            setRangeValues={setRangeValues}
                         />
+                        
                     </div>
-
                 </div>
 
                 <div className='col-span-5 p-4 h-500 mr-30'>
-                    {/* Eikhne Flight Details Thakbe */}
                     <div className='flex flex-col gap-5'>
                         <div className='bg-gradient-to-r from-blue-400 to-blue-500 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300'>
                             <div className='flex items-center justify-between'>
@@ -283,38 +283,70 @@ function FlightResults() {
                                         key={option}
                                         onClick={() => setSelectedOption(option)}
                                         className={`
-                flex-1 py-3 px-6 font-medium text-center transition-all duration-300 rounded-lg
-                ${selectedOption === option
+                                            flex-1 py-3 px-6 font-medium text-center transition-all duration-300 rounded-lg
+                                            ${selectedOption === option
                                                 ? 'bg-blue-500 text-white shadow-md transform scale-[0.98]'
                                                 : 'bg-transparent text-gray-600 hover:bg-white/80 hover:text-blue-600'
                                             }
-              `}
+                                        `}
                                     >
                                         {option}
                                     </button>
                                 ))}
                             </div>
                         </div>
-                        <div className='space-y-4'>
-                            {flights.map((flight, index) => (
-                                <FlightCard
-                                    key={index}
-                                    flight={flight}
-                                    origin={searchData.origin}
-                                    destination={searchData.destination}
-                                    adult={searchData.adults}
-                                    child={searchData.children}
-                                />
-                            ))}
+
+                        <div className='space-y-4 relative'>
+                            {filtering && (
+                                <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-2xl">
+                                    <div className="flex items-center gap-3 bg-white px-6 py-3 rounded-xl shadow-lg border border-blue-200">
+                                        <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                                        <span className="text-gray-700 font-medium">Filtering flights...</span>
+                                    </div>
+                                </div>
+                            )}
+                            
+                            <div className={`transition-all duration-300 ${filtering ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+                                {flights.length === 0 && !filtering ? (
+                                    <NoResults totalFlights={allflights.length} filteredCount={flights.length} />
+                                ) : (
+                                    flights.map((flight, index) => (
+                                        <div 
+                                            key={`${flight.id}-${index}`} 
+                                            className="transform transition-all duration-300 hover:scale-[1.02]"
+                                            style={{
+                                                animationDelay: `${index * 50}ms`,
+                                                animation: filtering ? 'none' : 'fadeInUp 0.3s ease-out forwards'
+                                            }}
+                                        >
+                                            <FlightCard
+                                                flight={flight}
+                                                origin={searchData.origin}
+                                                destination={searchData.destination}
+                                                adult={searchData.adults}
+                                                child={searchData.children}
+                                            />
+                                        </div>
+                                    ))
+                                )}
+                            </div>
                         </div>
-
-
                     </div>
-
-
                 </div>
-
             </div>
+
+            <style jsx>{`
+                @keyframes fadeInUp {
+                    from {
+                        opacity: 0;
+                        transform: translateY(20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+            `}</style>
         </div>
     );
 }

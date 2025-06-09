@@ -1,28 +1,32 @@
 import { useState } from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 
-export default function PriceRange({minprice,maxprice,onrangechange}) {
+export default function PriceRange({minprice,maxprice,rangeValues, setRangeValues}) {
   // Configurable slider settings
   const sliderMin = minprice;
   const sliderMax = maxprice;
   const sliderStep = 1;
+
   
 
-  const [rangeValues, setRangeValues] = useState([minprice, maxprice]);
+  
 
   const [isExpanded, setIsExpanded] = useState(false);
 
+  const actualMin = Math.min(rangeValues[0], rangeValues[1]);
+  const actualMax = Math.max(rangeValues[0], rangeValues[1]);
 
   const handleRangeChange = (index, value) => {
     const newValue = parseFloat(value);
     const newRangeValues = [...rangeValues];
     newRangeValues[index] = newValue;
-    onrangechange(newRangeValues);
     setRangeValues(newRangeValues);
+
+    // console.log(rangeValues[0]);
+    // console.log(rangeValues[1]);
   };
 
-  const actualMin = Math.min(rangeValues[0], rangeValues[1]);
-  const actualMax = Math.max(rangeValues[0], rangeValues[1]);
+  
 
   const valueToPercentage = (value) => {
     return ((value - sliderMin) / (sliderMax - sliderMin)) * 100;
