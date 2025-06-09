@@ -1,10 +1,10 @@
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { use, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Navbar from "./Navbar";
 import { Plane, Search } from 'lucide-react';
 import FlightCard from './FlightCard';
 import AirportSearch from './AirportSearch'
-import { over } from 'lodash';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import PriceRange from './Bookingfilter/Pricerange';
 
 const LoadingScreen = () => {
     return (
@@ -88,8 +88,11 @@ function FlightResults() {
     const [originCity, setOriginCity] = useState('');
     const [destinationCity, setDestinationCity] = useState('');
 
-    const [Origin_Airport,setOrigin_Airport] = useState('');
-    const [Dest_Airport,setDest_Airport] =useState('');
+    const [Origin_Airport, setOrigin_Airport] = useState('');
+    const [Dest_Airport, setDest_Airport] = useState('');
+
+    const [filteredFlights, setFilteredFlights] = useState([]);
+    const [rangeprice, setrange] = useState([0, 10000]);
 
 
 
@@ -124,13 +127,18 @@ function FlightResults() {
             const qct = await dct.json();
             setDestinationCity(qct);
 
-            const oap = await (await fetch(`http://localhost:3000/airports/iata?iata_code=`+searchData.origin)).json();
+            const oap = await (await fetch(`http://localhost:3000/airports/iata?iata_code=` + searchData.origin)).json();
             setOrigin_Airport(oap[0]);
-            const dap = await ((await fetch(`http://localhost:3000/airports/iata?iata_code=`+searchData.destination)).json());
+            const dap = await ((await fetch(`http://localhost:3000/airports/iata?iata_code=` + searchData.destination)).json());
             setDest_Airport(dap[0]);
-            
-            // console.log(Origin_Airport[0]);
-            // console.log(Dest_Airport[0]);
+
+
+            const prices = (data.data).map(f => parseFloat(f.ticket_price));
+            const min = Math.min(...prices);
+            const max = Math.max(...prices);
+
+            setrange([min, max]);
+            setFilteredFlights(data.data);
 
             setFlights(data.data);
             setLoading(false);
@@ -144,22 +152,25 @@ function FlightResults() {
 
 
     useEffect(() => {
-        
         fetchFlights();
     }, []);
-    
+
     useEffect(() => {
         setSearchData(prev => ({
             ...prev,
             orderType: selectedOption
         }));
         fetchFlights();
-        // console.log(selectedOption);
     }, [selectedOption]);
+
+    useEffect(() => {
+        const [mn, mx] = rangeprice;
+        const filtered = flights.filter(f => f.price >= mn && f.price <= mx);
+        setFilteredFlights(filtered);
+    }, [rangeprice, flights]);
 
 
     const jrnydate = new Date(searchData.journeyDate);
-
     const formattedDateJour = jrnydate.toLocaleDateString('en-US', {
         weekday: 'short',
         day: '2-digit',
@@ -168,9 +179,9 @@ function FlightResults() {
     });
 
 
-    // console.log(flights);
-    
-    console.log(Origin_Airport);
+    const handleRangeChange = (newval) => {
+        setrange(newval);
+    };
 
 
 
@@ -200,7 +211,7 @@ function FlightResults() {
                             className='mt-25 mb-160'
                             onClick={(e) => e.stopPropagation()}
                         >
-                            <AirportSearch 
+                            <AirportSearch
                                 origin_select={Origin_Airport}
                                 dest_select={Dest_Airport}
                                 journey_date={searchData.journeyDate}
@@ -219,6 +230,14 @@ function FlightResults() {
             <div className='grid grid-cols-7 gap-4 px-6 lg:px-8 mt-20'>
                 <div className='col-span-2 bg-white p-4 h-500 ml-30'>
                     {/* Eikhane Filter Thakbe */}
+                    <div className='col-span-2 bg-white p-4 h-fit rounded shadow'>
+                        <PriceRange
+                            minprice={rangeprice[0]}
+                            maxprice={rangeprice[1]}
+                            selectedprice={rangeprice}
+                            onrangechange={handleRangeChange}
+                        />
+                    </div>
 
                 </div>
 

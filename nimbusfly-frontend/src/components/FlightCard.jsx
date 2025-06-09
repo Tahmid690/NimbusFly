@@ -30,7 +30,7 @@ const FlightCard = ({ flight, origin, destination ,adult,child}) => {
     const departureTime = formatTime(flightData.departure_time);
     const arrivalTime = formatTime(flightData.arrival_time);
     const duration = calculateDuration(flightData.departure_time, flightData.arrival_time);
-    const price = parseFloat(flightData.base_price)*parseInt(adult)+parseFloat(flightData.base_price)*parseInt(child)*0.75;
+    // const price = parseFloat(flightData.base_price)*parseInt(adult)+parseFloat(flightData.base_price)*parseInt(child)*0.75;
 
     return (
         <div className="group relative bg-white border border-sky-100 rounded-3xl mb-3 overflow-hidden hover:shadow-xl hover:shadow-sky-200/50 hover:border-sky-200 transition-all duration-500 hover:-translate-y-1">
@@ -126,7 +126,7 @@ const FlightCard = ({ flight, origin, destination ,adult,child}) => {
                                 Total Price
                             </div>
                             <div className="text-xl lg:text-3xl font-black text-gray-900 mb-1">
-                                ${Math.round(price).toLocaleString()}
+                                ${flightData.ticket_price}
                             </div>
                             <div className="text-xs text-gray-600 font-medium">
                                 Includes taxes & fees

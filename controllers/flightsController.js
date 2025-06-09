@@ -168,16 +168,21 @@ const searchFlights = async (req, res) => {
     else if(orderType==='Fastest') order_typ=`f.arrival_time - f.departure_time`;
     else order_typ=`f.departure_time`
 
+    
+    let total = 0.75*parseInt(children || 0) + parseInt(adults || 0);
+
+    // console.log(total);
+
     const query1 = `
       SELECT
         a.airline_name as airline_name,
         f.departure_time as departure_time,
         f.arrival_time as arrival_time,
         (f.arrival_time - f.departure_time) as flight_time,
-        CASE 
+        (CASE 
             WHEN $4 = 'Business' THEN f.business_ticket_price 
             ELSE f.economy_ticket_price 
-        END as base_price,
+        END)*($6) as ticket_price,
         f.baggage_limit as baggage_limit,
         ac.model as aircraft_name,
         f.flight_number as flight_number
@@ -199,7 +204,7 @@ const searchFlights = async (req, res) => {
             ) 
         ORDER BY `+order_typ;  
     // console.log(query1);
-    const result = await pool.query(query1,[origin,destination,journeyDate,seatClass,parseInt(adults || 0) + parseInt(children || 0)]);
+    const result = await pool.query(query1,[origin,destination,journeyDate,seatClass,parseInt(adults || 0)+parseInt(children || 0),total]);
    
     // const query1=`SELECT * FROM flights`;
     // const result = await pool.query(query1);
