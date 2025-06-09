@@ -45,13 +45,13 @@ const Navbar = ({flg}) => {
                             <div className="flex flex-col">
                                 <span className={`text-3xl font-nunito font-bold transition-all duration-300 
                                     ${isScrolled ?
-                                        'bg-gradient-to-r from-teal-600 via-cyan-600 to-blue-600 bg-clip-text  group-hover:from-teal-700 group-hover:via-cyan-700 group-hover:to-blue-700 text-gray-700 ' :
+                                        'bg-gradient-to-r from-teal-600 via-cyan-600 to-blue-600 bg-clip-text  group-hover:from-teal-700 group-hover:via-cyan-700 group-hover:to-blue-700 text-blue-700 ' :
                                         'text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] text-shadow-lg'
                                     } `}>
                                     NimbusFly
                                 </span>
                                 <span className={`${isScrolled ?
-                                    'text-xs text-gray-500 font-medium -mt-1' :
+                                    'text-xs text-blue-900 font-medium -mt-1' :
                                     'text-xs text-gray-200 font-medium -mt-1'
                                     }`}
                                 >
