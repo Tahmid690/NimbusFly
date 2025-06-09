@@ -2,7 +2,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import Navbar from "./Navbar";
 import { Clock, Plane, Users, Calendar } from 'lucide-react';
-import PriceRange from './Bookingfilter/Pricerange';
+
 const LoadingScreen = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 flex items-center justify-center relative overflow-hidden">
@@ -67,7 +67,7 @@ const LoadingScreen = () => {
 
 const fetchFlights = async () => {
     try {
-        setLoading(false);
+        setLoading(true);
 
         const apiUrl = `http://localhost:3000/flights/search?${searchParams.toString()}`;
 
@@ -75,7 +75,6 @@ const fetchFlights = async () => {
         const data = await response.json();
 
         setFlights(data);
-        setfilteredflight(data);
         setLoading(false);
     } catch (err) {
         setError('Failed to fetch flights');
@@ -91,9 +90,9 @@ function FlightResults() {
     const navigate = useNavigate();
 
     const [flights, setFlights] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [filteredflight,setfilteredflight]=useState([])
-   
+    const [loading, setLoading] = useState(true);
+
+
     const searchData = {
         origin: searchParams.get('origin'),
         destination: searchParams.get('destination'),
@@ -102,7 +101,34 @@ function FlightResults() {
         tripType: searchParams.get('tripType'),
         adults: parseInt(searchParams.get('adults')) || 1,
         children: parseInt(searchParams.get('children')) || 0,
-        seatClass: searchParams.get('seatClass')
+        seatClass: searchParams.get('seatClass'),
+        orderType: options
+    };
+
+
+    const fetchFlights = async () => {
+        try {
+            setLoading(true);
+            const apiUrl = `http://localhost:3000/flights/search?${searchParams.toString()}`;
+            const response = await fetch(apiUrl);
+            const data = await response.json();
+
+
+            const oct = await fetch(`http://localhost:3000/airports/city?iata=${searchData.origin}`);
+            const pct = await oct.json();
+            setOriginCity(pct);
+            const dct = await fetch(`http://localhost:3000/airports/city?iata=${searchData.destination}`);
+            const qct = await dct.json();
+            setDestinationCity(qct);
+
+            setFlights(data);
+            setLoading(false);
+
+        } catch (err) {
+            setError('Failed to fetch flights');
+            setLoading(false);
+            console.error('Error fetching flights:', err);
+        }
     };
 
 
@@ -110,7 +136,16 @@ function FlightResults() {
         fetchFlights();
     }, []);
 
+    const jrnydate = new Date(searchData.journeyDate);
 
+    const formattedDateJour = jrnydate.toLocaleDateString('en-US', {
+        weekday: 'short',
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+    });
+
+    // console.log(formattedDateJour);
 
 
 
@@ -143,7 +178,7 @@ function FlightResults() {
             />
 
             <div className='grid grid-cols-7 gap-4 px-6 lg:px-8 mt-20'>
-                <div className='col-span-2 bg-red-600 p-4 h-500 ml-30'>
+                <div className='col-span-2 bg-white p-4 h-500 ml-30'>
                     {/* Eikhane Filter Thakbe */}
 
                     <PriceRange
@@ -155,14 +190,53 @@ function FlightResults() {
 
                 </div>
 
-                <div className='col-span-5 bg-teal-400 p-4 h-500 mr-30'>
+                <div className='col-span-5 p-4 h-500 mr-30'>
                     {/* Eikhne Flight Details Thakbe */}
-                    <div className='flex flex-col gap-4'>
-                        <div className='bg-teal-500 h-50'></div>
-                        <div className='bg-teal-500 h-50'></div>
-                        <div className='bg-teal-500 h-200'></div>
-                    </div>
+                    <div className='flex flex-col gap-5'>
+                        <div className='bg-gradient-to-r from-blue-400 to-blue-500 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300'>
+                            <div className='flex items-center justify-between'>
+                                <div className='flex-1'>
+                                    <div className='text-white font-semibold text-xl mb-2'>
+                                        {originCity.data} ({searchData.origin}) → {destinationCity.data} ({searchData.destination})
+                                    </div>
+                                    <div className='text-blue-100 text-sm'>
+                                        <span>{formattedDateJour}</span>
+                                        <span className='mx-3 text-blue-200'>|</span>
+                                        <span>{searchData.adults} passenger(s)</span>
+                                        <span className='mx-3 text-blue-200'>|</span>
+                                        <span>{searchData.seatClass}</span>
+                                    </div>
+                                </div>
 
+                                <div className='ml-6'>
+                                    <button className='bg-white/20 hover:bg-white/30 text-white px-6 py-2.5 rounded-xl font-medium transition-all duration-200 flex items-center gap-2 backdrop-blur-sm border border-white/20'>
+                                        <span>Change search</span>
+                                        <Search className='w-4 h-4' />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className='bg-white rounded-2xl border border-blue-200 p-1 shadow-lg hover:shadow-xl transition-shadow duration-300'>
+                            <div className='flex bg-blue-50/50 rounded-xl p-1'>
+                                {options.map((option, index) => (
+                                    <button
+                                        key={option}
+                                        onClick={() => setSelectedOption(option)}
+                                        className={`
+                flex-1 py-3 px-6 font-medium text-center transition-all duration-300 rounded-lg
+                ${selectedOption === option
+                                                ? 'bg-blue-500 text-white shadow-md transform scale-[0.98]'
+                                                : 'bg-transparent text-gray-600 hover:bg-white/80 hover:text-blue-600'
+                                            }
+              `}
+                                    >
+                                        {option}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
             </div>

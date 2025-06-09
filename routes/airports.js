@@ -3,12 +3,14 @@ const router = express.Router();
 const airportsController = require('../controllers/airportsController');
 
 router.get('/', airportsController.getAllAirports);
+router.get('/city',airportsController.getAirportCity);
 router.get('/search', airportsController.searchAirports);
 router.get('/search_name',airportsController.searchAirportsbyname);
 router.get('/:id', airportsController.getAirportById);
 router.post('/add', airportsController.createAirport);
 router.put('/:id', airportsController.updateAirport);
 router.delete('/:id', airportsController.deleteAirport);
+
 
 
 
