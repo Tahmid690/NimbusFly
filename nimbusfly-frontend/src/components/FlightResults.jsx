@@ -164,10 +164,14 @@ function FlightResults() {
     }, [selectedOption]);
 
     useEffect(() => {
-        const [mn, mx] = rangeprice;
-        const filtered = flights.filter(f => f.price >= mn && f.price <= mx);
-        setFilteredFlights(filtered);
-    }, [rangeprice, flights]);
+        const updt_flights = async () => {
+            const [mn, mx] = rangeprice;
+            const filtered = flights.filter(f => parseFloat(f.ticket_price) >= mn && parseFloat(f.ticket_price) <= mx);
+            setFlights(filtered);   
+            console.log(flights); 
+        }
+        updt_flights();
+    }, [rangeprice]);
 
 
     const jrnydate = new Date(searchData.journeyDate);
@@ -193,6 +197,8 @@ function FlightResults() {
             </div>
         );
     }
+
+    
 
 
 
