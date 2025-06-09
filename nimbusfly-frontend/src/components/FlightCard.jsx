@@ -64,79 +64,79 @@ const FlightCard = ({ flight, origin, destination, adult, child, Origin_Airport,
         switch (activeTab) {
             case 'overview':
                 return (
-                    <div className={tripType==='round-trip' && (`grid grid-cols-2`)}>
-                    <div className="space-y-6">
-                        <div className="bg-white rounded-xl p-4 border border-sky-100">
-                            <h4 className="font-bold text-gray-900 text-sm mb-4 flex items-center space-x-2">
-                                <Clock className="w-4 h-4 text-sky-600" />
-                                <span>{tripType==='round-trip' && (`Outbound `)}Flight Timeline</span>
-                            </h4>
-                            <div className="relative">
-                                <div className="absolute left-4 top-8 bottom-8 w-0.5 bg-gradient-to-b from-sky-400 to-blue-500"></div>
+                    <div className={tripType === 'round-trip' && (`grid grid-cols-2`)}>
+                        <div className="space-y-6">
+                            <div className="bg-white rounded-xl p-4 border border-sky-100">
+                                <h4 className="font-bold text-gray-900 text-sm mb-4 flex items-center space-x-2">
+                                    <Clock className="w-4 h-4 text-sky-600" />
+                                    <span>{tripType === 'round-trip' && (`Outbound `)}Flight Timeline</span>
+                                </h4>
+                                <div className="relative">
+                                    <div className="absolute left-4 top-8 bottom-8 w-0.5 bg-gradient-to-b from-sky-400 to-blue-500"></div>
 
-                                <div className="space-y-6">
-                                    <div className="flex items-start space-x-4">
-                                        <div className="w-8 h-8 bg-sky-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg">
-                                            <Plane className="w-3 h-3 transform -rotate-45" />
+                                    <div className="space-y-6">
+                                        <div className="flex items-start space-x-4">
+                                            <div className="w-8 h-8 bg-sky-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg">
+                                                <Plane className="w-3 h-3 transform -rotate-45" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <div className="font-semibold text-gray-900">Departure</div>
+                                                <div className="text-sm text-gray-600">{departureTime} • {departureDate}</div>
+                                                <div className="text-sm text-sky-700 font-medium">{origin} - {Origin_Airport.airport_name}</div>
+                                            </div>
                                         </div>
-                                        <div className="flex-1">
-                                            <div className="font-semibold text-gray-900">Departure</div>
-                                            <div className="text-sm text-gray-600">{departureTime} • {departureDate}</div>
-                                            <div className="text-sm text-sky-700 font-medium">{origin} - {Origin_Airport.airport_name}</div>
-                                        </div>
-                                    </div>
 
-                                    <div className="flex items-start space-x-4">
-                                        <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg">
-                                            <CheckCircle className="w-3 h-3" />
-                                        </div>
-                                        <div className="flex-1">
-                                            <div className="font-semibold text-gray-900">Arrival</div>
-                                            <div className="text-sm text-gray-600">{arrivalTime} • {arrivalDate}</div>
-                                            <div className="text-sm text-emerald-700 font-medium">{destination} - {Dest_Airport.airport_name}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {(tripType==='round-trip') && (
-                    <div className="space-y-6">
-                        <div className="bg-white rounded-xl p-4 border border-sky-100">
-                            <h4 className="font-bold text-gray-900 text-sm mb-4 flex items-center space-x-2">
-                                <Clock className="w-4 h-4 text-sky-600" />
-                                <span>Return Flight Timeline</span>
-                            </h4>
-                            <div className="relative">
-                                <div className="absolute left-4 top-8 bottom-8 w-0.5 bg-gradient-to-b from-sky-400 to-blue-500"></div>
-
-                                <div className="space-y-6">
-                                    <div className="flex items-start space-x-4">
-                                        <div className="w-8 h-8 bg-sky-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg">
-                                            <Plane className="w-3 h-3 transform -rotate-45" />
-                                        </div>
-                                        <div className="flex-1">
-                                            <div className="font-semibold text-gray-900">Departure</div>
-                                            <div className="text-sm text-gray-600">{rt_departureTime} • {rt_departureDate}</div>
-                                            <div className="text-sm text-sky-700 font-medium">{destination} - {Dest_Airport.airport_name}</div>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-start space-x-4">
-                                        <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg">
-                                            <CheckCircle className="w-3 h-3" />
-                                        </div>
-                                        <div className="flex-1">
-                                            <div className="font-semibold text-gray-900">Arrival</div>
-                                            <div className="text-sm text-gray-600">{rt_arrivalTime} • {rt_arrivalDate}</div>
-                                            <div className="text-sm text-emerald-700 font-medium">{origin} - {Origin_Airport.airport_name}</div>
+                                        <div className="flex items-start space-x-4">
+                                            <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg">
+                                                <CheckCircle className="w-3 h-3" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <div className="font-semibold text-gray-900">Arrival</div>
+                                                <div className="text-sm text-gray-600">{arrivalTime} • {arrivalDate}</div>
+                                                <div className="text-sm text-emerald-700 font-medium">{destination} - {Dest_Airport.airport_name}</div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    )}
+                        {(tripType === 'round-trip') && (
+                            <div className="space-y-6">
+                                <div className="bg-white rounded-xl p-4 border border-sky-100">
+                                    <h4 className="font-bold text-gray-900 text-sm mb-4 flex items-center space-x-2">
+                                        <Clock className="w-4 h-4 text-sky-600" />
+                                        <span>Return Flight Timeline</span>
+                                    </h4>
+                                    <div className="relative">
+                                        <div className="absolute left-4 top-8 bottom-8 w-0.5 bg-gradient-to-b from-sky-400 to-blue-500"></div>
+
+                                        <div className="space-y-6">
+                                            <div className="flex items-start space-x-4">
+                                                <div className="w-8 h-8 bg-sky-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg">
+                                                    <Plane className="w-3 h-3 transform -rotate-45" />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <div className="font-semibold text-gray-900">Departure</div>
+                                                    <div className="text-sm text-gray-600">{rt_departureTime} • {rt_departureDate}</div>
+                                                    <div className="text-sm text-sky-700 font-medium">{destination} - {Dest_Airport.airport_name}</div>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-start space-x-4">
+                                                <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg">
+                                                    <CheckCircle className="w-3 h-3" />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <div className="font-semibold text-gray-900">Arrival</div>
+                                                    <div className="text-sm text-gray-600">{rt_arrivalTime} • {rt_arrivalDate}</div>
+                                                    <div className="text-sm text-emerald-700 font-medium">{origin} - {Origin_Airport.airport_name}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 );
 
@@ -367,8 +367,13 @@ const FlightCard = ({ flight, origin, destination, adult, child, Origin_Airport,
             <div className="relative flex">
                 <div className="flex-1 p-4 lg:p-6">
                     <div className="flex items-center space-x-3 lg:space-x-4 mb-4 lg:mb-5">
-                        <div className={`w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-gradient-to-br from-sky-500 to-blue-700 flex items-center justify-center text-white font-bold text-xs lg:text-sm shadow-xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-500`}>
-                            LG
+                        
+                        <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center  group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                            <img
+                                src={flightData.logo_url}
+                                alt="Logo"
+                                className="max-w-8 max-h-8 lg:max-w-17 lg:max-h-10 object-contain"
+                            />
                         </div>
                         <div className="flex-1">
                             <div className="font-bold text-gray-900 text-base lg:text-lg mb-1">{flightData.airline_name}</div>
@@ -459,9 +464,11 @@ const FlightCard = ({ flight, origin, destination, adult, child, Origin_Airport,
                 {(tripType === 'round-trip') && (
                     <div className="flex-1 p-4 lg:p-6">
                         <div className="flex items-center space-x-3 lg:space-x-4 mb-4 lg:mb-5">
-                            <div className={`w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-gradient-to-br from-sky-500 to-blue-700 flex items-center justify-center text-white font-bold text-xs lg:text-sm shadow-xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-500`}>
-                                LG
-                            </div>
+                            <img
+                                src={flightData.logo_url}
+                                alt="Logo"
+                                className="max-w-8 max-h-8 lg:max-w-17 lg:max-h-10 object-contain"
+                            />
                             <div className="flex-1">
                                 <div className="font-bold text-gray-900 text-base lg:text-lg mb-1">{flightData.return_airline_name}</div>
                                 <div className="text-xs lg:text-sm text-gray-600 flex items-center space-x-2">

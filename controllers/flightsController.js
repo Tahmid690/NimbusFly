@@ -189,7 +189,9 @@ const searchFlights = async (req, res) => {
         END) as base_price,
         f.baggage_limit as baggage_limit,
         ac.model as aircraft_name,
-        f.flight_number as flight_number
+        f.flight_number as flight_number,
+
+        a.logo_url as logo_url
         
     FROM
         flights f
@@ -239,6 +241,8 @@ const searchFlights = async (req, res) => {
               ac2.model as return_aircraft_name,
               f2.baggage_limit as return_baggage_limit,
               f2.round_trip_discount as return_round_trip_discount,
+
+              a1.logo_url as logo_url,
 
 
               ROUND((CASE 
