@@ -160,7 +160,7 @@ function FlightResults() {
             setDest_Airport(dap[0]);
 
             // Set up price filtering
-            const prices = (data.data).map(f => parseFloat(f.ticket_price));
+            const prices = (data.data).map(f => parseFloat(f.total_ticket_price));
             const min = Math.min(...prices);
             const max = Math.max(...prices);
 
@@ -195,18 +195,21 @@ function FlightResults() {
 
     // Effect for price filtering
     useEffect(() => {
+        console.log(allflights);
+        
         const updt_flights = async () => {
             const actualMin = Math.min(rangeValues[0], rangeValues[1]);
             const actualMax = Math.max(rangeValues[0], rangeValues[1]);
             const crs = [Math.round(actualMin), Math.round(actualMax)];
-            
+            console.log(crs);
+            console.log(rangeprice);
             if (allflights.length === 0 || JSON.stringify(crs) === JSON.stringify(rangeprice)) return;
-            
+            console.log("Bujhlm na");
             setFiltering(true);
             await new Promise(resolve => setTimeout(resolve, 200));
             
             const filtered = allflights.filter(f => 
-                parseFloat(f.ticket_price) >= crs[0] && parseFloat(f.ticket_price) <= crs[1]
+                parseFloat(f.total_ticket_price) >= crs[0] && parseFloat(f.total_ticket_price) <= crs[1]
             );
             
             if (JSON.stringify(filtered) !== JSON.stringify(flights)) {

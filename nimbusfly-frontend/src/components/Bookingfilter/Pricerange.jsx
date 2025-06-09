@@ -7,6 +7,8 @@ export default function PriceRange({minprice = 0, maxprice = 1000, rangeValues =
   const sliderMax = maxprice;
   const sliderStep = 1;
 
+  
+
   const [isExpanded, setIsExpanded] = useState(false);
 
   const [localRangeValues, setLocalRangeValues] = useState(rangeValues);
@@ -56,7 +58,7 @@ export default function PriceRange({minprice = 0, maxprice = 1000, rangeValues =
   };
 
   const formatCurrency = (value) => {
-    return `৳ ${Math.round(value).toLocaleString()}`;
+    return `$ ${Math.round(value).toLocaleString()}`;
   };
 
   return (
@@ -206,7 +208,7 @@ export default function PriceRange({minprice = 0, maxprice = 1000, rangeValues =
             <div className="text-center bg-white rounded-xl p-4 shadow-sm border border-sky-100">
               <div className="text-xs text-sky-600 font-medium mb-1">Selected Range</div>
               <span className="text-slate-700 font-bold text-lg bg-gradient-to-r from-sky-600 to-blue-600 bg-clip-text text-transparent">
-                BDT {Math.round(actualMin).toLocaleString()} - BDT {Math.round(actualMax).toLocaleString()}
+                $ {Math.round(actualMin).toLocaleString()} - $ {Math.round(actualMax).toLocaleString()}
               </span>
             </div>
 
