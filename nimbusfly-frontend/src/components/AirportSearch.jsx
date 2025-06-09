@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
-import { Users } from 'lucide-react';
+import { Users, ArrowLeftRight } from 'lucide-react';
 import { Car } from "lucide-react";
 
 const fetch_airport = async (query, selectedAirport, setResults, abortController) => {
@@ -333,6 +333,27 @@ function AirportSearch({ origin_select = null, dest_select = null, journey_date=
         setQuery_destination(`${airport.city},${airport.country} (${airport.iata_code})`);
         setResults_destination([]);
     };
+
+    // New swap function
+    const handleSwapAirports = () => {
+        // Swap selected airports
+        const tempSelectedAirport = selectedAirport_origin;
+        setSelectedAirport_origin(selectedAirport_destination);
+        setSelectedAirport_destination(tempSelectedAirport);
+
+        // Swap query strings
+        const tempQuery = query_origin;
+        setQuery_origin(query_destination);
+        setQuery_destination(tempQuery);
+
+        // Clear results to avoid confusion
+        setResults_origin([]);
+        setResults_destination([]);
+
+        // Clear any errors for origin/destination
+        setErrors(prev => ({ ...prev, origin: false, destination: false }));
+    };
+
     useEffect(() => {
         if (origin_select != null) handleSelectOrigin(origin_select);
         if(dest_select !=null) handleSelectDestination(dest_select);
@@ -445,7 +466,7 @@ function AirportSearch({ origin_select = null, dest_select = null, journey_date=
             <br />
 
             <div className="grid grid-cols-4 gap-8">
-                <div className="w-full">
+                <div className="w-full relative">
                     <label className="block text-white font-medium mb-2">From </label>
 
                     <input
@@ -461,6 +482,14 @@ function AirportSearch({ origin_select = null, dest_select = null, journey_date=
                         selectedAirport={selectedAirport_origin}
                         handleSelect={handleSelectOrigin}
                     />
+
+                    <button
+                        onClick={handleSwapAirports}
+                        className="absolute -right-8 top-10 z-10 group bg-white/15 hover:bg-white/25 backdrop-blur-sm border border-white/30 hover:border-white/50 rounded-full p-2 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50"
+                        title="Swap airports"
+                    >
+                        <ArrowLeftRight className="w-4 h-4 text-white group-hover:text-cyan-200 transition-colors duration-300" />
+                    </button>
 
                     {/* <SelectedAirport
                         selectedAirport={selectedAirport_origin}
