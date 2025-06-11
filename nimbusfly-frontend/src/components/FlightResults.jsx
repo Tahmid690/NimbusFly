@@ -216,7 +216,7 @@ function FlightResults() {
                const desport=f.destination_airport_id;
 
               if(searchData.tripType==='one-way'){
-                   if(timefilterdep1){
+               if(timefilterdep1){
                 const time=new Date(f.departure_time).getHours();
                 const [start,end]=convertslot(timefilterdep1.slot);
                 if(!(time>=start&&time<end))return false;
