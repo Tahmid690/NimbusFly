@@ -214,38 +214,46 @@ function FlightResults() {
                if(!(parseFloat(f.total_ticket_price) >= crs[0] && parseFloat(f.total_ticket_price) <= crs[1]))return false;
                const oriport=f.origin_airport_id;
                const desport=f.destination_airport_id;
-            //    console.log(oriport);
-          //  console.log(f);
-               const jaitesi = String(oriport) === String(originportid);
-              const astesi = String(oriport) === String(desportid);
-          //  if(jaitesi){
-               if(timefilterdep1&&timefilterdep1.port===oriport){
-               // console.log(oriport);
+
+              if(searchData.tripType==='one-way'){
+                   if(timefilterdep1){
                 const time=new Date(f.departure_time).getHours();
                 const [start,end]=convertslot(timefilterdep1.slot);
                 if(!(time>=start&&time<end))return false;
-              // return time>=start&&time<end;
                }
-               if(timefilterarr1&&timefilterarr1.port===desport){
+                if(timefilterarr1){
                 const time=new Date(f.arrival_time).getHours();
                 const [start,end]=convertslot(timefilterarr1.slot);
                 if(!(time>=start&&time<end))return false;
                }
-           // }
-           // else if(astesi){
-                if(timefilterdep2&&timefilterdep2.port===des){
-                const time=new Date(f.departure_time).getHours();
-                const [start,end]=convertslot(timefilterdep2.slot);
-                if(!(time>=start&&time<end))return false;
-               }
-                
-                  if(timefilterarr2&&timefilterarr2.port===oriport){
-                const time=new Date(f.arrival_time).getHours();
-                const [start,end]=convertslot(timefilterarr2.slot);
-                if(!(time>=start&&time<end))return false;
-              }
-           // }
                return true;
+              }
+
+              else{
+                 const dept=new Date(f.departure_time).getHours();
+                 const arrt=new Date(f.arrival_time).getHours();
+                 const rdept=new Date(f.return_departure_time).getHours();
+                 const rarrt=new Date(f.return_arrival_time).getHours();
+                 if(timefilterdep1){
+                    const [start,end]=convertslot(timefilterdep1.slot);
+                    if(!(dept>=start&&dept<end))return false;
+                 }
+                 if(timefilterdep2){
+                     const [start,end]=convertslot(timefilterdep2.slot);
+                    if(!(rdept>=start&&rdept<end))return false;
+                 }
+                 if(timefilterarr1){
+                    const [start,end]=convertslot(timefilterarr1.slot);
+                    if(!(arrt>=start&&arrt<end))return false;
+                 }
+                  if(timefilterarr2){
+                    const [start,end]=convertslot(timefilterarr2.slot);
+                    if(!(rarrt>=start&&rarrt<end))return false;
+                 }
+                 
+                return true;
+
+              }
                
         });
             

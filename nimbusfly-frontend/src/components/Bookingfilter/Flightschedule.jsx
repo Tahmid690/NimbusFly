@@ -12,11 +12,25 @@ export default function Flightscedule({ origin, destination, origin_port,des_por
   const [isexpand, setexpand] = useState(true);
   const [depart, setdepart] = useState(true);
   const [trip, settrip] = useState(false);
-
+  const [dept,setdept]=useState([false,false,false,false]);
+  const [arrt,setarrt]=useState([false,false,false,false]);
+  const [rdept,setrdept]=useState([false,false,false,false]);
+  const [rarrt,setrarrt]=useState([false,false,false,false]);
   useEffect(() => {
     settrip(trip_type === "round-trip");
   }, []);
-
+const handledept = (i) => {
+  setdept(prev => prev.map((val, index) => index === i ? !val : false));
+};
+   const handlerdept=async(i)=>{
+     setrdept(prev=>prev.map((val,idx)=>idx==i?!val:false));
+  }
+   const handlearrt=async(i)=>{
+     setarrt(prev=>prev.map((val,idx)=>idx==i?!val:false));
+  }
+   const handlerarrt=async(i)=>{
+     setrarrt(prev=>prev.map((val,idx)=>idx==i?!val:false));
+  }
   return (
     <div className="max-w-md mx-auto bg-gradient-to-br from-sky-50 to-blue-100 p-3 rounded-lg mt-4">
       <style>{`
@@ -83,16 +97,23 @@ export default function Flightscedule({ origin, destination, origin_port,des_por
             </p>
             <div className="grid grid-cols-2 gap-2">
               {timeSlots.map((slot, i) => (
+                
                 <button
                   key={i}
-                  onClick={()=>ontimechangedes1({type:'departure',port:origin_port,slot:slot.label})}
-                  className="flex items-center justify-center gap-2 bg-gray-100 hover:bg-blue-100 py-2 px-3 rounded-md shadow text-sm"
+                  
+                  onClick={() => {
+                  ontimechangedes1(dept[i]?null:{ type: 'departure', port: origin_port, slot: slot.label });
+                  handledept(i); // 
+                  }}
+
+  
+                   className={`flex items-center justify-center gap-2 transitio  py-2 px-3 rounded-md shadow text-sm ${dept[i]?'bg-blue-500 text-white': 'bg-gray-100 hover:bg-blue-100'}`}
                 >
                   <span>{slot.icon}</span> {slot.label}
                 </button>
               ))}
             </div>
-      
+            {trip ? (
               <div>
                 <p className="font-medium font-semibold text-sm text-slate-700 mb-2">
                   Departure {destination}: Anytime
@@ -101,15 +122,18 @@ export default function Flightscedule({ origin, destination, origin_port,des_por
                   {timeSlots.map((slot, i) => (
                     <button
                       key={i}
-                      onClick={()=>ontimechangedes2({type:'departure',port:des_port,slot:slot.label})}
-                      className="flex items-center justify-center gap-2 bg-gray-100 hover:bg-blue-100 py-2 px-3 rounded-md shadow text-sm"
+                    onClick={() => {
+                     ontimechangedes2(rdept[i]?null:{ type: 'departure', port: origin_port, slot: slot.label });
+                     handlerdept(i); // 
+                    }}
+                     className={`flex items-center justify-center gap-2 transition  py-2 px-3 rounded-md shadow text-sm ${rdept[i]?'bg-blue-500 text-white': 'bg-gray-100 hover:bg-blue-100'}`}
                     >
                       <span>{slot.icon}</span> {slot.label}
                     </button>
                   ))}
                 </div>
               </div>
-       
+            ) : null}
           </div>
         ) : (
           <div>
@@ -120,14 +144,17 @@ export default function Flightscedule({ origin, destination, origin_port,des_por
               {timeSlots.map((slot, i) => (
                 <button
                   key={i}
-                  onClick={()=>ontimechangearr1({type:'arrival',port:des_port,slot:slot.label})}
-                  className="flex items-center justify-center gap-2 bg-gray-100 hover:bg-blue-100 py-2 px-3 rounded-md shadow text-sm"
+                  onClick={()=>{
+                    ontimechangearr1(arrt[i]?null:{type:'arrival',port:des_port,slot:slot.label});
+                    handlearrt(i);
+                  }}
+                   className={`flex items-center justify-center gap-2 transitio  py-2 px-3 rounded-md shadow text-sm ${arrt[i]?'bg-blue-500 text-white': 'bg-gray-100 hover:bg-blue-100'}`}
                 >
                   <span>{slot.icon}</span> {slot.label}
                 </button>
               ))}
             </div>
-         
+            {trip ? (
               <div>
                 <p className="font-medium font-semibold text-sm text-slate-700 mb-2">
                   Arrival {origin}: Anytime
@@ -136,15 +163,17 @@ export default function Flightscedule({ origin, destination, origin_port,des_por
                   {timeSlots.map((slot, i) => (
                     <button
                       key={i}
-                      onClick={()=>ontimechangearr2({type:'arrival',port:origin_port,slot:slot.label})}
-                      className="flex items-center justify-center gap-2 bg-gray-100 hover:bg-blue-100 py-2 px-3 rounded-md shadow text-sm"
+                      onClick={()=>{ontimechangearr2(rarrt[i]?null:{type:'arrival',port:origin_port,slot:slot.label});
+                      handlerarrt(i);
+                    }}
+                       className={`flex items-center justify-center gap-2 transition  py-2 px-3 rounded-md shadow text-sm ${rarrt[i]?'bg-blue-500 text-white': 'bg-gray-100 hover:bg-blue-100'}`}
                     >
                       <span>{slot.icon}</span> {slot.label}
                     </button>
                   ))}
                 </div>
               </div>
-        
+            ) : null}
           </div>
         )}
       </div>
