@@ -8,7 +8,7 @@ const timeSlots = [
   { label: "06-12 AM", icon: "🌙" },
 ];
 
-export default function Flightscedule({ origin, destination, trip_type,ontimechange }) {
+export default function Flightscedule({ origin, destination, origin_port,des_port,trip_type,ontimechangedes1,ontimechangedes2,ontimechangearr1,ontimechangearr2 }) {
   const [isexpand, setexpand] = useState(true);
   const [depart, setdepart] = useState(true);
   const [trip, settrip] = useState(false);
@@ -85,7 +85,7 @@ export default function Flightscedule({ origin, destination, trip_type,ontimecha
               {timeSlots.map((slot, i) => (
                 <button
                   key={i}
-                  onClick={()=>ontimechange({type:'departure',city:origin,slot:slot.label})}
+                  onClick={()=>ontimechangedes1({type:'departure',port:origin_port,slot:slot.label})}
                   className="flex items-center justify-center gap-2 bg-gray-100 hover:bg-blue-100 py-2 px-3 rounded-md shadow text-sm"
                 >
                   <span>{slot.icon}</span> {slot.label}
@@ -101,7 +101,7 @@ export default function Flightscedule({ origin, destination, trip_type,ontimecha
                   {timeSlots.map((slot, i) => (
                     <button
                       key={i}
-                      onClick={()=>ontimechange({type:'departure',city:destination,slot:slot.label})}
+                      onClick={()=>ontimechangedes2({type:'departure',port:des_port,slot:slot.label})}
                       className="flex items-center justify-center gap-2 bg-gray-100 hover:bg-blue-100 py-2 px-3 rounded-md shadow text-sm"
                     >
                       <span>{slot.icon}</span> {slot.label}
@@ -120,7 +120,7 @@ export default function Flightscedule({ origin, destination, trip_type,ontimecha
               {timeSlots.map((slot, i) => (
                 <button
                   key={i}
-                  onClick={()=>ontimechange({type:'arrival',city:destination,slot:slot.label})}
+                  onClick={()=>ontimechangearr1({type:'arrival',port:des_port,slot:slot.label})}
                   className="flex items-center justify-center gap-2 bg-gray-100 hover:bg-blue-100 py-2 px-3 rounded-md shadow text-sm"
                 >
                   <span>{slot.icon}</span> {slot.label}
@@ -136,7 +136,7 @@ export default function Flightscedule({ origin, destination, trip_type,ontimecha
                   {timeSlots.map((slot, i) => (
                     <button
                       key={i}
-                      onClick={()=>ontimechange({type:'arrival',city:destination,slot:slot.label})}
+                      onClick={()=>ontimechangearr2({type:'arrival',port:origin_port,slot:slot.label})}
                       className="flex items-center justify-center gap-2 bg-gray-100 hover:bg-blue-100 py-2 px-3 rounded-md shadow text-sm"
                     >
                       <span>{slot.icon}</span> {slot.label}

@@ -103,10 +103,16 @@ function FlightResults() {
     const [Origin_Airport, setOrigin_Airport] = useState('');
     const [Dest_Airport, setDest_Airport] = useState('');
 
+    const [originportid,setoriginportid]=useState(0);
+    const [desportid,setdesportid]=useState(0);
+
     const [filteredFlights, setFilteredFlights] = useState([]);
     const [rangeprice, setrange] = useState([0, 10000]);
     const [rangeValues, setRangeValues] = useState([0, 1000000]);
-    const [timefilter,settimefilter]=useState(null);
+    const [timefilterdep1,settimefilterdep1]=useState(null);
+    const [timefilterdep2,settimefilterdep2]=useState(null);
+    const [timefilterarr1,settimefilterarr1]=useState(null);
+    const [timefilterarr2,settimefilterarr2]=useState(null);
     // Initialize searchData directly from searchParams
     const [searchData, setSearchData] = useState({
         origin: searchParams.get('origin') || '',
@@ -153,15 +159,19 @@ function FlightResults() {
             const dct = await fetch(`http://localhost:3000/airports/city?iata=${currentSearchData.destination}`);
             const qct = await dct.json();
             setDestinationCity(qct);
-
+            // console.log(qct);
             const oap = await (await fetch(`http://localhost:3000/airports/iata?iata_code=${currentSearchData.origin}`)).json();
             setOrigin_Airport(oap[0]);
+            setoriginportid(oap[0].airport_id);
             
             const dap = await (await fetch(`http://localhost:3000/airports/iata?iata_code=${currentSearchData.destination}`)).json();
             setDest_Airport(dap[0]);
+            setdesportid(dap[0].airport_id);
+                //                  console.log(oap[0].airport_id);
+                 //       console.log(dap[0].airport_id);
 
             // Set up price filtering
-            const prices = (data.data).map(f => parseFloat(f.ticket_price));
+            const prices = (data.data).map(f => parseFloat(f.total_ticket_price));
             const min = Math.min(...prices);
             const max = Math.max(...prices);
 
@@ -179,55 +189,69 @@ function FlightResults() {
         }
     };
 
-    // Initial load effect - UNCOMMENTED AND FIXED
-    useEffect(() => {
-        // Only fetch if we have the required search parameters
-        if (searchParams.get('origin') && searchParams.get('destination')) {
-            fetchFlights();
-        }
-    }, [searchParams]); // Added searchParams as dependency
-
-    // Effect for handling sorting option changes
     useEffect(() => {
         if (searchParams.get('origin') && searchParams.get('destination')) {
             fetchFlights();
         }
-    }, [selectedOption]);
+    }, [searchParams,selectedOption]); 
 
-    // Effect for price filtering
+
     useEffect(() => {
+        console.log(allflights);
+        
         const updt_flights = async () => {
             const actualMin = Math.min(rangeValues[0], rangeValues[1]);
             const actualMax = Math.max(rangeValues[0], rangeValues[1]);
             const crs = [Math.round(actualMin), Math.round(actualMax)];
-            
+            console.log(crs);
+            console.log(rangeprice);
             if (allflights.length === 0 || JSON.stringify(crs) === JSON.stringify(rangeprice)) return;
-            
+            // console.log("Bujhlm na");
             setFiltering(true);
             await new Promise(resolve => setTimeout(resolve, 200));
             
-            let filtered = allflights.filter(f => 
-                parseFloat(f.ticket_price) >= crs[0] && parseFloat(f.ticket_price) <= crs[1]
-            );
+            let filtered = allflights.filter(f => {
+               if(!(parseFloat(f.total_ticket_price) >= crs[0] && parseFloat(f.total_ticket_price) <= crs[1]))return false;
+               const oriport=f.origin_airport_id;
+               const desport=f.destination_airport_id;
+            //    console.log(oriport);
+          //  console.log(f);
+               if(timefilterdep1&&timefilterdep1.port===oriport){
+               // console.log(oriport);
+                const time=new Date(f.departure_time).getHours();
+                const [start,end]=convertslot(timefilterdep1.slot);
+                if(!(time>=start&&time<end))return false;
+              // return time>=start&&time<end;
+               }
+                if(timefilterdep2&&timefilterdep2.port===oriport){
+                const time=new Date(f.departure_time).getHours();
+                const [start,end]=convertslot(timefilterdep2.slot);
+                if(!(time>=start&&time<end))return false;
+               }
+                if(timefilterarr1&&timefilterarr1.port===desport){
+                const time=new Date(f.arrival_time).getHours();
+                const [start,end]=convertslot(timefilterarr1.slot);
+                if(!(time>=start&&time<end))return false;
+               }
+                  if(timefilterarr2&&timefilterarr2.port===desport){
+                const time=new Date(f.arrival_time).getHours();
+                const [start,end]=convertslot(timefilterarr2.slot);
+                if(!(time>=start&&time<end))return false;
+              }
+               return true;
+               
+        });
             
             if (JSON.stringify(filtered) !== JSON.stringify(flights)) {
                 setFlights(filtered);
             }
-            if(timefilter){
-                setFiltering(true);
-              filtered=filtered.filter(flight=>{
-                const time=timefilter.type==='departure'?new Date(flight.departure_time).getHours():new Date(flight.arrival_time).getHours();
-                const [start,end]=convertslot(timefilter.slot);
-                return time>=start&&time<end;
-              })
-              setFiltering(true);
-              setFlights(filtered);
-            }
+
+            
             
             setFiltering(false);
         }
         updt_flights();
-    }, [rangeValues, allflights,timefilter]);
+    }, [rangeValues, allflights,timefilterdep1,timefilterdep2,timefilterarr1,timefilterarr2]);
 
     const convertslot=(label)=>{
         const [st,en,period]=label.split(/[- ]/);
@@ -320,8 +344,13 @@ function FlightResults() {
                         <Flightscedule
                         origin={originCity.data}
                         destination={destinationCity.data}
+                        origin_port={originportid}
+                        des_port={desportid}
                         trip_type={searchData.tripType}
-                        ontimechange={settimefilter}                      
+                        ontimechangedes1={settimefilterdep1} 
+                        ontimechangedes2={settimefilterdep2}
+                        ontimechangearr1={settimefilterarr1}
+                        ontimechangearr2={settimefilterarr2}                     
                         />
 
                         <Airlinefilter/>
@@ -407,6 +436,7 @@ function FlightResults() {
                                                 child={searchData.children}
                                                 Origin_Airport={Origin_Airport}
                                                 Dest_Airport={Dest_Airport}
+                                                tripType={searchData.tripType}
                                             />
                                         </div>
                                     ))
