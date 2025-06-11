@@ -1,6 +1,7 @@
 import AirportSearch from "./AirportSearch";
 import HeroSection from "./HeroSection";
 import Navbar from "./Navbar";
+import {useAuth} from './Authnication/AuthContext';
 
 function HomePage() {
     

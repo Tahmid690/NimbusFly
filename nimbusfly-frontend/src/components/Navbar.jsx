@@ -1,19 +1,32 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from './Authnication/AuthContext';
 
 const Navbar = ({flg}) => {
     const [isScrolled, setIsScrolled] = useState(flg);
     const [activeLink, setActiveLink] = useState('Home');
+    const [showUserMenu, setShowUserMenu] = useState(false);
+    const { isAuthenticated, user, logout } = useAuth();
+    const navigate = useNavigate();
 
     
     useEffect(() => {
-
         const handleScroll = () => {
             setIsScrolled((window.scrollY > 20) || flg);
         };
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (showUserMenu && !event.target.closest('.user-menu-container')) {
+                setShowUserMenu(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [showUserMenu]);
 
     const navLinks = [
         { name: 'Home', href: '#home' },
@@ -79,15 +92,79 @@ const Navbar = ({flg}) => {
                             ))}
 
                             <div className="flex items-center space-x-3">
-                                <Link to='/login'>
-                                    <button className="relative overflow-hidden px-8 py-3 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-600 text-white font-bold text-sm rounded-xl shadow-lg hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300 group focus:outline-none focus:ring-4 focus:ring-blue-300/50"
-                                    >
-                                        <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></span>
-                                        <span className="relative flex items-center space-x-2">
-                                            <span>Get Started</span>
-                                        </span>
-                                    </button>
-                                </Link>
+                                {isAuthenticated ? (
+                                    <div className="relative user-menu-container">
+                                        <div
+                                            onClick={() => setShowUserMenu(!showUserMenu)}
+                                            className="cursor-pointer p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                                        >
+                                            <div className="space-y-1">
+                                                <div className={`w-6 h-0.5 bg-gray-700 transition-all duration-300 ${showUserMenu ? 'rotate-45 translate-y-1.5' : ''}`}></div>
+                                                <div className={`w-6 h-0.5 bg-gray-700 transition-opacity duration-300 ${showUserMenu ? 'opacity-0' : ''}`}></div>
+                                                <div className={`w-6 h-0.5 bg-gray-700 transition-all duration-300 ${showUserMenu ? '-rotate-45 -translate-y-1.5' : ''}`}></div>
+                                            </div>
+                                        </div>
+                                        
+                                        {showUserMenu && (
+                                            <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50">
+                                                <div className="px-4 py-3 border-b border-gray-100">
+                                                    <p className="text-sm font-semibold text-gray-900">{user?.name}</p>
+                                                    <p className="text-sm text-gray-600">{user?.email}</p>
+                                                </div>
+                                                <div className="py-1">
+                                                    <button
+                                                        onClick={() => {
+                                                            setShowUserMenu(false);
+                                                            // Navigate to profile page
+                                                        }}
+                                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
+                                                    >
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                        </svg>
+                                                        <span>My Profile</span>
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            setShowUserMenu(false);
+                                                            // Navigate to bookings page
+                                                        }}
+                                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
+                                                    >
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                                        </svg>
+                                                        <span>My Bookings</span>
+                                                    </button>
+                                                    <hr className="my-1 border-gray-100" />
+                                                    <button
+                                                        onClick={() => {
+                                                            logout();
+                                                            setShowUserMenu(false);
+                                                            navigate('/');
+                                                        }}
+                                                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
+                                                    >
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                                        </svg>
+                                                        <span>Sign Out</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <Link to='/login'>
+                                        <button className="relative overflow-hidden px-8 py-3 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-600 text-white font-bold text-sm rounded-xl shadow-lg hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300 group focus:outline-none focus:ring-4 focus:ring-blue-300/50"
+                                        >
+                                            <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></span>
+                                            <span className="relative flex items-center space-x-2">
+                                                <span>Get Started</span>
+                                            </span>
+                                        </button>
+                                    </Link>
+                                )}
                             </div>
                         </div>
 

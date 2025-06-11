@@ -178,22 +178,13 @@ function FlightResults() {
         }
     };
 
-    // Initial load effect - UNCOMMENTED AND FIXED
-    useEffect(() => {
-        // Only fetch if we have the required search parameters
-        if (searchParams.get('origin') && searchParams.get('destination')) {
-            fetchFlights();
-        }
-    }, [searchParams]); // Added searchParams as dependency
-
-    // Effect for handling sorting option changes
     useEffect(() => {
         if (searchParams.get('origin') && searchParams.get('destination')) {
             fetchFlights();
         }
-    }, [selectedOption]);
+    }, [searchParams,selectedOption]); 
 
-    // Effect for price filtering
+
     useEffect(() => {
         console.log(allflights);
         
@@ -204,7 +195,7 @@ function FlightResults() {
             console.log(crs);
             console.log(rangeprice);
             if (allflights.length === 0 || JSON.stringify(crs) === JSON.stringify(rangeprice)) return;
-            console.log("Bujhlm na");
+            // console.log("Bujhlm na");
             setFiltering(true);
             await new Promise(resolve => setTimeout(resolve, 200));
             

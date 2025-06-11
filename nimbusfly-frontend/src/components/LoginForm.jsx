@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { Link } from 'react-router-dom'
+import { Link ,useNavigate,useLocation} from 'react-router-dom'
 import axios from 'axios'
+import { useAuth } from './Authnication/AuthContext';
 
 function LoginForm(){
     const [isLogin, setIsLogin] = useState(true)
@@ -24,7 +25,11 @@ function LoginForm(){
     const [showPassword, setShowPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false) 
     
-    
+    const { login } = useAuth();
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const from = location.state?.from?.pathname || "/";
 
     const handleLogin = async (e) => {
         e.preventDefault()
@@ -37,7 +42,14 @@ function LoginForm(){
             })
 
             console.log('Login successful!', response.data)
+
+            const { user, jwt_token } = response.data;
+            // console.log(token);
+            login(user, jwt_token);
+
             setMessage('Login successful!')
+            navigate(from, { replace: true });
+
         }
         catch(error){
             console.log('Login failed',error.response.data);
@@ -74,7 +86,8 @@ function LoginForm(){
                 address: ''
             });
             
-            setMessage(`Registration successful! Try to login from login window.`)
+            setMessage(`Registration successful! You can login now.`)
+            setIsLogin(true)
         } catch (error) {
             console.error('Registration failed', error.response?.data || error.message)
             const err = error.response.data.log;
