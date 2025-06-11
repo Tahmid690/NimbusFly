@@ -1,28 +1,153 @@
-import { useState } from "react";
-import { ChevronDown,ChevronUp } from "lucide-react";
-export default function Flightscedule(){
-    const [isexpand,setexpand]=useState(true);
-    return (
-        <div className="max-w-md mx-auto bg-gray-800 rounded-lg mt-4">
-            <div
-            className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-700 transition-colors"
-            onClick={()=>setexpand(!isexpand)}
-            >
-                <h3 className="text-white font-medium text-lg">Flight Schedules</h3>
-                 {
-                    isexpand?(<ChevronUp className="w-5 h-5 text-grey-400"/>):(<ChevronDown className="w-5 h-5 text-grey-400"/>)
-                 }
-            </div>
+import { useEffect, useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
-            <div className={`collapse-transition ${isexpand?"max-h-96 opacity-100":"max-h-0 opacity-0"}`}>
+const timeSlots = [
+  { label: "00-06 AM", icon: "🌅" },
+  { label: "06-12 PM", icon: "☀️" },
+  { label: "12-06 PM", icon: "🌤️" },
+  { label: "06-12 AM", icon: "🌙" },
+];
 
-              <div className="flex p-1">
-                <button className="flex-1 px-4 py-2  bg-blue-600 text-white rounded-md hover:bg-blue-700">Departure</button>
-                <button className="flex-1 px-4 py-2  bg-blue-600 text-white rounded-md hover:bg-blue-700">Arrival</button>
-              </div>
+export default function Flightscedule({ origin, destination, trip_type,ontimechange }) {
+  const [isexpand, setexpand] = useState(true);
+  const [depart, setdepart] = useState(true);
+  const [trip, settrip] = useState(false);
 
-            </div>
-         
+  useEffect(() => {
+    settrip(trip_type === "round-trip");
+  }, []);
+
+  return (
+    <div className="max-w-md mx-auto bg-gradient-to-br from-sky-50 to-blue-100 p-3 rounded-lg mt-4">
+      <style>{`
+        .collapse-transition {
+          transition: all 0.3s ease-in-out;
+          overflow: hidden;
+        }
+      `}</style>
+
+      <div
+        className="flex items-center justify-between p-6 cursor-pointer hover:bg-white/20 transition-all duration-200 rounded-t-2xl group"
+        onClick={() => setexpand(!isexpand)}
+      >
+        <h3 className="text-slate-900 font-semibold text-xl flex items-center gap-2">
+          <div className="w-2 h-2 bg-gradient-to-r from-sky-400 to-blue-500 rounded-full"></div>
+          Flight Schedules
+        </h3>
+        <div className="p-2 rounded-full group-hover:bg-sky-200 transition-colors">
+          {isexpand ? (
+            <ChevronUp className="w-5 h-5 text-sky-600" />
+          ) : (
+            <ChevronDown className="w-5 h-5 text-sky-600" />
+          )}
         </div>
-    )
+      </div>
+
+      {/* Move ALL content inside the collapsible container */}
+      <div
+        className={`collapse-transition ${
+          isexpand ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        {/* Departure/Arrival buttons */}
+        <div className="flex p-1">
+          <button
+            className={`flex-1 px-4 py-2 rounded-md transition-all duration-500 ${
+              depart
+                ? "bg-blue-500 text-white"
+                : "bg-white-300 text-black-800 hover:bg-white/70"
+            }`}
+            onClick={() => {
+              setdepart(true);
+            }}
+          >
+            Departure
+          </button>
+          <button
+            className={`flex-1 px-4 py-2 rounded-md transition-all duration-500 ${
+              !depart
+                ? "bg-blue-500 text-white"
+                : "bg-white-300 text-black-800 hover:bg-white/70"
+            }`}
+            onClick={() => setdepart(false)}
+          >
+            Arrival
+          </button>
+        </div>
+
+        {/* Time slots content */}
+        {depart ? (
+          <div>
+            <p className="font-medium font-semibold text-sm text-slate-700 mb-2">
+              Departure {origin}: Anytime
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {timeSlots.map((slot, i) => (
+                <button
+                  key={i}
+                  onClick={()=>ontimechange({type:'departure',city:origin,slot:slot.label})}
+                  className="flex items-center justify-center gap-2 bg-gray-100 hover:bg-blue-100 py-2 px-3 rounded-md shadow text-sm"
+                >
+                  <span>{slot.icon}</span> {slot.label}
+                </button>
+              ))}
+            </div>
+            {trip ? (
+              <div>
+                <p className="font-medium font-semibold text-sm text-slate-700 mb-2">
+                  Departure {destination}: Anytime
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {timeSlots.map((slot, i) => (
+                    <button
+                      key={i}
+                      onClick={()=>ontimechange({type:'departure',city:destination,slot:slot.label})}
+                      className="flex items-center justify-center gap-2 bg-gray-100 hover:bg-blue-100 py-2 px-3 rounded-md shadow text-sm"
+                    >
+                      <span>{slot.icon}</span> {slot.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        ) : (
+          <div>
+            <p className="font-medium font-semibold text-sm text-slate-700 mb-2">
+              Arrival {destination}: Anytime
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {timeSlots.map((slot, i) => (
+                <button
+                  key={i}
+                  onClick={()=>ontimechange({type:'arrival',city:destination,slot:slot.label})}
+                  className="flex items-center justify-center gap-2 bg-gray-100 hover:bg-blue-100 py-2 px-3 rounded-md shadow text-sm"
+                >
+                  <span>{slot.icon}</span> {slot.label}
+                </button>
+              ))}
+            </div>
+            {trip ? (
+              <div>
+                <p className="font-medium font-semibold text-sm text-slate-700 mb-2">
+                  Arrival {origin}: Anytime
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {timeSlots.map((slot, i) => (
+                    <button
+                      key={i}
+                      onClick={()=>ontimechange({type:'arrival',city:destination,slot:slot.label})}
+                      className="flex items-center justify-center gap-2 bg-gray-100 hover:bg-blue-100 py-2 px-3 rounded-md shadow text-sm"
+                    >
+                      <span>{slot.icon}</span> {slot.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }

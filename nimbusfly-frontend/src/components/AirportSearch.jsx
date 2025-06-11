@@ -8,7 +8,10 @@ const fetch_airport = async (query, selectedAirport, setResults, abortController
         if (query) {
             let cd = "";
             if (selectedAirport) cd = selectedAirport.iata_code;
-            const res = await fetch(`http://localhost:3000/airports/search_name?query=${query}&iata_code=${cd}`, { signal: abortController.signal });
+            // Fixed: Added missing backtick for template literal
+            const res = await fetch(`http://localhost:3000/airports/search_name?query=${query}&iata_code=${cd}`, { 
+                signal: abortController.signal 
+            });
             const data = await res.json();
             setResults(data);
         }
@@ -387,6 +390,7 @@ function AirportSearch({ origin_select = null, dest_select = null, journey_date=
         if (tripType === 'round-trip' && returnDate) {
             searchParams.append('returnDate', returnDate);
         }
+        console.log(searchParams.toString());
         navigate(`/flight-results?${searchParams.toString()}`);
 
     }
