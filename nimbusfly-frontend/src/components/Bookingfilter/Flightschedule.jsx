@@ -92,7 +92,7 @@ export default function Flightscedule({ origin, destination, origin_port,des_por
                 </button>
               ))}
             </div>
-            {trip ? (
+      
               <div>
                 <p className="font-medium font-semibold text-sm text-slate-700 mb-2">
                   Departure {destination}: Anytime
@@ -109,7 +109,7 @@ export default function Flightscedule({ origin, destination, origin_port,des_por
                   ))}
                 </div>
               </div>
-            ) : null}
+       
           </div>
         ) : (
           <div>
@@ -127,7 +127,7 @@ export default function Flightscedule({ origin, destination, origin_port,des_por
                 </button>
               ))}
             </div>
-            {trip ? (
+         
               <div>
                 <p className="font-medium font-semibold text-sm text-slate-700 mb-2">
                   Arrival {origin}: Anytime
@@ -144,7 +144,7 @@ export default function Flightscedule({ origin, destination, origin_port,des_por
                   ))}
                 </div>
               </div>
-            ) : null}
+        
           </div>
         )}
       </div>
