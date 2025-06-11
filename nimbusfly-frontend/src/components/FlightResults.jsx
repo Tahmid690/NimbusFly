@@ -211,6 +211,7 @@ function FlightResults() {
             await new Promise(resolve => setTimeout(resolve, 200));
             
             let filtered = allflights.filter(f => {
+                console.log(f);
                if(!(parseFloat(f.total_ticket_price) >= crs[0] && parseFloat(f.total_ticket_price) <= crs[1]))return false;
                const oriport=f.origin_airport_id;
                const desport=f.destination_airport_id;
@@ -233,7 +234,7 @@ function FlightResults() {
                }
            // }
            // else if(astesi){
-                if(timefilterdep2&&timefilterdep2.port===des){
+                if(timefilterdep2&&timefilterdep2.port===desport){
                 const time=new Date(f.departure_time).getHours();
                 const [start,end]=convertslot(timefilterdep2.slot);
                 if(!(time>=start&&time<end))return false;

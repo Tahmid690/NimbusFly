@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { ChevronDown, Heart, Plane, Clock, Users, Luggage, Star, Wifi, Coffee, Search, Filter, SlidersHorizontal, MapPin, Calendar, CreditCard, Shield, Utensils, Monitor, Headphones, User, AlertCircle, CheckCircle, XCircle, Info, Zap, Award } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const FlightCard = ({ flight, origin, destination, adult, child, Origin_Airport, Dest_Airport, tripType }) => {
     const [showDetails, setShowDetails] = useState(false);
     const [activeTab, setActiveTab] = useState('overview');
 
-
+    const navigate = useNavigate();
     const flightData = flight;
 
     const formatTime = (timeString) => {
@@ -50,6 +51,17 @@ const FlightCard = ({ flight, origin, destination, adult, child, Origin_Airport,
     const rt_arrivalDate = formatDate(flightData.return_arrival_time);
     const rt_duration = calculateDuration(flightData.return_departure_time, flightData.return_arrival_time);
 
+    const call_booking = ()=>{
+        const data = {
+            ...flight,
+            tripType:tripType,
+            origin:origin,
+            destination:destination,
+            child:child,
+            adult:adult
+        }
+        navigate('/booking',{state : {data}});
+    }
 
 
 
@@ -565,7 +577,9 @@ const FlightCard = ({ flight, origin, destination, adult, child, Origin_Airport,
                     </div>
 
                     <div className="space-y-2 lg:space-y-3 mt-4">
-                        <button className={`w-full bg-gradient-to-r from-sky-500 to-blue-700 text-white py-2.5 lg:py-3 rounded-xl font-bold text-sm lg:text-base shadow-xl hover:shadow-2xl transform hover:scale-[1.02] transition-all duration-300 flex items-center justify-center space-x-2 group/btn`}>
+                        <button className={`w-full bg-gradient-to-r from-sky-500 to-blue-700 text-white py-2.5 lg:py-3 rounded-xl font-bold text-sm lg:text-base shadow-xl hover:shadow-2xl transform hover:scale-[1.02] transition-all duration-300 flex items-center justify-center space-x-2 group/btn`}
+                                onClick={call_booking}
+                        >
                             <span>Select Flight</span>
                             <div className="w-4 h-4 lg:w-5 lg:h-5 bg-white/20 rounded-full flex items-center justify-center group-hover/btn:bg-white/30 transition-colors duration-200">
                                 <ChevronDown className="w-2.5 h-2.5 lg:w-3 lg:h-3 transform -rotate-90 group-hover/btn:translate-x-0.5 transition-transform duration-200" />
