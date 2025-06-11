@@ -127,7 +127,7 @@ const searchAirportsbyname = async (req, res) => {
   try {
 
     const result = await pool.query(`
-      SELECT airport_name,iata_code,city,country
+      SELECT airport_name,airport_id,iata_code,city,country
       FROM airports
       WHERE
         (airport_name ILIKE $1 OR
@@ -159,7 +159,7 @@ const searchAirportiata = async (req, res) => {
   try {
 
     const result = await pool.query(`
-      SELECT airport_name,iata_code,city,country
+      SELECT airport_name,airport_id,iata_code,city,country
       FROM airports
       WHERE
         iata_code ILIKE $1

@@ -175,6 +175,8 @@ const searchFlights = async (req, res) => {
 
     const query1 = `
       SELECT
+        f.origin_airport_id as origin_airport_id,
+        f.destination_airport_id as destination_airport_id,
         a.airline_name as airline_name,
         f.departure_time as departure_time,
         f.arrival_time as arrival_time,
@@ -223,7 +225,8 @@ const searchFlights = async (req, res) => {
 
       const query2 = `
             SELECT
-
+              f1.origin_airport_id as origin_airport_id,
+              f1.destination_airport_id as destination_airport_id,
               a1.airline_name as airline_name,
               f1.departure_time as departure_time,
               f1.arrival_time as arrival_time,

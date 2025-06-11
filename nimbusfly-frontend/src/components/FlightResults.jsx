@@ -216,6 +216,9 @@ function FlightResults() {
                const desport=f.destination_airport_id;
                console.log("Dhuru " ,oriport);
           //  console.log(f);
+               const jaitesi = String(oriport) === String(originportid);
+              const astesi = String(oriport) === String(desportid);
+          //  if(jaitesi){
                if(timefilterdep1&&timefilterdep1.port===oriport){
                // console.log(oriport);
                 const time=new Date(f.departure_time).getHours();
@@ -223,21 +226,25 @@ function FlightResults() {
                 if(!(time>=start&&time<end))return false;
               // return time>=start&&time<end;
                }
-                if(timefilterdep2&&timefilterdep2.port===oriport){
-                const time=new Date(f.departure_time).getHours();
-                const [start,end]=convertslot(timefilterdep2.slot);
-                if(!(time>=start&&time<end))return false;
-               }
-                if(timefilterarr1&&timefilterarr1.port===desport){
+               if(timefilterarr1&&timefilterarr1.port===desport){
                 const time=new Date(f.arrival_time).getHours();
                 const [start,end]=convertslot(timefilterarr1.slot);
                 if(!(time>=start&&time<end))return false;
                }
-                  if(timefilterarr2&&timefilterarr2.port===desport){
+           // }
+           // else if(astesi){
+                if(timefilterdep2&&timefilterdep2.port===des){
+                const time=new Date(f.departure_time).getHours();
+                const [start,end]=convertslot(timefilterdep2.slot);
+                if(!(time>=start&&time<end))return false;
+               }
+                
+                  if(timefilterarr2&&timefilterarr2.port===oriport){
                 const time=new Date(f.arrival_time).getHours();
                 const [start,end]=convertslot(timefilterarr2.slot);
                 if(!(time>=start&&time<end))return false;
               }
+           // }
                return true;
                
         });
