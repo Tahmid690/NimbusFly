@@ -25,7 +25,7 @@ const authController = {
             if(check.rowCount!=0){
                 return res.status(400).json({
                     "status" : "falied",
-                    "log" : "user already exists with same email/phone_number"
+                    "log" : "User already exists with same email/phone number"
                 });
             }
 
