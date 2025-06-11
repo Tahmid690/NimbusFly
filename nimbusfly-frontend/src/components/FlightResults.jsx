@@ -214,7 +214,7 @@ function FlightResults() {
                if(!(parseFloat(f.total_ticket_price) >= crs[0] && parseFloat(f.total_ticket_price) <= crs[1]))return false;
                const oriport=f.origin_airport_id;
                const desport=f.destination_airport_id;
-            //    console.log(oriport);
+               console.log("Dhuru " ,oriport);
           //  console.log(f);
                if(timefilterdep1&&timefilterdep1.port===oriport){
                // console.log(oriport);
