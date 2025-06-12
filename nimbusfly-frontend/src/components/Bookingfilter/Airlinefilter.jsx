@@ -1,22 +1,17 @@
 import { useEffect, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
-const timeSlots = [
-  { label: "00-06 AM", icon: "🌅" },
-  { label: "06-12 PM", icon: "☀️" },
-  { label: "12-06 PM", icon: "🌤️" },
-  { label: "06-12 AM", icon: "🌙" },
-];
-
-export default function Flightscedule({ origin, destination, trip_type,ontimechange }) {
+function Airlinefilter({airlines,handleselect}) {
   const [isexpand, setexpand] = useState(true);
-  const [depart, setdepart] = useState(true);
-  const [trip, settrip] = useState(false);
-
-  useEffect(() => {
-    settrip(trip_type === "round-trip");
-  }, []);
-
+  const [selectedairline, setselectedairline] = useState(new Set());
+  const airline=airlines;
+  console.log(airline);
+  const handletoggle=(name)=>{
+   const newline=new Set(selectedairline);
+   if(newline.has(name)){newline.delete(name),handleselect(name,0);}
+   else {newline.add(name),handleselect(name,1);}
+   setselectedairline(newline);
+  }
   return (
     <div className="max-w-md mx-auto bg-gradient-to-br from-sky-50 to-blue-100 p-3 rounded-lg mt-4">
       <style>{`
@@ -49,10 +44,20 @@ export default function Flightscedule({ origin, destination, trip_type,ontimecha
           isexpand ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
         }`}
       >
-        {/* Departure/Arrival buttons */}
+       {airline.map((name,i)=>(
+       <div>
+        <label key={name}>
+          
+           <input type="checkbox" className="w-4 h-4" onChange={()=>handletoggle(name)}/>
+           
+           <span className={`ml-2 text-lg ${selectedairline.has(name)?'text-sm text-blue-600 font-bold':'text-sm text-slate-700'}`}>{name}</span>
+        </label>
+        </div>
+       ))}
 
-        {/* Time slots content */}
       </div>
     </div>
   );
 }
+
+export default Airlinefilter;

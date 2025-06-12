@@ -6,7 +6,7 @@ import AirportSearch from './AirportSearch'
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import PriceRange from './Bookingfilter/Pricerange';
 import Flightscedule from './Bookingfilter/Flightschedule';
-import Airlinefilter from './Bookingfilter/Airlinefilter';
+ import Airlinefilter from  './Bookingfilter/Airlinefilter';
 const LoadingScreen = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 flex items-center justify-center relative overflow-hidden">
@@ -113,6 +113,8 @@ function FlightResults() {
     const [timefilterdep2,settimefilterdep2]=useState(null);
     const [timefilterarr1,settimefilterarr1]=useState(null);
     const [timefilterarr2,settimefilterarr2]=useState(null);
+    const [allairline,setallairline]=useState([]);
+    const [selectedline,setselectedline]=useState([]);
     // Initialize searchData directly from searchParams
     const [searchData, setSearchData] = useState({
         origin: searchParams.get('origin') || '',
@@ -181,7 +183,6 @@ function FlightResults() {
             setAllFlights(data.data);
             setFlights(data.data);
             setLoading(false);
-
         } catch (err) {
             setError('Failed to fetch flights');
             setLoading(false);
@@ -194,7 +195,20 @@ function FlightResults() {
             fetchFlights();
         }
     }, [searchParams,selectedOption]); 
+    
+    useEffect(()=>{
 
+        const airline=[...new Set(allflights.map(f=>f.airline_name))];
+        setallairline(airline);
+
+    },[allflights]);
+    
+    const handleairline=async(name,op)=>{
+        const newline=new Set(selectedline);
+        if(op===1)newline.add(name);
+        else if(newline.has(name))newline.delete(name);
+        setselectedline(newline);
+    }
 
     useEffect(() => {
         console.log(allflights);
@@ -212,8 +226,7 @@ function FlightResults() {
             
             let filtered = allflights.filter(f => {
                if(!(parseFloat(f.total_ticket_price) >= crs[0] && parseFloat(f.total_ticket_price) <= crs[1]))return false;
-               const oriport=f.origin_airport_id;
-               const desport=f.destination_airport_id;
+             
 
               if(searchData.tripType==='one-way'){
                if(timefilterdep1){
@@ -226,7 +239,6 @@ function FlightResults() {
                 const [start,end]=convertslot(timefilterarr1.slot);
                 if(!(time>=start&&time<end))return false;
                }
-               return true;
               }
 
               else{
@@ -250,10 +262,13 @@ function FlightResults() {
                     const [start,end]=convertslot(timefilterarr2.slot);
                     if(!(rarrt>=start&&rarrt<end))return false;
                  }
-                 
-                return true;
-
               }
+                if(selectedline&&selectedline.size>0){
+                    console.log(f.airline_name);
+                    console.log(selectedline.has(f.airline_name));
+                    if(!selectedline.has(f.airline_name))return false;
+                }
+                return true;
                
         });
             
@@ -266,7 +281,7 @@ function FlightResults() {
             setFiltering(false);
         }
         updt_flights();
-    }, [rangeValues, allflights,timefilterdep1,timefilterdep2,timefilterarr1,timefilterarr2]);
+    }, [rangeValues, allflights,timefilterdep1,timefilterdep2,timefilterarr1,timefilterarr2,selectedline]);
 
     const convertslot=(label)=>{
         const [st,en,period]=label.split(/[- ]/);
@@ -367,8 +382,12 @@ function FlightResults() {
                         ontimechangearr1={settimefilterarr1}
                         ontimechangearr2={settimefilterarr2}                     
                         />
+                       <Airlinefilter
+                       airlines={allairline}
+                       handleselect={handleairline}
+                       />
 
-                        <Airlinefilter/>
+                       
                     </div>
                 </div>
 
