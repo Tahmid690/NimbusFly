@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
-function Airlinefilter({airlines,handleselect}) {
+function Airlinefilter({airlines,handleselect,reset}) {
   const [isexpand, setexpand] = useState(true);
   const [selectedairline, setselectedairline] = useState(new Set());
   const airline=airlines;
@@ -12,6 +12,10 @@ function Airlinefilter({airlines,handleselect}) {
    else {newline.add(name),handleselect(name,1);}
    setselectedairline(newline);
   }
+  useEffect(()=>{
+    setselectedairline(new Set());
+    setexpand(true);
+  },[reset]);
   return (
     <div className="max-w-md mx-auto bg-gradient-to-br from-sky-50 to-blue-100 p-3 rounded-lg mt-4">
       <style>{`
@@ -48,7 +52,7 @@ function Airlinefilter({airlines,handleselect}) {
        <div>
         <label key={name}>
           
-           <input type="checkbox" className="w-4 h-4" onChange={()=>handletoggle(name)}/>
+           <input type="checkbox" className="w-4 h-4" checked={selectedairline.has(name)}onChange={()=>handletoggle(name)}/>
            
            <span className={`ml-2 text-lg ${selectedairline.has(name)?'text-sm text-blue-600 font-bold':'text-sm text-slate-700'}`}>{name}</span>
         </label>

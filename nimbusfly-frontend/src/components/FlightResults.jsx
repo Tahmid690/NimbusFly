@@ -7,6 +7,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import PriceRange from './Bookingfilter/Pricerange';
 import Flightscedule from './Bookingfilter/Flightschedule';
  import Airlinefilter from  './Bookingfilter/Airlinefilter';
+ import '../App.css'
 const LoadingScreen = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 flex items-center justify-center relative overflow-hidden">
@@ -115,6 +116,7 @@ function FlightResults() {
     const [timefilterarr2,settimefilterarr2]=useState(null);
     const [allairline,setallairline]=useState([]);
     const [selectedline,setselectedline]=useState([]);
+    const [reset,setreset]=useState(0);
     // Initialize searchData directly from searchParams
     const [searchData, setSearchData] = useState({
         origin: searchParams.get('origin') || '',
@@ -200,8 +202,9 @@ function FlightResults() {
 
         const airline=[...new Set(allflights.map(f=>f.airline_name))];
         setallairline(airline);
+        setselectedline(new Set());
 
-    },[allflights]);
+    },[allflights,searchData]);
     
     const handleairline=async(name,op)=>{
         const newline=new Set(selectedline);
@@ -225,6 +228,7 @@ function FlightResults() {
             await new Promise(resolve => setTimeout(resolve, 200));
             
             let filtered = allflights.filter(f => {
+                console.log(f);
                if(!(parseFloat(f.total_ticket_price) >= crs[0] && parseFloat(f.total_ticket_price) <= crs[1]))return false;
              
 
@@ -296,7 +300,21 @@ function FlightResults() {
         }
         return [start,end];
     }
+    const handlereset=async()=>{
+        const prices = allflights.map(f => parseFloat(f.total_ticket_price));
+            const min = Math.min(...prices);
+            const max = Math.max(...prices);
+        setRangeValues([min,max]);
+        setrange([min,max]);
+        setFlights(allflights);
+        settimefilterarr1(null);
+        settimefilterarr2(null);
+        settimefilterdep1(null);
+        settimefilterdep2(null);
+        setselectedline(new Set());
+        setreset(reset+1);
 
+    }
     const jrnydate = new Date(searchData.journeyDate);
     const formattedDateJour = jrnydate.toLocaleDateString('en-US', {
         weekday: 'short',
@@ -304,10 +322,6 @@ function FlightResults() {
         month: 'short',
         year: 'numeric'
     });
-
-    const handleRangeChange = (newval) => {
-        setrange(newval);
-    };
 
     if (loading) {
         return (
@@ -360,16 +374,18 @@ function FlightResults() {
                 </div>
             )}
 
-            <div className='grid grid-cols-7 px-6 lg:px-8 mt-20'>
+            <div className='flex px-6 lg:px-8 mt-20 h-screen'>
 
-                {/* ******filter */}
-                <div className='col-span-2 p-4 ml-30'>
-                    <div className='col-span-2 p-4 h-fit rounded shadow'>
+
+                {/* ******filter - Left Sidebar with independent scroll */}
+                <div className=' w-1/4 flex-shrink-0 overflow-y-auto scrollbar-hidden p-4 ml-30' style={{ maxHeight: 'calc(100vh - 5rem)' }}>
+                    <div className='p-4 h-fit rounded shadow sticky top-0'>
                         <PriceRange
                             minprice={rangeprice[0]}
                             maxprice={rangeprice[1]}
                             rangeValues={rangeValues}
                             setRangeValues={setRangeValues}
+                            reset={reset}
                         />
                         <Flightscedule
                         origin={originCity.data}
@@ -380,18 +396,29 @@ function FlightResults() {
                         ontimechangedes1={settimefilterdep1} 
                         ontimechangedes2={settimefilterdep2}
                         ontimechangearr1={settimefilterarr1}
-                        ontimechangearr2={settimefilterarr2}                     
+                        ontimechangearr2={settimefilterarr2}
+                        reset={reset}                   
                         />
                        <Airlinefilter
                        airlines={allairline}
                        handleselect={handleairline}
+                       reset={reset}
                        />
-
+                       <div className="max-w-md mx-auto bg-gradient-to-br from-sky-50 to-blue-100 p-3 rounded-lg mt-4">
+                           <div className="flex p-1">
+                            <button
+                             className="flex-1 px-4 py-2 rounded-md transition-all duration-500  bg-blue-600 text-white hover:bg-blue-900"
+                             onClick={handlereset}
+                            >Reset All
+                            </button>
+                            </div>
+                        </div>
                        
                     </div>
                 </div>
 
-                <div className='col-span-5 p-4 h-500 mr-30'>
+                {/* Main Content Area with independent scroll */}
+                <div className='w-3/4 flex-1 overflow-y-auto p-4 mr-30' style={{ maxHeight: 'calc(100vh - 5rem)' }}>
                     <div className='flex flex-col gap-5'>
                         <div className='bg-gradient-to-r from-blue-400 to-blue-500 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300'>
                             <div className='flex items-center justify-between'>

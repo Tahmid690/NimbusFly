@@ -143,7 +143,7 @@ export default function PriceRange({
         }
       `}</style>
 
-      <div className="max-w-md mx-auto glass-effect rounded-2xl shadow-xl border border-white/20">
+      
         {/* Header with toggle */}
         <div
           className="flex items-center justify-between p-6 cursor-pointer hover:bg-white/20 transition-all duration-200 rounded-t-2xl group"
@@ -245,7 +245,7 @@ export default function PriceRange({
             </div>
           </div>
         </div>
-      </div>
+
     </div>
   );
 }

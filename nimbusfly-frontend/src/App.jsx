@@ -10,6 +10,7 @@ import AdminDashboard from './components/admin/AdminDashboard'
 import { AuthProvider } from './components/Authnication/AuthContext'
 import ProtectedRoute from './components/Authnication/ProtectedRoute'
 import PublicRoute from './components/Authnication/PublicRoute'
+import BookingDetails from './components/BookingDetails'
 
 function App() {
   return (
@@ -28,6 +29,16 @@ function App() {
               </PublicRoute>
             } 
           />
+
+          <Route 
+            path="/booking" 
+            element={
+              <ProtectedRoute>
+                <BookingDetails/>
+              </ProtectedRoute>
+            } 
+          />
+
           
           
           <Route path="/admin/login" element={<AirlineLogin />} />
