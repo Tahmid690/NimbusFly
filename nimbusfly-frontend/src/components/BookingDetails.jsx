@@ -6,6 +6,7 @@ import BookingStages from "./BookingStages";
 
 const BookingDetails = () => {
     const location = useLocation();
+    console.log(location);
     const flight = location.state;
     console.log(flight);
 
