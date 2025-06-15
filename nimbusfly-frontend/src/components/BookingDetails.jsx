@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Navbar from "./Navbar";
 import { useLocation } from "react-router-dom";
 import BookingStages from "./BookingStages";
+
 import Passengerform from "./Passengerform";
 import axios from "axios";
 const BookingDetails = () => {
