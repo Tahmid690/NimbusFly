@@ -64,10 +64,10 @@ const FlightSummary = ({ flight }) => {
 
 
     return (
-        <div className="group relative bg-white border border-sky-100 rounded-3xl mb-6 overflow-hidden shadow-lg hover:shadow-2xl hover:shadow-sky-200/60 hover:border-sky-300 transition-all duration-500">
+        <div className="group relative  border-sky-100 rounded-3xl mb-6 overflow-hidden shadow-lg hover:shadow-2xl hover:shadow-sky-200/60 hover:border-sky-300 transition-all duration-500">
             <div className="absolute inset-0 bg-gradient-to-r from-sky-50/20 via-blue-50/10 to-cyan-50/20 opacity-0 group-hover:opacity-100 transition-all duration-700 pointer-events-none"></div>
             <div className="relative flex">
-                <div className="flex-1 p-4 lg:p-6">
+                <div className="flex-1 p-4 lg:p-6 shadow-md rounded-3xl">
                     <div className="flex items-center space-x-3 lg:space-x-4 mb-4 lg:mb-5">
 
                         <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center  group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
@@ -77,13 +77,18 @@ const FlightSummary = ({ flight }) => {
                                 className="max-w-8 max-h-8 lg:max-w-17 lg:max-h-10 object-contain"
                             />
                         </div>
-                        <div className="flex-1">
+                        <div className="flex-2">
+                            <div>
                             <div className="font-bold text-gray-900 text-base lg:text-lg mb-1">{flightData.airline_name}</div>
                             <div className="text-xs lg:text-sm text-gray-600 flex items-center space-x-2">
                                 <span className="font-medium">{flightData.flight_number}</span>
                                 <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
                                 <span>{flightData.aircraft_name}</span>
                                 <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
+                            </div>
+                            </div>
+                            <div>
+                                kskdl
                             </div>
                         </div>
                     </div>
@@ -142,7 +147,9 @@ const FlightSummary = ({ flight }) => {
 
 
             {(flightData.tripType === 'round-trip') && (
-                <div className="flex-1 p-4 lg:p-6">
+                
+                <div className="flex-1 p-4 lg:p-6 shadow-md rounded-3xl">
+                    <br/>
                     <div className="flex items-center space-x-3 lg:space-x-4 mb-4 lg:mb-5">
                         <img
                             src={flightData.logo_url}
