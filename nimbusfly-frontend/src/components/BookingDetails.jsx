@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Navbar from "./Navbar";
 import { useLocation } from "react-router-dom";
 import BookingStages from "./BookingStages";
-
+import FlightSummary from "./FlightSummary";
 import Passengerform from "./Passengerform";
 import axios from "axios";
 const BookingDetails = () => {
@@ -11,7 +11,7 @@ const BookingDetails = () => {
   const location = useLocation();
   console.log(location);
   const flight = location.state;
-  console.log(flight);
+  console.log("Booking Page",flight);
 
   useEffect(() => {
     const det = JSON.parse(localStorage.getItem("userData"));
@@ -95,6 +95,18 @@ const BookingDetails = () => {
         <Navbar flg={true} />
         <div className="mt-20">
           <BookingStages stage={1} />
+                <div className="w-full grid grid-cols-3 pl-60 pr-60 pt-10">
+                    <div className="col-span-2">
+                        <FlightSummary flight={flight.data}/>
+                    </div>
+                    <div className=" bg-blue-200">
+                        
+                        {/* <FlightSummary flight={flight.data}/> */}
+                    </div>
+                    
+
+                </div>
+                
         </div>
         <div className="flex px-6 lg:px-8 mt-10 h-screen">
           <div className="w-3/5 flex-shrink-0 overflow-y-auto p-4 ml-30">
