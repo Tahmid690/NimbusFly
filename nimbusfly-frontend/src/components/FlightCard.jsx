@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ChevronDown, Heart, Plane, Clock, Users, Luggage, Star, Wifi, Coffee, Search, Filter, SlidersHorizontal, MapPin, Calendar, CreditCard, Shield, Utensils, Monitor, Headphones, User, AlertCircle, CheckCircle, XCircle, Info, Zap, Award } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const FlightCard = ({ flight, origin, destination, adult, child, Origin_Airport, Dest_Airport, tripType }) => {
+const FlightCard = ({ flight, origin, destination, adult, child, Origin_Airport, Dest_Airport, tripType, seatClass }) => {
     const [showDetails, setShowDetails] = useState(false);
     const [activeTab, setActiveTab] = useState('overview');
 
@@ -58,7 +58,8 @@ const FlightCard = ({ flight, origin, destination, adult, child, Origin_Airport,
             origin:origin,
             destination:destination,
             child:child,
-            adult:adult
+            adult:adult,
+            seatClass:seatClass
         }
         navigate('/booking',{state : {data}});
     }
@@ -431,7 +432,7 @@ const FlightCard = ({ flight, origin, destination, adult, child, Origin_Airport,
                                 <br />
 
                                 <div className="absolute -bottom-4 lg:-bottom-5 left-1/2 transform -translate-x-1/2">
-                                    <div className="text-xs text-emerald-700 font-bold bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-200">
+                                    <div className="text-xs text-emerald-700 font-bold bg-emerald-100 px-1 py-0.5 rounded-full border border-emerald-200">
                                         Direct Flight
                                     </div>
                                 </div>
@@ -525,7 +526,7 @@ const FlightCard = ({ flight, origin, destination, adult, child, Origin_Airport,
                                     <br />
 
                                     <div className="absolute -bottom-4 lg:-bottom-5 left-1/2 transform -translate-x-1/2">
-                                        <div className="text-xs text-emerald-700 font-bold bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-200">
+                                        <div className="text-xs text-emerald-700 font-bold bg-emerald-100 px-1 py-0.5 rounded-full border border-emerald-200">
                                             Direct Flight
                                         </div>
                                     </div>

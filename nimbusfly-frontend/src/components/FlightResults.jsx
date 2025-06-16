@@ -498,6 +498,7 @@ function FlightResults() {
                                                 Origin_Airport={Origin_Airport}
                                                 Dest_Airport={Dest_Airport}
                                                 tripType={searchData.tripType}
+                                                seatClass={searchData.seatClass}
                                             />
                                         </div>
                                     ))

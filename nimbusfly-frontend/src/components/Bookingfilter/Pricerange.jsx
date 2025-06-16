@@ -13,7 +13,7 @@ export default function PriceRange({
 
   
 
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
 
   const [localRangeValues, setLocalRangeValues] = useState(rangeValues);
   const currentRangeValues = setRangeValues ? rangeValues : localRangeValues;

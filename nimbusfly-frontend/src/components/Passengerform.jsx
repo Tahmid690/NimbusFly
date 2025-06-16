@@ -4,7 +4,7 @@ import { ChevronUp, ChevronDown, X, Search } from 'lucide-react';
 const PassengerForm = ({ index,update,adult,passengerData,ontraveller,savedtraveller }) => {
 
 
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
   const [travelerDropdownOpen, setTravelerDropdownOpen] = useState(false);
   const [travelerSearchTerm, setTravelerSearchTerm] = useState('');
   const [selected,setselected]=useState(true);
@@ -88,7 +88,7 @@ const nationalities = [
 
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
+    <div className="bg-white rounded-3xl shadow-sm border border-gray-200 mb-4">
       {/* Header */}
       <div 
         className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 rounded-t-lg transition-colors duration-200"
