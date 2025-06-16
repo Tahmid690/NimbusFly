@@ -98,7 +98,7 @@ const FlightSummary = ({ flight }) => {
                         <div className="relative mb-4 lg:mb-5">
                             <div className="flex items-center justify-between">
                                 <div className="text-center">
-                                    <div className="text-xl lg:text-2xl font-bold text-gray-900 mb-1">{rt_departureTime}</div>
+                                    <div className="text-xl lg:text-2xl font-bold text-gray-900 mb-1">{departureTime}</div>
                                     <div className="text-xs lg:text-sm font-bold text-sky-700 bg-sky-100 px-2 lg:px-3 py-1 rounded-full">
                                         {flightData.origin || "JFK"}
                                     </div>
@@ -110,7 +110,7 @@ const FlightSummary = ({ flight }) => {
                                         <div className="bg-white border-2 border-sky-200 px-2  rounded-full shadow-lg">
                                             <div className="text-xs lg:text-sm font-bold text-sky-700 flex items-center space-x-1">
                                                 <Clock className="w-3 h-3" />
-                                                <span>{rt_duration}</span>
+                                                <span>{duration}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -135,7 +135,7 @@ const FlightSummary = ({ flight }) => {
                                 </div>
 
                                 <div className="text-center">
-                                    <div className="text-xl lg:text-2xl font-bold text-gray-900 mb-1">{rt_arrivalTime}</div>
+                                    <div className="text-xl lg:text-2xl font-bold text-gray-900 mb-1">{arrivalTime}</div>
                                     <div className="text-xs lg:text-sm font-bold text-sky-700 bg-sky-100 px-2 lg:px-3 py-1 rounded-full">
                                         {flightData.destination}
                                     </div>
@@ -188,7 +188,7 @@ const FlightSummary = ({ flight }) => {
                             <div className="relative mb-4 lg:mb-5">
                                 <div className="flex items-center justify-between">
                                     <div className="text-center">
-                                        <div className="text-xl lg:text-2xl font-bold text-gray-900 mb-1">{departureTime}</div>
+                                        <div className="text-xl lg:text-2xl font-bold text-gray-900 mb-1">{rt_departureTime}</div>
                                         <div className="text-xs lg:text-sm font-bold text-sky-700 bg-sky-100 px-2 lg:px-3 py-1 rounded-full">
                                             {flightData.destination || "JFK"}
                                         </div>
@@ -200,7 +200,7 @@ const FlightSummary = ({ flight }) => {
                                             <div className="bg-white border-2 border-sky-200 px-2  rounded-full shadow-lg">
                                                 <div className="text-xs lg:text-sm font-bold text-sky-700 flex items-center space-x-1">
                                                     <Clock className="w-3 h-3" />
-                                                    <span>{duration}</span>
+                                                    <span>{rt_duration}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -225,7 +225,7 @@ const FlightSummary = ({ flight }) => {
                                     </div>
 
                                     <div className="text-center">
-                                        <div className="text-xl lg:text-2xl font-bold text-gray-900 mb-1">{arrivalTime}</div>
+                                        <div className="text-xl lg:text-2xl font-bold text-gray-900 mb-1">{rt_arrivalTime}</div>
                                         <div className="text-xs lg:text-sm font-bold text-sky-700 bg-sky-100 px-2 lg:px-3 py-1 rounded-full">
                                             {flightData.origin}
                                         </div>
