@@ -11,6 +11,7 @@ import { AuthProvider } from './components/Authnication/AuthContext'
 import ProtectedRoute from './components/Authnication/ProtectedRoute'
 import PublicRoute from './components/Authnication/PublicRoute'
 import BookingDetails from './components/BookingDetails'
+import PaymentDetails from './components/PaymentDetails'
 
 function App() {
   return (
@@ -37,6 +38,15 @@ function App() {
                 <BookingDetails/>
               </ProtectedRoute>
             } 
+          />
+
+          <Route
+          path="/payment"
+          element={
+            <ProtectedRoute>
+              <PaymentDetails/>
+            </ProtectedRoute>
+          }
           />
 
           

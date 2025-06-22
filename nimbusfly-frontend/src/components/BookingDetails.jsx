@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 import BookingStages from "./BookingStages";
 import FlightSummary from "./FlightSummary";
 import Passengerform from "./Passengerform";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 const BookingDetails = () => {
   const [user_id, setuser_id] = useState(null);
@@ -12,7 +13,7 @@ const BookingDetails = () => {
   console.log(location);
   const flight = location.state;
   console.log("Booking Page", flight);
-
+  const navigate=useNavigate();
   useEffect(() => {
     const det = JSON.parse(localStorage.getItem("userData"));
     //  console.log(str);
@@ -82,6 +83,7 @@ const BookingDetails = () => {
       console.log(newp);
       const response = await axios.post('http://localhost:3000/passenger/add', { passengers: newp });
       console.log("Passengers added successfully: ", response.data);
+      navigate('/payment',{state:{passengers}});
 
     } catch (err) {
       console.log("Err saving passenger, ", err.response?.data || err.message)
