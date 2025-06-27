@@ -4,7 +4,6 @@ const pool = require('../config/database');
 const getAllflights = async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM flights');
-
     res.json({
       success: true,
       data: result.rows,
