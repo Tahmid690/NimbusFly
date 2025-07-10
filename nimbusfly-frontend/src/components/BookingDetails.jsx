@@ -83,7 +83,7 @@ const BookingDetails = () => {
       console.log(newp);
       const response = await axios.post('http://localhost:3000/passenger/add', { passengers: newp });
       console.log("Passengers added successfully: ", response.data);
-      navigate('/payment',{state:{passengers}});
+      navigate('/payment',{state:{passengers, flight: flight.data}});
 
     } catch (err) {
       console.log("Err saving passenger, ", err.response?.data || err.message)

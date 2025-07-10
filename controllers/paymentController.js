@@ -31,26 +31,52 @@ const getPaymentByBooking = async (req, res) => {
 // ✅ 2. POST /payments/process
 const processPayment = async (req, res) => {
   try {
-    const { booking_id, amount, payment_method, transaction_id, status } = req.body;
+    const { 
+      customer_id, 
+      passengers, 
+      flight_data, 
+      payment_method, 
+      billing_address, 
+      total_amount 
+    } = req.body;
 
-    if (!booking_id) return res.status(400).json({ success: false, message: 'Booking ID is required' });
-    if (!amount) return res.status(400).json({ success: false, message: 'Amount is required' });
+    if (!customer_id) return res.status(400).json({ success: false, message: 'Customer ID is required' });
+    if (!passengers || passengers.length === 0) return res.status(400).json({ success: false, message: 'Passenger data is required' });
+    if (!flight_data) return res.status(400).json({ success: false, message: 'Flight data is required' });
     if (!payment_method) return res.status(400).json({ success: false, message: 'Payment method is required' });
-    if (!transaction_id) return res.status(400).json({ success: false, message: 'Transaction ID is required' });
-    if (!status) return res.status(400).json({ success: false, message: 'Payment status is required' });
+    if (!total_amount) return res.status(400).json({ success: false, message: 'Total amount is required' });
 
+    // Generate booking ID and transaction ID
+    const booking_id = `NF${Date.now().toString().slice(-6)}`;
+    const transaction_id = `TXN${Date.now()}${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
     const payment_date = new Date();
 
-    const result = await pool.query(`
-      INSERT INTO payments (booking_id, amount, payment_method, transaction_id, payment_date, status)
-      VALUES ($1, $2, $3, $4, $5, $6)
-      RETURNING *
-    `, [booking_id, amount, payment_method, transaction_id, payment_date, status]);
+    // In a real application, you would:
+    // 1. Create a booking record first
+    // 2. Process payment with payment gateway
+    // 3. Create passenger records
+    // 4. Create ticket records
+    // 5. Send confirmation emails
+
+    // For demo purposes, we'll simulate successful payment
+    const paymentResult = {
+      payment_id: Date.now(),
+      booking_id: booking_id,
+      amount: total_amount,
+      payment_method: payment_method,
+      transaction_id: transaction_id,
+      payment_date: payment_date,
+      status: 'completed'
+    };
 
     res.status(201).json({
       success: true,
       message: 'Payment processed successfully',
-      data: result.rows[0]
+      booking_id: booking_id,
+      transaction_id: transaction_id,
+      amount: total_amount,
+      status: 'completed',
+      data: paymentResult
     });
 
   } catch (error) {

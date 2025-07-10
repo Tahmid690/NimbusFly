@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Confirmation Page</title>
+</head>
+<body>
+    <h1>Test Confirmation Page</h1>
+    <p>Click the button below to test the confirmation page with sample data:</p>
+    
+    <button onclick="testConfirmation()">Test Confirmation Page</button>
+    
+    <script>
+        function testConfirmation() {
+            const testData = {
+                bookingId: 'NF123456',
+                passengers: [
+                    {
+                        title: 'Mr',
+                        first_name: 'John',
+                        last_name: 'Doe',
+                        passport_number: 'A1234567'
+                    }
+                ],
+                flight: {
+                    flight_number: 'NF001',
+                    origin: 'DAC',
+                    destination: 'CTG',
+                    departure_time: '10:30 AM',
+                    arrival_time: '2:15 PM',
+                    base_price: 5000,
+                    adult: 1,
+                    child: 0,
+                    seatClass: 'Economy'
+                },
+                paymentData: {
+                    amount: 5000,
+                    method: 'Card'
+                }
+            };
+            
+            // Navigate to confirmation page with test data
+            const url = `http://localhost:5178/confirmation`;
+            const newWindow = window.open(url);
+            
+            // Wait for the window to load, then inject the test data
+            setTimeout(() => {
+                if (newWindow) {
+                    newWindow.postMessage({
+                        type: 'TEST_DATA',
+                        data: testData
+                    }, '*');
+                }
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

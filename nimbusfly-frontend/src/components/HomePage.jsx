@@ -4,6 +4,7 @@ import Navbar from "./Navbar";
 import {useAuth} from './Authnication/AuthContext';
 
 function HomePage() {
+    console.log("HomePage component is rendering");
     
     return (
         <div>
