@@ -28,8 +28,10 @@ const getPaymentByBooking = async (req, res) => {
   }
 };
 
-// ✅ 2. POST /payments/process
+// ✅ 2. POST /payments/process - Complete Database Integration
 const processPayment = async (req, res) => {
+  const client = await pool.connect();
+  
   try {
     const { 
       customer_id, 
@@ -40,6 +42,7 @@ const processPayment = async (req, res) => {
       total_amount 
     } = req.body;
 
+    // Validation
     if (!customer_id) return res.status(400).json({ success: false, message: 'Customer ID is required' });
     if (!passengers || passengers.length === 0) return res.status(400).json({ success: false, message: 'Passenger data is required' });
     if (!flight_data) return res.status(400).json({ success: false, message: 'Flight data is required' });
@@ -51,40 +54,142 @@ const processPayment = async (req, res) => {
     const transaction_id = `TXN${Date.now()}${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
     const payment_date = new Date();
 
-    // In a real application, you would:
-    // 1. Create a booking record first
-    // 2. Process payment with payment gateway
-    // 3. Create passenger records
-    // 4. Create ticket records
-    // 5. Send confirmation emails
+    // Start database transaction
+    await client.query('BEGIN');
 
-    // For demo purposes, we'll simulate successful payment
-    const paymentResult = {
-      payment_id: Date.now(),
-      booking_id: booking_id,
-      amount: total_amount,
-      payment_method: payment_method,
-      transaction_id: transaction_id,
-      payment_date: payment_date,
-      status: 'completed'
-    };
+    // 1. Create booking record
+    const bookingQuery = `
+      INSERT INTO bookings (customer_id, booking_date, total_amount, payment_status, trip_type) 
+      VALUES ($1, $2, $3, $4, $5) 
+      RETURNING booking_id
+    `;
+    const bookingResult = await client.query(bookingQuery, [
+      customer_id,
+      payment_date.toISOString().split('T')[0],
+      total_amount,
+      'PAID',
+      flight_data.trip_type || 'ONE-WAY'
+    ]);
+    const db_booking_id = bookingResult.rows[0].booking_id;
+
+    // 2. Create passenger records
+    const passengerIds = [];
+    for (const passenger of passengers) {
+      const passengerQuery = `
+        INSERT INTO passengers (customer_id, first_name, last_name, date_of_birth, passport_number, nationality, title) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7) 
+        RETURNING passenger_id
+      `;
+      const passengerResult = await client.query(passengerQuery, [
+        customer_id,
+        passenger.first_name,
+        passenger.last_name,
+        passenger.date_of_birth,
+        passenger.passport_number,
+        passenger.nationality,
+        passenger.title || 'Mr'
+      ]);
+      passengerIds.push(passengerResult.rows[0].passenger_id);
+    }
+
+    // 3. Create payment record
+    const paymentQuery = `
+      INSERT INTO payments (booking_id, amount, payment_method, transaction_id, payment_date, status) 
+      VALUES ($1, $2, $3, $4, $5, $6) 
+      RETURNING payment_id
+    `;
+    const paymentResult = await client.query(paymentQuery, [
+      db_booking_id,
+      total_amount,
+      payment_method,
+      transaction_id,
+      payment_date,
+      'PAID'
+    ]);
+
+    // 4. Generate tickets for each passenger
+    const tickets = [];
+    for (let i = 0; i < passengerIds.length; i++) {
+      const passenger_id = passengerIds[i];
+      
+      // Calculate individual ticket price
+      const isChild = i >= (flight_data.adult_count || 0);
+      const ticketPrice = isChild ? flight_data.base_price * 0.75 : flight_data.base_price;
+      
+      // Find available seat (simplified - in real app, implement proper seat selection)
+      const seatQuery = `
+        SELECT seat_id FROM seats 
+        WHERE aircraft_id = $1 AND is_booked = false 
+        LIMIT 1
+      `;
+      const seatResult = await client.query(seatQuery, [flight_data.aircraft_id || 1]);
+      
+      if (seatResult.rows.length === 0) {
+        throw new Error('No available seats');
+      }
+      
+      const seat_id = seatResult.rows[0].seat_id;
+      
+      // Create ticket
+      const ticketQuery = `
+        INSERT INTO ticket (booking_id, flight_id, passenger_id, seat_id, price) 
+        VALUES ($1, $2, $3, $4, $5) 
+        RETURNING ticket_id
+      `;
+      const ticketResult = await client.query(ticketQuery, [
+        db_booking_id,
+        flight_data.flight_id,
+        passenger_id,
+        seat_id,
+        ticketPrice
+      ]);
+      
+      // Mark seat as booked
+      await client.query('UPDATE seats SET is_booked = true WHERE seat_id = $1', [seat_id]);
+      
+      tickets.push({
+        ticket_id: ticketResult.rows[0].ticket_id,
+        passenger_id: passenger_id,
+        seat_id: seat_id,
+        price: ticketPrice
+      });
+    }
+
+    // Commit transaction
+    await client.query('COMMIT');
 
     res.status(201).json({
       success: true,
-      message: 'Payment processed successfully',
+      message: 'Payment processed successfully and all records created',
       booking_id: booking_id,
+      db_booking_id: db_booking_id,
       transaction_id: transaction_id,
       amount: total_amount,
-      status: 'completed',
-      data: paymentResult
+      status: 'PAID',
+      payment_id: paymentResult.rows[0].payment_id,
+      passenger_ids: passengerIds,
+      tickets: tickets,
+      data: {
+        booking_id: booking_id,
+        transaction_id: transaction_id,
+        payment_date: payment_date,
+        total_amount: total_amount,
+        passengers_created: passengerIds.length,
+        tickets_created: tickets.length
+      }
     });
 
   } catch (error) {
+    // Rollback transaction on error
+    await client.query('ROLLBACK');
+    
     res.status(500).json({
       success: false,
       message: 'Failed to process payment',
       error: error.message
     });
+  } finally {
+    client.release();
   }
 };
 

@@ -6,6 +6,7 @@ import FlightSummary from "./FlightSummary";
 import Passengerform from "./Passengerform";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { CreditCard, Users } from "lucide-react";
 const BookingDetails = () => {
   const [user_id, setuser_id] = useState(null);
   const [savedpassenger, setsavedpassenger] = useState(null);
@@ -133,59 +134,119 @@ const BookingDetails = () => {
               </div>
             </div>
             <div className="px-4">
-              <div className="bg-white rounded-3xl shadow-lg p-6 sticky top-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Price Summary</h3>
-                
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-gray-600">Adults</span>
-                      <span className="text-sm text-gray-500">({flight.data.adult})</span>
-                    </div>
-                    <span className="font-medium">${(flight.data.base_price * flight.data.adult).toFixed(2)}</span>
+              <div className="bg-white rounded-3xl shadow-lg border border-blue-100 p-6 sticky top-6 hover:shadow-xl transition-all duration-300 overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"></div>
+                <div className="flex items-center space-x-3 mb-6 pt-2">
+                  <div className="p-2 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-xl">
+                    <CreditCard className="w-6 h-6 text-blue-600" />
                   </div>
-                  
-                  {flight.data.child > 0 && (
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-gray-600">Children</span>
-                        <span className="text-sm text-gray-500">({flight.data.child})</span>
-                      </div>
-                      <span className="font-medium">${(flight.data.base_price * 0.75 * flight.data.child).toFixed(2)}</span>
-                    </div>
-                  )}
-                  
-                  
-                  <hr className="my-4" />
-                  
-                  <div className="flex items-center justify-between text-lg font-bold">
-                    <span className="text-gray-900">Total</span>
-                    <span className="text-blue-600">
-                      ${(
-                        flight.data.base_price * flight.data.adult + 
-                        flight.data.base_price * 0.75 * flight.data.child
-                      ).toFixed(2)}
-                    </span>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">Price Summary</h3>
+                    <p className="text-sm text-gray-500">Booking breakdown</p>
                   </div>
                 </div>
                 
-                <div className="mt-6 p-4 bg-blue-50 rounded-xl">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <span className="text-sm font-medium text-blue-800">Trip Details</span>
+                <div className="space-y-4">
+                  <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                          <Users className="w-4 h-4 text-blue-600" />
+                        </div>
+                        <div>
+                          <span className="text-gray-800 font-semibold">Adults</span>
+                          <span className="text-sm text-gray-500 bg-blue-100 px-2 py-1 rounded-full ml-2">×{flight.data.adult}</span>
+                        </div>
+                      </div>
+                      <span className="font-bold text-gray-900">${(flight.data.base_price * flight.data.adult).toFixed(2)}</span>
+                    </div>
+                    
+                    {flight.data.child > 0 && (
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                            <Users className="w-4 h-4 text-green-600" />
+                          </div>
+                          <div>
+                            <span className="text-gray-800 font-semibold">Children</span>
+                            <span className="text-sm text-gray-500 bg-green-100 px-2 py-1 rounded-full ml-2">×{flight.data.child}</span>
+                            <span className="text-xs text-gray-500 block">25% discount applied</span>
+                          </div>
+                        </div>
+                        <span className="font-bold text-gray-900">${(flight.data.base_price * 0.75 * flight.data.child).toFixed(2)}</span>
+                      </div>
+                    )}
                   </div>
-                  <div className="text-sm text-gray-600 space-y-1">
-                    <div className="flex justify-between">
-                      <span>Route:</span>
-                      <span className="font-medium">{flight.data.origin} → {flight.data.destination}</span>
+                  
+                  <div className="border-t border-gray-200 pt-4 space-y-3">
+                    <div className="flex items-center justify-between py-2">
+                      <span className="text-gray-700 font-medium">Subtotal</span>
+                      <span className="font-semibold text-gray-900">${(flight.data.base_price * flight.data.adult + flight.data.base_price * 0.75 * flight.data.child).toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span>Trip Type:</span>
-                      <span className="font-medium capitalize">{flight.data.tripType}</span>
+                    
+                    <div className="flex items-center justify-between py-2">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-gray-700 font-medium">Platform Fee</span>
+                        <div className="group relative">
+                          <svg className="w-4 h-4 text-gray-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                            5% of subtotal (min $15)
+                          </div>
+                        </div>
+                      </div>
+                      <span className="font-semibold text-gray-900">${Math.max((flight.data.base_price * flight.data.adult + flight.data.base_price * 0.75 * flight.data.child) * 0.05, 15).toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span>Class:</span>
-                      <span className="font-medium">{flight.data.seatClass || 'Economy'}</span>
+                  </div>
+                  
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
+                          <CreditCard className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <span className="text-lg font-bold text-gray-900">Total Amount</span>
+                          <p className="text-sm text-gray-600">All fees included</p>
+                        </div>
+                      </div>
+                      <span className="text-2xl font-bold text-blue-600">
+                        ${(
+                          flight.data.base_price * flight.data.adult + 
+                          flight.data.base_price * 0.75 * flight.data.child + 
+                          Math.max((flight.data.base_price * flight.data.adult + flight.data.base_price * 0.75 * flight.data.child) * 0.05, 15)
+                        ).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+                  <div className="flex items-center space-x-2 mb-4">
+                    <div className="p-1 bg-blue-500 rounded-full">
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <span className="text-sm font-bold text-blue-800">Trip Details</span>
+                  </div>
+                  <div className="text-sm text-gray-700 space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Route:</span>
+                      <span className="font-semibold text-blue-800">{flight.data.origin} → {flight.data.destination}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Trip Type:</span>
+                      <span className="font-semibold text-blue-800 capitalize">{flight.data.tripType}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Class:</span>
+                      <span className="font-semibold text-blue-800">{flight.data.seatClass || 'Economy'}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Passengers:</span>
+                      <span className="font-semibold text-blue-800">{flight.data.adult + flight.data.child} total</span>
                     </div>
                   </div>
                 </div>

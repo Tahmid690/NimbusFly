@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-const BillingAddress = ({ billingAddress, onUpdate, passengers }) => {
+const BillingAddress = ({ billingAddress, onUpdate, passengers, validationErrors = {} }) => {
   const handleInputChange = (field, value) => {
     onUpdate(field, value);
   };
@@ -44,8 +44,13 @@ const BillingAddress = ({ billingAddress, onUpdate, passengers }) => {
                 placeholder="Enter first name"
                 value={billingAddress.firstName}
                 onChange={(e) => handleInputChange('firstName', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:border-transparent ${
+                  validationErrors.firstName ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+                }`}
               />
+              {validationErrors.firstName && (
+                <p className="text-red-600 text-sm mt-1">{validationErrors.firstName}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
@@ -54,8 +59,13 @@ const BillingAddress = ({ billingAddress, onUpdate, passengers }) => {
                 placeholder="Enter last name"
                 value={billingAddress.lastName}
                 onChange={(e) => handleInputChange('lastName', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:border-transparent ${
+                  validationErrors.lastName ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+                }`}
               />
+              {validationErrors.lastName && (
+                <p className="text-red-600 text-sm mt-1">{validationErrors.lastName}</p>
+              )}
             </div>
           </div>
           
@@ -66,8 +76,13 @@ const BillingAddress = ({ billingAddress, onUpdate, passengers }) => {
               placeholder="Enter address"
               value={billingAddress.address}
               onChange={(e) => handleInputChange('address', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:range-2 focus:ring-blue-500 focus:border-transparent"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:border-transparent ${
+                validationErrors.address ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+              }`}
             />
+            {validationErrors.address && (
+              <p className="text-red-600 text-sm mt-1">{validationErrors.address}</p>
+            )}
           </div>
           
           <div className="grid grid-cols-2 gap-4">
@@ -78,8 +93,13 @@ const BillingAddress = ({ billingAddress, onUpdate, passengers }) => {
                 placeholder="Enter city"
                 value={billingAddress.city}
                 onChange={(e) => handleInputChange('city', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:border-transparent ${
+                  validationErrors.city ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+                }`}
               />
+              {validationErrors.city && (
+                <p className="text-red-600 text-sm mt-1">{validationErrors.city}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Postal Code</label>
@@ -88,8 +108,13 @@ const BillingAddress = ({ billingAddress, onUpdate, passengers }) => {
                 placeholder="Enter postal code"
                 value={billingAddress.postalCode}
                 onChange={(e) => handleInputChange('postalCode', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:border-transparent ${
+                  validationErrors.postalCode ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+                }`}
               />
+              {validationErrors.postalCode && (
+                <p className="text-red-600 text-sm mt-1">{validationErrors.postalCode}</p>
+              )}
             </div>
           </div>
           
