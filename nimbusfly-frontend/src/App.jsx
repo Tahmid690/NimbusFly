@@ -17,6 +17,7 @@ import AdminPublicRoute from './components/Authnication/AdminPublicRoute'
 import AdminProtectedRoute from './components/Authnication/AdminProtectedRoute'
 import AdminLoginForm from './components/AirlineLogin'
 import AdminDashboard from './components/AdminDashboard' 
+import FlightManagement from './components/FlightManagement'
 
 function App() {
   console.log("App component is rendering");
@@ -90,6 +91,15 @@ function App() {
               element={
                 <AdminProtectedRoute>
                   <AdminDashboard/>
+                </AdminProtectedRoute>
+              } 
+            />
+
+             <Route 
+              path="/admin/flightmanagement" 
+              element={
+                <AdminProtectedRoute>
+                  <FlightManagement/>
                 </AdminProtectedRoute>
               } 
             />

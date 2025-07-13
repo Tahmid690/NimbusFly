@@ -28,7 +28,8 @@ import {
   Phone,
   Building,
   ChevronDown,
-  User
+  User,
+  X
 } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -164,15 +165,6 @@ const AdminDashboard = () => {
   const handleLogout = () => {
     logout();
     navigate('/admin/login');
-  };
-
-  const handleEditProfile = () => {
-    setProfileForm({
-      airline_name: admin.airline_name || '',
-      email: admin.email || ''
-    });
-    setShowEditProfile(true);
-    setShowProfileDropdown(false);
   };
 
   const handleProfileSubmit = async (e) => {
@@ -311,11 +303,7 @@ const AdminDashboard = () => {
 
             {/* Admin Controls */}
             <div className="flex items-center space-x-6">
-              <div className="hidden md:block text-right">
-                <p className="text-sm font-medium text-gray-900">{admin.airline_name}</p>
-                <p className="text-xs text-gray-500">Administrator</p>
-              </div>
-              
+
               {/* Profile Dropdown */}
               <div className="relative">
                 <button
@@ -325,7 +313,7 @@ const AdminDashboard = () => {
                   <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
                     <User className="w-4 h-4" />
                   </div>
-                  <span className="hidden md:block">{admin.email}</span>
+                  <span className="hidden md:block">{admin.airline_name}</span>
                   <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showProfileDropdown ? 'rotate-180' : ''}`} />
                 </button>
                 
@@ -337,13 +325,6 @@ const AdminDashboard = () => {
                       <p className="text-xs text-blue-600 mt-1">Admin Access</p>
                     </div>
                     <div className="py-1">
-                      <button
-                        onClick={handleEditProfile}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
-                      >
-                        <User className="w-4 h-4" />
-                        <span>Edit Profile</span>
-                      </button>
                       <hr className="my-1 border-gray-100" />
                       <button
                         onClick={() => {
@@ -415,7 +396,8 @@ const AdminDashboard = () => {
             <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Quick Actions</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <button 
-                onClick={() => setActiveTab('flights')}
+                onClick={() =>  navigate('/admin/flightmanagement')}
+                
                 className="group p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl border border-blue-200 hover:shadow-xl hover:scale-105 transition-all duration-300"
               >
                 <div className="text-center">
