@@ -78,6 +78,84 @@ const getFlightDetails = async (flight_data) => {
   }
 };
 
+// Helper function to get return flight details for round-trip bookings
+const getReturnFlightDetails = async (flight_data) => {
+  try {
+    // If return flight_id is provided
+    if (flight_data.return_flight_id) {
+      const flightQuery = `
+        SELECT flight_id, aircraft_id 
+        FROM flights 
+        WHERE flight_id = $1
+      `;
+      const result = await pool.query(flightQuery, [flight_data.return_flight_id]);
+      
+      if (result.rows.length > 0) {
+        return {
+          flight_id: result.rows[0].flight_id,
+          aircraft_id: result.rows[0].aircraft_id
+        };
+      }
+    }
+
+    // Find return flight by flight number and route (destination becomes origin for return)
+    if (flight_data.return_flight_number && flight_data.destination && flight_data.origin) {
+      const flightQuery = `
+        SELECT f.flight_id, f.aircraft_id 
+        FROM flights f
+        JOIN airports orig ON f.origin_airport_id = orig.airport_id
+        JOIN airports dest ON f.destination_airport_id = dest.airport_id
+        WHERE f.flight_number = $1 
+        AND orig.iata_code = $2 
+        AND dest.iata_code = $3
+        LIMIT 1
+      `;
+      const result = await pool.query(flightQuery, [
+        flight_data.return_flight_number,
+        flight_data.destination, // Return origin is the original destination
+        flight_data.origin       // Return destination is the original origin
+      ]);
+      
+      if (result.rows.length > 0) {
+        return {
+          flight_id: result.rows[0].flight_id,
+          aircraft_id: result.rows[0].aircraft_id
+        };
+      }
+    }
+
+    // Find return flight by departure time and route
+    if (flight_data.return_departure_time && flight_data.destination && flight_data.origin) {
+      const flightQuery = `
+        SELECT f.flight_id, f.aircraft_id 
+        FROM flights f
+        JOIN airports orig ON f.origin_airport_id = orig.airport_id
+        JOIN airports dest ON f.destination_airport_id = dest.airport_id
+        WHERE orig.iata_code = $1 
+        AND dest.iata_code = $2
+        AND DATE(f.departure_time) = DATE($3)
+        LIMIT 1
+      `;
+      const result = await pool.query(flightQuery, [
+        flight_data.destination, // Return origin is the original destination
+        flight_data.origin,      // Return destination is the original origin
+        flight_data.return_departure_time
+      ]);
+      
+      if (result.rows.length > 0) {
+        return {
+          flight_id: result.rows[0].flight_id,
+          aircraft_id: result.rows[0].aircraft_id
+        };
+      }
+    }
+
+    throw new Error('Return flight not found with provided data');
+  } catch (error) {
+    throw new Error(`Failed to get return flight details: ${error.message}`);
+  }
+};
+
 const getPaymentByBooking = async (req, res) => {
   try {
     const booking_id = parseInt(req.params.booking_id);
@@ -130,8 +208,15 @@ const processPayment = async (req, res) => {
 
     // Extract flight_id and aircraft_id from flight data
     let flightDetails;
+    let returnFlightDetails = null;
+    
     try {
       flightDetails = await getFlightDetails(flight_data);
+      
+      // For round-trip flights, also get return flight details
+      if (flight_data.trip_type === 'ROUND-WAY') {
+        returnFlightDetails = await getReturnFlightDetails(flight_data);
+      }
     } catch (error) {
       return res.status(400).json({ 
         success: false, 
@@ -199,53 +284,67 @@ const processPayment = async (req, res) => {
 
     // 4. Generate tickets for each passenger
     const tickets = [];
-    for (let i = 0; i < passengerIds.length; i++) {
-      const passenger_id = passengerIds[i];
-      
-      // Calculate individual ticket price
-      const isChild = i >= flight_data.adult_count;
-      const ticketPrice = isChild ? flight_data.base_price * 0.75 : flight_data.base_price;
-      
-      // Find available seat by class (Economy or Business)
-      const requestedClass = flight_data.seat_class || 'Economy';
-      const seatQuery = `
-        SELECT seat_id, seat_number FROM seats 
-        WHERE aircraft_id = $1 AND is_booked = false 
-        AND (seat_class = $2)
-        ORDER BY seat_number
-        LIMIT 1
-      `;
-      const seatResult = await client.query(seatQuery, [flightDetails.aircraft_id, requestedClass]);
-      console.log(seatResult);
-      if (seatResult.rows.length === 0) {
-        throw new Error(`No available ${requestedClass} class seats`);
+    
+    // Helper function to create tickets for a specific flight
+    const createTicketsForFlight = async (flightInfo, flightType = 'outbound') => {
+      for (let i = 0; i < passengerIds.length; i++) {
+        const passenger_id = passengerIds[i];
+        
+        // Calculate individual ticket price
+        const isChild = i >= flight_data.adult_count;
+        const ticketPrice = isChild ? flight_data.base_price * 0.75 : flight_data.base_price;
+        
+        // Find available seat by class (Economy or Business)
+        const requestedClass = flight_data.seat_class || 'Economy';
+        const seatQuery = `
+          SELECT seat_id, seat_number FROM seats 
+          WHERE aircraft_id = $1 AND is_booked = false 
+          AND (seat_class = $2)
+          ORDER BY seat_number
+          LIMIT 1
+        `;
+        const seatResult = await client.query(seatQuery, [flightInfo.aircraft_id, requestedClass]);
+        
+        if (seatResult.rows.length === 0) {
+          throw new Error(`No available ${requestedClass} class seats for ${flightType} flight`);
+        }
+        
+        const seat_id = seatResult.rows[0].seat_id;
+        
+        // Create ticket
+        const ticketQuery = `
+          INSERT INTO ticket (booking_id, flight_id, passenger_id, seat_id, price) 
+          VALUES ($1, $2, $3, $4, $5) 
+          RETURNING ticket_id
+        `;
+        const ticketResult = await client.query(ticketQuery, [
+          db_booking_id,
+          flightInfo.flight_id,
+          passenger_id,
+          seat_id,
+          ticketPrice
+        ]);
+        
+        // Mark seat as booked
+        await client.query('UPDATE seats SET is_booked = true WHERE seat_id = $1', [seat_id]);
+        
+        tickets.push({
+          ticket_id: ticketResult.rows[0].ticket_id,
+          passenger_id: passenger_id,
+          seat_id: seat_id,
+          price: ticketPrice,
+          flight_type: flightType,
+          flight_id: flightInfo.flight_id
+        });
       }
-      
-      const seat_id = seatResult.rows[0].seat_id;
-      
-      // Create ticket
-      const ticketQuery = `
-        INSERT INTO ticket (booking_id, flight_id, passenger_id, seat_id, price) 
-        VALUES ($1, $2, $3, $4, $5) 
-        RETURNING ticket_id
-      `;
-      const ticketResult = await client.query(ticketQuery, [
-        db_booking_id,
-        flightDetails.flight_id,
-        passenger_id,
-        seat_id,
-        ticketPrice
-      ]);
-      
-      // Mark seat as booked
-      await client.query('UPDATE seats SET is_booked = true WHERE seat_id = $1', [seat_id]);
-      
-      tickets.push({
-        ticket_id: ticketResult.rows[0].ticket_id,
-        passenger_id: passenger_id,
-        seat_id: seat_id,
-        price: ticketPrice
-      });
+    };
+
+    // Create tickets for outbound flight
+    await createTicketsForFlight(flightDetails, 'outbound');
+    
+    // Create tickets for return flight if it's a round-trip
+    if (flight_data.trip_type === 'ROUND-WAY' && returnFlightDetails) {
+      await createTicketsForFlight(returnFlightDetails, 'return');
     }
 
     // Commit transaction

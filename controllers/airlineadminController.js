@@ -103,6 +103,7 @@ const login=async(req,res)=>{
                 "jwt_token": token,
                 "user": {
                     admin_id: result.rows[0].admin_id,
+                    airline_id: result.rows[0].airline_id,
                     airline_name:result.rows[0].airline_name,
                     email: email
                 }
@@ -119,9 +120,10 @@ const login=async(req,res)=>{
 
 
 const getAdminById = async (req, res) => {
+  console.log("zzjhdgc");
   try {
     const id = parseInt(req.params.id);
-
+     
     if (isNaN(id)) {
       return res.status(400).json({ success: false, message: 'Invalid admin ID' });
     }

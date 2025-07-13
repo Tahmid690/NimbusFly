@@ -21,22 +21,82 @@ function AdminLoginForm() {
         setIsLoading(true);
         
         try {
+            console.log('Attempting admin login with:', { email, password });
             const response = await axios.post('http://localhost:3000/admin/login', {
                 email: email,
                 password: password
             });
 
-            console.log('Admin login successful!', response.data);
+            console.log('Admin login API response:', response.data);
+            console.log('Response status:', response.status);
+            console.log('Full response object:', response);
 
-            const { admin, jwt_token } = response.data;
-            login(admin, jwt_token);
+            // Handle different possible API response structures
+            let adminData = null;
+            let token = null;
 
-            setMessage('Login successful!');
-            navigate(from, { replace: true });
+            // Check various possible response structures
+            if (response.data) {
+                if (response.data.admin && response.data.jwt_token) {
+                    // Expected structure: { admin: {...}, jwt_token: "..." }
+                    adminData = response.data.admin;
+                    token = response.data.jwt_token;
+                    console.log('Using structure: admin + jwt_token');
+                } else if (response.data.admin && response.data.token) {
+                    // Alternative: { admin: {...}, token: "..." }
+                    adminData = response.data.admin;
+                    token = response.data.token;
+                    console.log('Using structure: admin + token');
+                } else if (response.data.user && (response.data.token || response.data.jwt_token)) {
+                    // Alternative: { user: {...}, token: "..." } or { user: {...}, jwt_token: "..." }
+                    adminData = response.data.user;
+                    token = response.data.token || response.data.jwt_token;
+                    console.log('Using structure: user + token/jwt_token');
+                } else if (response.data.success && response.data.data) {
+                    // Alternative: { success: true, data: { admin: {...}, token: "..." } }
+                    if (response.data.data.admin && response.data.data.token) {
+                        adminData = response.data.data.admin;
+                        token = response.data.data.token;
+                        console.log('Using structure: success + data.admin + data.token');
+                    } else if (response.data.data.user && response.data.data.token) {
+                        adminData = response.data.data.user;
+                        token = response.data.data.token;
+                        console.log('Using structure: success + data.user + data.token');
+                    }
+                } else if (response.data.message === 'success' || response.status === 200) {
+                    // Try to extract from various fields
+                    adminData = response.data.admin || response.data.user || response.data.data || response.data;
+                    token = response.data.jwt_token || response.data.token || response.data.access_token || 'dummy_token';
+                    console.log('Using fallback extraction');
+                }
+            }
+
+            console.log('Extracted admin data:', adminData);
+            console.log('Extracted token:', token);
+            console.log('Full response.data:', response.data);
+            console.log('response.data.user:', response.data.user);
+
+            if (adminData && token) {
+                console.log('Admin data to store:', adminData);
+                console.log('JWT token to store:', token);
+                
+                login(adminData, token);
+                
+                setMessage('Login successful!');
+                console.log('Navigating to admin dashboard...');
+                navigate(from, { replace: true });
+            } else {
+                console.error('Could not extract admin data and token from response');
+                console.error('Response data keys:', Object.keys(response.data || {}));
+                console.error('Full response data:', response.data);
+                setMessage('Login failed: Could not process server response');
+            }
 
         } catch (error) {
-            console.log('Admin login failed', error.response?.data);
-            setMessage('Invalid admin credentials. Please try again.');
+            console.error('Admin login failed:', error);
+            console.error('Error response:', error.response?.data);
+            console.error('Error status:', error.response?.status);
+            setMessage(error.response?.data?.message || 'Invalid admin credentials. Please try again.');
         } finally {
             setIsLoading(false);
         }
