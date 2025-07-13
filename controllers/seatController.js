@@ -28,25 +28,42 @@ const getSeatsByAircraft = async (req, res) => {
   }
 };
 
-// ✅ 2. GET /seats/flight/:flight_id/available
+// ✅ 2. GET /seats/flight/:flight_id/available?class=Economy|Business
 const getAvailableSeatsByFlight = async (req, res) => {
   try {
     const flight_id = parseInt(req.params.flight_id);
+    const seatClass = req.query.class; // Optional: filter by seat class
 
     if (isNaN(flight_id)) {
       return res.status(400).json({ success: false, message: 'Invalid flight ID' });
     }
 
-    const result = await pool.query(`
+    let query = `
       SELECT s.*
       FROM seats s
       JOIN aircraft a ON s.aircraft_id = a.aircraft_id
       JOIN flights f ON f.aircraft_id = a.aircraft_id
       WHERE f.flight_id = $1 AND s.is_booked = FALSE
-    `, [flight_id]);
+    `;
+    
+    const queryParams = [flight_id];
+    
+    // Add seat class filter if specified
+    if (seatClass && (seatClass === 'Economy' || seatClass === 'Business')) {
+      query += ` AND (s.class = $2 OR s.seat_class = $2)`;
+      queryParams.push(seatClass);
+    }
+    
+    query += ` ORDER BY s.seat_number`;
+
+    const result = await pool.query(query, queryParams);
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ success: false, message: 'No available seats for this flight' });
+      const classMsg = seatClass ? ` for ${seatClass} class` : '';
+      return res.status(404).json({ 
+        success: false, 
+        message: `No available seats${classMsg} for this flight` 
+      });
     }
 
     res.json({ success: true, data: result.rows });

@@ -1,6 +1,83 @@
 const pool = require('../config/database');
 
-// ✅ 1. GET /payments/booking/:booking_id
+// Helper function to extract flight_id and aircraft_id from flight data
+const getFlightDetails = async (flight_data) => {
+  try {
+    // If flight_id is already provided, get aircraft_id from it
+    if (flight_data.flight_id) {
+      const flightQuery = `
+        SELECT flight_id, aircraft_id 
+        FROM flights 
+        WHERE flight_id = $1
+      `;
+      const result = await pool.query(flightQuery, [flight_data.flight_id]);
+      
+      if (result.rows.length > 0) {
+        return {
+          flight_id: result.rows[0].flight_id,
+          aircraft_id: result.rows[0].aircraft_id
+        };
+      }
+    }
+
+    // If no flight_id, try to find flight by flight_number and route
+    if (flight_data.flight_number && flight_data.origin && flight_data.destination) {
+      const flightQuery = `
+        SELECT f.flight_id, f.aircraft_id 
+        FROM flights f
+        JOIN airports orig ON f.origin_airport_id = orig.airport_id
+        JOIN airports dest ON f.destination_airport_id = dest.airport_id
+        WHERE f.flight_number = $1 
+        AND orig.iata_code = $2 
+        AND dest.iata_code = $3
+        LIMIT 1
+      `;
+      const result = await pool.query(flightQuery, [
+        flight_data.flight_number,
+        flight_data.origin,
+        flight_data.destination
+      ]);
+      
+      if (result.rows.length > 0) {
+        return {
+          flight_id: result.rows[0].flight_id,
+          aircraft_id: result.rows[0].aircraft_id
+        };
+      }
+    }
+
+    // If still no match, try to find by departure time and route
+    if (flight_data.departure_time && flight_data.origin && flight_data.destination) {
+      const flightQuery = `
+        SELECT f.flight_id, f.aircraft_id 
+        FROM flights f
+        JOIN airports orig ON f.origin_airport_id = orig.airport_id
+        JOIN airports dest ON f.destination_airport_id = dest.airport_id
+        WHERE orig.iata_code = $1 
+        AND dest.iata_code = $2
+        AND DATE(f.departure_time) = DATE($3)
+        LIMIT 1
+      `;
+      const result = await pool.query(flightQuery, [
+        flight_data.origin,
+        flight_data.destination,
+        flight_data.departure_time
+      ]);
+      
+      if (result.rows.length > 0) {
+        return {
+          flight_id: result.rows[0].flight_id,
+          aircraft_id: result.rows[0].aircraft_id
+        };
+      }
+    }
+
+    throw new Error('Flight not found with provided data');
+  } catch (error) {
+    throw new Error(`Failed to get flight details: ${error.message}`);
+  }
+};
+
 const getPaymentByBooking = async (req, res) => {
   try {
     const booking_id = parseInt(req.params.booking_id);
@@ -28,7 +105,6 @@ const getPaymentByBooking = async (req, res) => {
   }
 };
 
-// ✅ 2. POST /payments/process - Complete Database Integration
 const processPayment = async (req, res) => {
   const client = await pool.connect();
   
@@ -46,8 +122,21 @@ const processPayment = async (req, res) => {
     if (!customer_id) return res.status(400).json({ success: false, message: 'Customer ID is required' });
     if (!passengers || passengers.length === 0) return res.status(400).json({ success: false, message: 'Passenger data is required' });
     if (!flight_data) return res.status(400).json({ success: false, message: 'Flight data is required' });
+    if (!flight_data.base_price) return res.status(400).json({ success: false, message: 'Base price is required' });
+    if (flight_data.adult_count === undefined || flight_data.adult_count === null) return res.status(400).json({ success: false, message: 'Adult count is required' });
     if (!payment_method) return res.status(400).json({ success: false, message: 'Payment method is required' });
     if (!total_amount) return res.status(400).json({ success: false, message: 'Total amount is required' });
+
+    // Extract flight_id and aircraft_id from flight data
+    let flightDetails;
+    try {
+      flightDetails = await getFlightDetails(flight_data);
+    } catch (error) {
+      return res.status(400).json({ 
+        success: false, 
+        message: `Flight lookup failed: ${error.message}` 
+      });
+    }
 
     // Generate booking ID and transaction ID
     const booking_id = `NF${Date.now().toString().slice(-6)}`;
@@ -68,7 +157,7 @@ const processPayment = async (req, res) => {
       payment_date.toISOString().split('T')[0],
       total_amount,
       'PAID',
-      flight_data.trip_type || 'ONE-WAY'
+      flight_data.trip_type
     ]);
     const db_booking_id = bookingResult.rows[0].booking_id;
 
@@ -113,19 +202,22 @@ const processPayment = async (req, res) => {
       const passenger_id = passengerIds[i];
       
       // Calculate individual ticket price
-      const isChild = i >= (flight_data.adult_count || 0);
+      const isChild = i >= flight_data.adult_count;
       const ticketPrice = isChild ? flight_data.base_price * 0.75 : flight_data.base_price;
       
-      // Find available seat (simplified - in real app, implement proper seat selection)
+      // Find available seat by class (Economy or Business)
+      const requestedClass = flight_data.seat_class || 'Economy';
       const seatQuery = `
-        SELECT seat_id FROM seats 
+        SELECT seat_id, seat_number FROM seats 
         WHERE aircraft_id = $1 AND is_booked = false 
+        AND (seat_class = $2)
+        ORDER BY seat_number
         LIMIT 1
       `;
-      const seatResult = await client.query(seatQuery, [flight_data.aircraft_id || 1]);
+      const seatResult = await client.query(seatQuery, [flightDetails.aircraft_id, requestedClass]);
       
       if (seatResult.rows.length === 0) {
-        throw new Error('No available seats');
+        throw new Error(`No available ${requestedClass} class seats`);
       }
       
       const seat_id = seatResult.rows[0].seat_id;
@@ -138,7 +230,7 @@ const processPayment = async (req, res) => {
       `;
       const ticketResult = await client.query(ticketQuery, [
         db_booking_id,
-        flight_data.flight_id,
+        flightDetails.flight_id,
         passenger_id,
         seat_id,
         ticketPrice
@@ -182,12 +274,13 @@ const processPayment = async (req, res) => {
   } catch (error) {
     // Rollback transaction on error
     await client.query('ROLLBACK');
-    
+    console.log('Pgaolll')
     res.status(500).json({
       success: false,
-      message: 'Failed to process payment',
+      message: error.message || 'Failed to process payment',
       error: error.message
     });
+
   } finally {
     client.release();
   }

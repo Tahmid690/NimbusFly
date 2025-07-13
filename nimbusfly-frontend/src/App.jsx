@@ -1,24 +1,21 @@
 import './App.css'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import LoginForm from './components/LoginForm'
 import HomePage from './components/HomePage'
 import FlightResults from './components/FlightResults'
 import AirlineLogin from './components/AirlineLogin'
-import AirlineReg from './components/AirlineReg'
-import Navbar from './components/Navbar'
-import AdminDashboard from './components/admin/AdminDashboard'
 import { AuthProvider } from './components/Authnication/AuthContext'
+import { AdminAuthProvider } from './components/Authnication/AdminContext'
 import ProtectedRoute from './components/Authnication/ProtectedRoute'
 import PublicRoute from './components/Authnication/PublicRoute'
 import BookingDetails from './components/BookingDetails'
-import PaymentDetails from './components/PaymentDetails'
 import PaymentPage from './components/PaymentPage'
 import TicketConfirmation from './components/TicketConfirmation'
 import UserDashboard from './components/UserDashboard'
-import TestBoardingPass from './components/TestBoardingPass'
-import TestConfirmation from './components/TestConfirmation'
-import SimpleTest from './components/SimpleTest'
 import Footer from './components/Footer'
+import AdminPublicRoute from './components/Authnication/AdminPublicRoute'
+import AdminProtectedRoute from './components/Authnication/AdminProtectedRoute'
+import AdminLoginForm from './components/AirlineLogin' 
 
 function App() {
   console.log("App component is rendering");
@@ -26,6 +23,7 @@ function App() {
   return (
     <div className="flex flex-col min-h-screen">
       <AuthProvider>
+         <AdminAuthProvider>
         <div className="flex-grow">
           <Routes>
             <Route path="/" element={<HomePage />} />
@@ -77,16 +75,29 @@ function App() {
               }
             />
 
-            <Route path="/test-pdf" element={<TestBoardingPass />} />
-            <Route path="/test-confirmation" element={<TestConfirmation />} />
-            <Route path="/test-simple" element={<SimpleTest />} />
+            <Route 
+              path="/admin/login" 
+              element={
+                <AdminPublicRoute>
+                  <AdminLoginForm />
+                </AdminPublicRoute>
+              } 
+            />
+
+            <Route 
+              path="/admin/dashboard" 
+              element={
+                <AdminProtectedRoute>
+                  <AdminLoginForm />
+                </AdminProtectedRoute>
+              } 
+            />
 
             
-            <Route path="/admin/login" element={<AirlineLogin />} />
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
           </Routes>
         </div>
         <Footer />
+        </AdminAuthProvider>
       </AuthProvider>
     </div>
   )

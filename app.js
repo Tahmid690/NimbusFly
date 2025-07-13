@@ -7,6 +7,7 @@ const aircraft = require('./routes/aircrafts');
 const authRoutes = require('./routes/auth');
 const passenger=require('./routes/passenger')
 const bookings=require('./routes/bookings');
+const customer=require('./routes/customer');
 const ticket=require('./routes/ticket')
 const payment=require('./routes/payment')
 const seat=require('./routes/seat')
@@ -28,7 +29,8 @@ app.use('/flights',flight);
 app.use('/airports', airport);
 app.use('/aircraft', aircraft);
 app.use('/passenger',passenger);
-app.use('/booking',bookings);
+app.use('/bookings',bookings);
+app.use('/customer',customer);
 app.use('/tickets',ticket);
 app.use('/payments',payment);
 app.use('/seats',seat);

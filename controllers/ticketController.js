@@ -77,7 +77,7 @@ const generateTicket = async (req, res) => {
     if (!price) return res.status(400).json({ success: false, message: 'Price is required' });
 
     const result = await pool.query(`
-      INSERT INTO tickets (booking_id, flight_id, passenger_id, seat_id, price)
+      INSERT INTO ticket (booking_id, flight_id, passenger_id, seat_id, price)
       VALUES ($1, $2, $3, $4, $5)
       RETURNING *
     `, [booking_id, flight_id, passenger_id, seat_id, price]);

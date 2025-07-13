@@ -151,15 +151,11 @@ const PaymentPage = () => {
     }
 
     setLoading(true);
-    
+    console.log(flightData);
     try {
-      // Comprehensive booking payload that matches database schema
-      const bookingPayload = {
+      // Comprehensive payment payload that matches backend API schema
+      const paymentPayload = {
         customer_id: user_id,
-        booking_date: new Date().toISOString().split('T')[0],
-        total_amount: calculateTotal(),
-        payment_status: 'PENDING',
-        trip_type: flightData.tripType === 'round-trip' ? 'ROUND-WAY' : 'ONE-WAY',
         passengers: passengers.map(passenger => ({
           first_name: passenger.first_name,
           last_name: passenger.last_name,
@@ -169,23 +165,22 @@ const PaymentPage = () => {
           title: passenger.title || 'Mr'
         })),
         flight_data: {
-          flight_id: flightData.flight_id,
+          flight_id: flightData.flight_id, // Optional - will be extracted if not provided
           flight_number: flightData.flight_number,
           origin: flightData.origin,
           destination: flightData.destination,
           departure_time: flightData.departure_time,
           arrival_time: flightData.arrival_time,
           seat_class: flightData.seatClass || 'Economy',
-          adult_count: flightData.adult || 0,
-          child_count: flightData.child || 0,
-          base_price: flightData.base_price || 0
+          adult_count: flightData.adult,
+          child_count: flightData.child,
+          base_price: flightData.base_price,
+          trip_type: flightData.tripType === 'round-trip' ? 'ROUND-WAY' : 'ONE-WAY',
+          aircraft_id: flightData.aircraft_id // Optional - will be extracted if not provided
         },
-        payment_details: {
-          payment_method: paymentData.method,
-          card_last_four: paymentData.method === 'card' ? paymentData.cardNumber.slice(-4) : null,
-          cardholder_name: paymentData.cardholderName,
-          mobile_number: paymentData.method === 'mobile' ? paymentData.mobileNumber : null
-        },
+        payment_method: paymentData.method === 'card' ? 
+          `${paymentData.cardholderName} (****${paymentData.cardNumber.slice(-4)})` : 
+          `Mobile Banking (${paymentData.mobileNumber})`,
         billing_address: billingAddress.sameAsPassenger ? {
           same_as_passenger: true,
           first_name: passengers[0]?.first_name,
@@ -193,12 +188,13 @@ const PaymentPage = () => {
         } : {
           same_as_passenger: false,
           ...billingAddress
-        }
+        },
+        total_amount: calculateTotal()
       };
 
       // Process payment and create booking through backend
       try {
-        const response = await axios.post('http://localhost:3000/payments/process', bookingPayload);
+        const response = await axios.post('http://localhost:3000/payments/process', paymentPayload);
         
         if (response.data.success) {
           // Navigate to confirmation page with complete booking details
@@ -208,6 +204,7 @@ const PaymentPage = () => {
               transactionId: response.data.transaction_id,
               passengers,
               flight: flightData,
+              tripType: flightData.tripType, // Pass the trip type
               tickets: response.data.tickets || [],
               paymentData: {
                 ...response.data,
