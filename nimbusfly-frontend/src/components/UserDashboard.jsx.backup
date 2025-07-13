@@ -77,7 +77,6 @@ const UserDashboard = () => {
             setError('Failed to load bookings');
           }
 
-          
           // Fetch customer profile
           try {
             const profileResponse = await axios.get(`http://localhost:3000/customer/${user.customer_id}/profile`);
@@ -1162,6 +1161,7 @@ const UserDashboard = () => {
                   </div>
                 </div>
               )}
+
             </div>
           </div>
         </div>
@@ -1478,29 +1478,30 @@ const UserDashboard = () => {
                 </div>
               </div>
               <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-t border-gray-200">
-                <div className="text-sm text-gray-500">
-                  Total Passengers: {selectedBooking.tickets.length}
-                </div>
-                <div className="flex items-center space-x-3">
-                  <button
-                    onClick={() => setShowBookingDetails(false)}
-                    className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium transition-colors duration-200"
-                  >
-                    Close
-                  </button>
-                  <button
-                    onClick={() => handleDownloadTicket(selectedBooking.booking.booking_id)}
-                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 flex items-center space-x-2"
-                  >
-                    <Download className="w-4 h-4" />
-                    <span>Download Ticket</span>
-                  </button>
-                </div>
+              <div className="text-sm text-gray-500">
+                Total Passengers: {selectedBooking.tickets.length}
+              </div>
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => setShowBookingDetails(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium transition-colors duration-200"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => handleDownloadTicket(selectedBooking.booking.booking_id)}
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 flex items-center space-x-2"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Download Ticket</span>
+                </button>
               </div>
             </div>
           </div>
         </div>
       )}
+      
+    </div>
     </div>
   );
 };

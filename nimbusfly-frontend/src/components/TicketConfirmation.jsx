@@ -680,20 +680,16 @@ const downloadBoardingPass = async () => {
           scrollY: 0
         });
         
-        // Remove temporary container
         document.body.removeChild(tempContainer);
         
-        // Add to PDF
         const imgData = canvas.toDataURL('image/png', 1.0);
         const pageWidth = pdf.internal.pageSize.getWidth();
         const pageHeight = pdf.internal.pageSize.getHeight();
         
-        // Calculate dimensions to fit the boarding pass properly
         const aspectRatio = canvas.width / canvas.height;
-        let imgWidth = Math.min(280, pageWidth - 20); // Leave 10mm margin on each side
+        let imgWidth = Math.min(280, pageWidth - 20); 
         let imgHeight = imgWidth / aspectRatio;
         
-        // If height is too tall, scale down
         if (imgHeight > pageHeight - 20) {
           imgHeight = pageHeight - 20;
           imgWidth = imgHeight * aspectRatio;

@@ -69,7 +69,7 @@ const HeroSection = () => {
             <div
                 className="absolute inset-0 bg-cover bg-center bg-no-repeat transform scale-110 transition-transform duration-[20s] ease-out hover:scale-105"
                 style={{
-                    backgroundImage: `url('/bkg3c.jpg')`
+                    backgroundImage: `url('/cprs.jpg')`
                 }}
             />
             
