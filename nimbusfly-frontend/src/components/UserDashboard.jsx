@@ -1005,67 +1005,126 @@ const UserDashboard = () => {
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                   <Plane className="w-5 h-5 mr-2" />
                   Flight Details & Passengers
+                  {selectedBooking.booking.trip_type === 'round-trip' && (
+                    <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                      Round Trip
+                    </span>
+                  )}
                 </h3>
                 <div className="space-y-4">
-                  {selectedBooking.tickets.map((ticket, index) => (
-                    <div key={index} className="border border-gray-200 rounded-xl p-4 bg-gradient-to-r from-white to-blue-50">
-                      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-4">
-                        <div className="flex items-center space-x-3">
-                          <div className="p-2 bg-blue-100 rounded-lg">
-                            <Plane className="w-5 h-5 text-blue-600" />
+                  {(() => {
+                    // Group tickets by flight to show flights separately
+                    const flightGroups = {};
+                    selectedBooking.tickets.forEach(ticket => {
+                      const flightKey = ticket.flight_number;
+                      if (!flightGroups[flightKey]) {
+                        flightGroups[flightKey] = {
+                          flight: ticket,
+                          passengers: []
+                        };
+                      }
+                      flightGroups[flightKey].passengers.push(ticket);
+                    });
+                    
+                    // Sort flights by departure time to ensure correct outbound/return order
+                    const flights = Object.values(flightGroups).sort((a, b) => {
+                      const timeA = new Date(a.flight.departure_time).getTime();
+                      const timeB = new Date(b.flight.departure_time).getTime();
+                      return timeA - timeB;
+                    });
+                    
+                    console.log('Flight groups sorted by departure time:', flights.map(f => ({
+                      flight_number: f.flight.flight_number,
+                      departure_time: f.flight.departure_time,
+                      route: `${f.flight.origin_code} → ${f.flight.destination_code}`
+                    })));
+                    
+                    return flights.map((flightGroup, flightIndex) => {
+                      const ticket = flightGroup.flight;
+                      const isReturnFlight = flightIndex > 0 && selectedBooking.booking.trip_type === 'round-trip';
+                      
+                      console.log(`Flight ${flightIndex}: ${ticket.flight_number} - ${ticket.origin_code} → ${ticket.destination_code} - ${isReturnFlight ? 'RETURN' : 'OUTBOUND'}`);
+                      
+                      return (
+                        <div key={flightIndex} className="border border-gray-200 rounded-xl p-4 bg-gradient-to-r from-white to-blue-50">
+                          {/* Flight Header */}
+                          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-4">
+                            <div className="flex items-center space-x-3">
+                              <div className={`p-2 rounded-lg ${isReturnFlight ? 'bg-green-100' : 'bg-blue-100'}`}>
+                                <Plane className={`w-5 h-5 ${isReturnFlight ? 'text-green-600 rotate-180' : 'text-blue-600'}`} />
+                              </div>
+                              <div>
+                                <div className="flex items-center space-x-2">
+                                  <h4 className="font-semibold text-gray-900">{ticket.airline_name}</h4>
+                                  {isReturnFlight && (
+                                    <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                                      Return Flight
+                                    </span>
+                                  )}
+                                  {!isReturnFlight && selectedBooking.booking.trip_type === 'round-trip' && (
+                                    <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                                      Outbound Flight
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-sm text-gray-600">Flight {ticket.flight_number}</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-medium">{ticket.origin_code} → {ticket.destination_code}</p>
+                              <p className="text-sm text-gray-600">{ticket.aircraft_model}</p>
+                            </div>
                           </div>
-                          <div>
-                            <h4 className="font-semibold text-gray-900">{ticket.airline_name}</h4>
-                            <p className="text-sm text-gray-600">Flight {ticket.flight_number}</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-medium">{ticket.origin_code} → {ticket.destination_code}</p>
-                          <p className="text-sm text-gray-600">{ticket.aircraft_model}</p>
-                        </div>
-                      </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div className="flex items-center space-x-2">
-                          <Clock className="w-4 h-4 text-gray-400" />
-                          <div>
-                            <p className="text-sm text-gray-500">Departure</p>
-                            <p className="font-medium">{formatDate(ticket.departure_time)} at {formatTime(ticket.departure_time)}</p>
-                            <p className="text-xs text-gray-500">{ticket.origin_airport}</p>
+                          {/* Flight Times */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div className="flex items-center space-x-2">
+                              <Clock className="w-4 h-4 text-gray-400" />
+                              <div>
+                                <p className="text-sm text-gray-500">Departure</p>
+                                <p className="font-medium">{formatDate(ticket.departure_time)} at {formatTime(ticket.departure_time)}</p>
+                                <p className="text-xs text-gray-500">{ticket.origin_airport}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Clock className="w-4 h-4 text-gray-400" />
+                              <div>
+                                <p className="text-sm text-gray-500">Arrival</p>
+                                <p className="font-medium">{formatDate(ticket.arrival_time)} at {formatTime(ticket.arrival_time)}</p>
+                                <p className="text-xs text-gray-500">{ticket.destination_airport}</p>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Clock className="w-4 h-4 text-gray-400" />
-                          <div>
-                            <p className="text-sm text-gray-500">Arrival</p>
-                            <p className="font-medium">{formatDate(ticket.arrival_time)} at {formatTime(ticket.arrival_time)}</p>
-                            <p className="text-xs text-gray-500">{ticket.destination_airport}</p>
-                          </div>
-                        </div>
-                      </div>
 
-                      <div className="bg-white rounded-lg p-3 border border-gray-100">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <User className="w-4 h-4 text-gray-400" />
-                          <h5 className="font-medium text-gray-900">Passenger Information</h5>
+                          {/* Passengers for this flight */}
+                          <div className="bg-white rounded-lg p-3 border border-gray-100">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <Users className="w-4 h-4 text-gray-400" />
+                              <h5 className="font-medium text-gray-900">Passengers on this Flight ({flightGroup.passengers.length})</h5>
+                            </div>
+                            <div className="space-y-2">
+                              {flightGroup.passengers.map((passenger, passengerIndex) => (
+                                <div key={passengerIndex} className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm p-2 bg-gray-50 rounded">
+                                  <div>
+                                    <p className="text-gray-500">Name</p>
+                                    <p className="font-medium">{passenger.passenger_first_name} {passenger.passenger_last_name}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-gray-500">Seat</p>
+                                    <p className="font-medium">{passenger.seat_number || 'Not assigned'}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-gray-500">Class</p>
+                                    <p className="font-medium">{passenger.seat_class}</p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                          <div>
-                            <p className="text-gray-500">Name</p>
-                            <p className="font-medium">{ticket.passenger_first_name} {ticket.passenger_last_name}</p>
-                          </div>
-                          <div>
-                            <p className="text-gray-500">Seat</p>
-                            <p className="font-medium">{ticket.seat_number || 'Not assigned'}</p>
-                          </div>
-                          <div>
-                            <p className="text-gray-500">Class</p>
-                            <p className="font-medium">{ticket.seat_class}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                      );
+                    });
+                  })()}
                 </div>
               </div>
             </div>
