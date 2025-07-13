@@ -285,6 +285,9 @@ const processPayment = async (req, res) => {
     // 4. Generate tickets for each passenger
     const tickets = [];
     
+    // Track seat assignments to avoid conflicts in round-trip bookings
+    const usedSeats = new Set();
+    
     // Helper function to create tickets for a specific flight
     const createTicketsForFlight = async (flightInfo, flightType = 'outbound') => {
       for (let i = 0; i < passengerIds.length; i++) {
@@ -294,24 +297,49 @@ const processPayment = async (req, res) => {
         const isChild = i >= flight_data.adult_count;
         const ticketPrice = isChild ? flight_data.base_price * 0.75 : flight_data.base_price;
         
-        // Find available seat by class (Economy or Business)
+        // Find available seat by class, considering existing bookings for this flight
         const requestedClass = flight_data.seat_class || 'Economy';
+        
+        // Find seats that are not already booked for this specific flight
+        // This query finds seats that are either:
+        // 1. Not globally booked (is_booked = false), OR
+        // 2. Booked globally but not yet assigned to THIS specific flight
         const seatQuery = `
-          SELECT seat_id, seat_number FROM seats 
-          WHERE aircraft_id = $1 AND is_booked = false 
-          AND (seat_class = $2)
-          ORDER BY seat_number
+          SELECT s.seat_id, s.seat_number 
+          FROM seats s
+          WHERE s.aircraft_id = $1 
+          AND s.seat_class = $2
+          AND s.seat_id NOT IN (
+            -- Exclude seats already assigned to tickets for this specific flight
+            SELECT DISTINCT t.seat_id 
+            FROM ticket t 
+            WHERE t.flight_id = $3 AND t.seat_id IS NOT NULL
+            UNION
+            -- Exclude seats already used in this booking session
+            SELECT unnest($4::int[])
+          )
+          ORDER BY s.seat_number
           LIMIT 1
         `;
-        const seatResult = await client.query(seatQuery, [flightInfo.aircraft_id, requestedClass]);
+        
+        const usedSeatsArray = Array.from(usedSeats);
+        const seatResult = await client.query(seatQuery, [
+          flightInfo.aircraft_id, 
+          requestedClass, 
+          flightInfo.flight_id,
+          usedSeatsArray.length > 0 ? usedSeatsArray : [0] // Use [0] as placeholder when empty
+        ]);
         
         if (seatResult.rows.length === 0) {
-          throw new Error(`No available ${requestedClass} class seats for ${flightType} flight`);
+          throw new Error(`No available ${requestedClass} class seats for ${flightType} flight (${flightInfo.flight_id})`);
         }
         
         const seat_id = seatResult.rows[0].seat_id;
         
-        // Create ticket
+        // Track this seat as used in current booking session
+        usedSeats.add(seat_id);
+        
+        // Create ticket (seat assignment is now tracked through the ticket table)
         const ticketQuery = `
           INSERT INTO ticket (booking_id, flight_id, passenger_id, seat_id, price) 
           VALUES ($1, $2, $3, $4, $5) 
@@ -325,8 +353,9 @@ const processPayment = async (req, res) => {
           ticketPrice
         ]);
         
-        // Mark seat as booked
-        await client.query('UPDATE seats SET is_booked = true WHERE seat_id = $1', [seat_id]);
+        // Note: We no longer use the global is_booked flag since seats are tracked per flight
+        // through the ticket table. This allows the same physical seat to be used on 
+        // different flights of the same aircraft.
         
         tickets.push({
           ticket_id: ticketResult.rows[0].ticket_id,

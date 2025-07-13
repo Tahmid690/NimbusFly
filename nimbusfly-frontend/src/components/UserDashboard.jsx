@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from './Authnication/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
@@ -202,6 +202,7 @@ const UserDashboard = () => {
         const flightKey = ticket.flight_number;
         if (!flightMap.has(flightKey)) {
           flightMap.set(flightKey, {
+            ...ticket,
             flight_number: ticket.flight_number,
             airline_name: ticket.airline_name,
             departure_time: ticket.departure_time,
@@ -246,112 +247,282 @@ const UserDashboard = () => {
             }
           });
           
-          // Create boarding pass HTML
+          // Airline logo handler - uses logo_url from database
+          const getAirlineLogo = () => {
+            // Use logo_url from the database if available
+            console.log(flight);
+            if (flight?.logo_url) {
+              return flight.logo_url;
+            }
+            
+            // Default to NimbusFly logo if no logo_url is provided
+            return '/nimbusfly_logo.png';
+          };
+
+          // Generate realistic gate number based on flight number
+          const generateGate = (flightNumber) => {
+            if (!flightNumber) return 'A1';
+            const gates = ['A', 'B', 'C', 'D', 'E'];
+            const gateIndex = flightNumber.slice(-1).charCodeAt(0) % gates.length;
+            const gateNumber = (flightNumber.slice(-1).charCodeAt(0) % 20) + 1;
+            return `${gates[gateIndex]}${gateNumber}`;
+          };
+
+          // Generate terminal based on airline or flight
+          const generateTerminal = (airline, flightNumber) => {
+            if (!airline && !flightNumber) return 'T1';
+            const airlineName = airline?.toLowerCase() || flightNumber?.substring(0, 2)?.toLowerCase() || '';
+            if (airlineName.includes('us') || airlineName.includes('american')) return 'T1';
+            if (airlineName.includes('british') || airlineName.includes('biman')) return 'T2';
+            if (airlineName.includes('saudi') || airlineName.includes('novoair')) return 'T3';
+            return 'T1';
+          };
+
+          // Generate boarding time (30 minutes before departure)
+          const generateBoardingTime = (departureTime) => {
+            if (!departureTime) return '09:30';
+            try {
+              const depTime = new Date(departureTime);
+              const boardingTime = new Date(depTime.getTime() - 30 * 60 * 1000);
+              return boardingTime.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                hour12: false 
+              });
+            } catch {
+              return '09:30';
+            }
+          };
+
+          // Format flight date
+          const formatFlightDate = (timeString) => {
+            if (!timeString) return new Date().toLocaleDateString('en-US', { 
+              month: 'short', 
+              day: 'numeric',
+              year: 'numeric'
+            });
+            try {
+              const dateObj = new Date(timeString);
+              return dateObj.toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric',
+                year: 'numeric'
+              });
+            } catch {
+              return new Date().toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric',
+                year: 'numeric'
+              });
+            }
+          };
+
+          // Generate proper barcode pattern
+          const generateBarcode = () => {
+            const patterns = [3, 1, 2, 1, 3, 2, 1, 2, 3, 1, 2, 3, 1, 2, 1, 3, 2, 1, 3, 2];
+            return patterns.map((height, i) => 
+              `<div style="width: ${i % 2 === 0 ? '3px' : '1px'}; height: ${8 + height * 2}px; background: #000; display: inline-block;"></div>`
+            ).join('');
+          };
+
+          // Get airline logo
+          const airlineLogo = getAirlineLogo();
+
+          // Create boarding pass HTML with enhanced design
           const boardingPassHTML = `
-            <div style="width: 900px; height: 500px; background: white; font-family: Arial, sans-serif; border: 2px solid #e5e7eb; border-radius: 12px; overflow: hidden; display: flex;">
-              <!-- Left section - Main boarding pass -->
-              <div style="flex: 3; padding: 32px 24px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; position: relative;">
-                
-                <!-- Header -->
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                  <div>
-                    <h1 style="font-size: 24px; font-weight: bold; margin: 0 0 4px 0;">BOARDING PASS</h1>
-                    <p style="font-size: 14px; opacity: 0.9; margin: 0;">${flight.airline_name}</p>
-                  </div>
-                  <div style="text-align: right;">
-                    <p style="font-size: 12px; opacity: 0.8; margin: 0;">Flight</p>
-                    <p style="font-size: 18px; font-weight: bold; margin: 0;">${flight.flight_number}</p>
-                  </div>
-                </div>
+      <div style="width: 100%; height: 100%; background: white; display: flex; border-radius: 12px; overflow: hidden; position: relative; box-shadow: 0 8px 32px rgba(0,0,0,0.12); border: 1px solid #e5e7eb;">
         
-                <!-- Passenger Info -->
-                <div style="margin-bottom: 24px;">
-                  <h2 style="font-size: 20px; font-weight: bold; margin: 0 0 8px 0;">${passenger.first_name.toUpperCase()} ${passenger.last_name.toUpperCase()}</h2>
-                  <p style="font-size: 14px; opacity: 0.9; margin: 0;">Passenger</p>
-                </div>
-        
-                <!-- Flight Route -->
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                  <div style="text-align: center;">
-                    <p style="font-size: 12px; opacity: 0.8; margin: 0 0 4px 0;">FROM</p>
-                    <p style="font-size: 24px; font-weight: bold; margin: 0;">${flight.origin_code}</p>
-                    <p style="font-size: 10px; opacity: 0.7; margin: 4px 0 0 0;">${flight.origin_airport}</p>
-                  </div>
-                  <div style="flex: 1; height: 2px; background: rgba(255,255,255,0.3); margin: 0 20px; position: relative;">
-                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
-                      <span style="color: #3b82f6; font-size: 16px;">✈</span>
-                    </div>
-                  </div>
-                  <div style="text-align: center;">
-                    <p style="font-size: 12px; opacity: 0.8; margin: 0 0 4px 0;">TO</p>
-                    <p style="font-size: 24px; font-weight: bold; margin: 0;">${flight.destination_code}</p>
-                    <p style="font-size: 10px; opacity: 0.7; margin: 4px 0 0 0;">${flight.destination_airport}</p>
-                  </div>
-                </div>
-        
-                <!-- Flight Details -->
-                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;">
-                  <div>
-                    <p style="font-size: 10px; opacity: 0.8; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px;">Date</p>
-                    <p style="font-size: 14px; font-weight: bold; margin: 0;">${new Date(flight.departure_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
-                  </div>
-                  <div>
-                    <p style="font-size: 10px; opacity: 0.8; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px;">Departure</p>
-                    <p style="font-size: 14px; font-weight: bold; margin: 0;">${new Date(flight.departure_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}</p>
-                  </div>
-                  <div>
-                    <p style="font-size: 10px; opacity: 0.8; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px;">Seat</p>
-                    <p style="font-size: 14px; font-weight: bold; margin: 0;">${passenger.seat_number || 'TBD'}</p>
-                  </div>
-                  <div>
-                    <p style="font-size: 10px; opacity: 0.8; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px;">Class</p>
-                    <p style="font-size: 14px; font-weight: bold; margin: 0;">${passenger.seat_class}</p>
-                  </div>
-                </div>
-        
-                <!-- Bottom info -->
-                <div style="border-top: 1px solid rgba(255,255,255,0.3); padding-top: 16px; display: flex; justify-content: space-between; align-items: center;">
-                  <div>
-                    <p style="font-size: 10px; opacity: 0.8; text-transform: uppercase; margin: 0 0 4px 0; letter-spacing: 0.5px;">Boarding Time</p>
-                    <p style="font-size: 14px; font-weight: bold; margin: 0;">30 min before</p>
-                  </div>
-                  <div>
-                    <p style="font-size: 10px; opacity: 0.8; text-transform: uppercase; margin: 0 0 4px 0; letter-spacing: 0.5px;">Gate</p>
-                    <p style="font-size: 14px; font-weight: bold; margin: 0;">TBD</p>
-                  </div>
-                </div>
+        <!-- Left section - Main boarding pass -->
+        <div style="flex: 2.2; padding: 32px; background: white; border-right: 2px dashed #cbd5e1; position: relative;">
+          
+          <!-- Header -->
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #e5e7eb;">
+            <div style="display: flex; align-items: center;">
+              <div style="width: 56px; height: 56px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; margin-right: 16px;">
+                <img src="${airlineLogo}" alt="Airline Logo" style="width: 44px; height: 44px; object-fit: contain;" onerror="this.style.display='none'" />
               </div>
-              
-              <!-- Right section - Stub -->
-              <div style="flex: 1; padding: 32px 20px; background: #f8fafc; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center; position: relative; border-left: 2px dashed #cbd5e1;">
-                
-                <!-- Header -->
-                <div style="width: 100%;">
-                  <p style="font-size: 10px; color: #64748b; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">${flight.airline_name}</p>
-                  <p style="font-size: 14px; font-weight: bold; color: #1e293b; margin: 4px 0;">${flight.flight_number}</p>
-                </div>
-        
-                <!-- QR Code -->
-                <div style="margin: 20px 0;">
-                  <div style="padding: 8px; background: white; border-radius: 8px; border: 1px solid #e2e8f0;">
-                    <img src="${qrCodeDataUrl}" alt="QR Code" style="width: 80px; height: 80px; display: block;" />
-                  </div>
-                </div>
-        
-                <!-- Flight info -->
-                <div style="width: 100%;">
-                  <p style="font-size: 16px; font-weight: bold; color: #1e293b; margin: 0;">${flight.origin_code}</p>
-                  <p style="font-size: 10px; color: #64748b; margin: 2px 0 8px 0;">TO</p>
-                  <p style="font-size: 16px; font-weight: bold; color: #1e293b; margin: 0;">${flight.destination_code}</p>
-                </div>
-        
-                <!-- Seat -->
-                <div style="width: 100%;">
-                  <p style="font-size: 10px; color: #64748b; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">SEAT</p>
-                  <p style="font-size: 18px; font-weight: bold; color: #1e293b; margin: 0;">${passenger.seat_number || 'TBD'}</p>
-                </div>
+              <div>
+                <h1 style="font-size: 24px; font-weight: 700; margin: 0 0 4px 0; line-height: 1.2; color: #1e293b; letter-spacing: -0.5px;">
+                  ${flight.airline_name || 'NimbusFly'}
+                </h1>
+                <p style="font-size: 11px; color: #64748b; margin: 0; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">
+                  Boarding Pass
+                </p>
               </div>
             </div>
+            <div style="text-align: right; color: white; padding: 12px 16px; border-radius: 8px; background: #1e293b; min-width: 120px;">
+              <p style="font-size: 10px; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8;">Flight</p>
+              <p style="font-size: 16px; font-weight: 700; margin: 0; letter-spacing: 1px; font-family: 'Courier New', monospace;">${flight.flight_number}</p>
+            </div>
+          </div>
+
+          <!-- Passenger and flight details -->
+          <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 24px; margin-bottom: 28px;">
+            <div>
+              <p style="font-size: 10px; color: #64748b; text-transform: uppercase; margin: 0 0 6px 0; letter-spacing: 0.5px; font-weight: 600;">
+                Passenger Name
+              </p>
+              <p style="font-size: 16px; font-weight: 700; color: #1e293b; margin: 0; line-height: 1.2; text-transform: uppercase; letter-spacing: 0.5px;">
+                ${passenger.first_name} ${passenger.last_name}
+              </p>
+            </div>
+            <div>
+              <p style="font-size: 10px; color: #64748b; text-transform: uppercase; margin: 0 0 6px 0; letter-spacing: 0.5px; font-weight: 600;">
+                Flight
+              </p>
+              <p style="font-size: 16px; font-weight: 700; color: #1e293b; margin: 0; font-family: 'Courier New', monospace;">
+                ${flight.flight_number}
+              </p>
+            </div>
+            <div>
+              <p style="font-size: 10px; color: #64748b; text-transform: uppercase; margin: 0 0 6px 0; letter-spacing: 0.5px; font-weight: 600;">
+                Date
+              </p>
+              <p style="font-size: 16px; font-weight: 700; color: #1e293b; margin: 0;">
+                ${formatFlightDate(flight.departure_time)}
+              </p>
+            </div>
+          </div>
+
+          <!-- Route information -->
+          <div style="background: #f8fafc; border-radius: 12px; padding: 28px; margin-bottom: 28px; border: 1px solid #e2e8f0; position: relative;">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div style="text-align: center; flex: 1;">
+                <p style="font-size: 11px; color: #64748b; text-transform: uppercase; margin: 0 0 8px 0; letter-spacing: 0.5px; font-weight: 600;">
+                  From
+                </p>
+                <p style="font-size: 36px; font-weight: 800; margin: 0 0 6px 0; line-height: 1; color: #1e293b; letter-spacing: -1px;">
+                  ${flight.origin_code || 'DAC'}
+                </p>
+                <p style="font-size: 14px; color: #475569; margin: 0; font-weight: 600; font-family: 'Courier New', monospace;">
+                  ${new Date(flight.departure_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                </p>
+              </div>
+              
+              <div style="display: flex; flex-direction: column; align-items: center; flex: 1; margin: 0 32px;">
+                <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                  <div style="width: 50px; height: 2px; background: #cbd5e1;"></div>
+                  <div style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 8px; color: white; font-size: 14px; font-weight: bold; background: #1e293b; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    ✈
+                  </div>
+                  <div style="width: 50px; height: 2px; background: #cbd5e1;"></div>
+                </div>
+                <p style="font-size: 10px; color: #64748b; margin: 0; text-align: center; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                  Direct Flight
+                </p>
+              </div>
+              
+              <div style="text-align: center; flex: 1;">
+                <p style="font-size: 11px; color: #64748b; text-transform: uppercase; margin: 0 0 8px 0; letter-spacing: 0.5px; font-weight: 600;">
+                  To
+                </p>
+                <p style="font-size: 36px; font-weight: 800; margin: 0 0 6px 0; line-height: 1; color: #1e293b; letter-spacing: -1px;">
+                  ${flight.destination_code || 'CTG'}
+                </p>
+                <p style="font-size: 14px; color: #475569; margin: 0; font-weight: 600; font-family: 'Courier New', monospace;">
+                  ${new Date(flight.arrival_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Flight details grid -->
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px;">
+            <div style="background: white; padding: 16px; border-radius: 8px; text-align: center; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+              <p style="font-size: 10px; color: #64748b; text-transform: uppercase; margin: 0 0 6px 0; font-weight: 600; letter-spacing: 0.5px;">
+                Seat
+              </p>
+              <p style="font-size: 20px; font-weight: 800; color: #1e293b; margin: 0; font-family: 'Courier New', monospace;">${passenger.seat_number || 'TBD'}</p>
+            </div>
+            <div style="background: white; padding: 16px; border-radius: 8px; text-align: center; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+              <p style="font-size: 10px; color: #64748b; text-transform: uppercase; margin: 0 0 6px 0; font-weight: 600; letter-spacing: 0.5px;">
+                Gate
+              </p>
+              <p style="font-size: 20px; font-weight: 800; color: #1e293b; margin: 0; font-family: 'Courier New', monospace;">${generateGate(flight.flight_number)}</p>
+            </div>
+            <div style="background: white; padding: 16px; border-radius: 8px; text-align: center; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+              <p style="font-size: 10px; color: #64748b; text-transform: uppercase; margin: 0 0 6px 0; font-weight: 600; letter-spacing: 0.5px;">
+                Class
+              </p>
+              <p style="font-size: 12px; font-weight: 700; color: #1e293b; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">
+                ${passenger.seat_class || 'Economy'}
+              </p>
+            </div>
+            <div style="background: white; padding: 16px; border-radius: 8px; text-align: center; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+              <p style="font-size: 10px; color: #64748b; text-transform: uppercase; margin: 0 0 6px 0; font-weight: 600; letter-spacing: 0.5px;">
+                Terminal
+              </p>
+              <p style="font-size: 20px; font-weight: 800; color: #1e293b; margin: 0; font-family: 'Courier New', monospace;">${generateTerminal(flight.airline_name, flight.flight_number)}</p>
+            </div>
+          </div>
+
+          <!-- Bottom info -->
+          <div style="border-top: 1px solid #e5e7eb; padding-top: 16px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <p style="font-size: 10px; color: #64748b; text-transform: uppercase; margin: 0 0 4px 0; letter-spacing: 0.5px; font-weight: 600;">
+                Boarding Time
+              </p>
+              <p style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0; font-family: 'Courier New', monospace;">
+                ${generateBoardingTime(flight.departure_time)}
+              </p>
+            </div>
+            <div>
+              <p style="font-size: 10px; color: #64748b; text-transform: uppercase; margin: 0 0 4px 0; letter-spacing: 0.5px; font-weight: 600;">
+                Sequence Number
+              </p>
+              <p style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0; font-family: 'Courier New', monospace;">
+                ${Math.floor(Math.random() * 900) + 100}
+              </p>
+            </div>
+          </div>
+
+        </div>
+        
+        <!-- Right section - Stub -->
+        <div style="flex: 0.8; padding: 32px 24px; background: #f8fafc; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center; position: relative; border-left: 2px dashed #cbd5e1;">
+          
+          <!-- Header -->
+          <div style="width: 100%;">
+            <div style="width: 48px; height: 48px; background: white; border-radius: 8px; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+              <img src="${airlineLogo}" alt="Airline Logo" style="width: 36px; height: 36px; object-fit: contain;" onerror="this.style.display='none'" />
+            </div>
+            <p style="font-size: 10px; color: #64748b; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">
+              ${flight.airline_name || 'NimbusFly'}
+            </p>
+          </div>
+
+          <!-- QR Code -->
+          <div style="margin: 20px 0;">
+            <div style="padding: 12px; background: white; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+              <img src="${qrCodeDataUrl}" alt="QR Code" style="width: 80px; height: 80px; display: block;" />
+            </div>
+          </div>
+
+          <!-- Barcode -->
+          <div style="margin: 20px 0;">
+            <div style="display: flex; justify-content: center; align-items: end; gap: 1px; margin-bottom: 8px; padding: 8px; background: white; border-radius: 4px; border: 1px solid #e2e8f0; height: 32px;">
+              ${generateBarcode()}
+            </div>
+            <p style="font-size: 10px; font-family: 'Courier New', monospace; color: #64748b; margin: 0; letter-spacing: 0.5px; font-weight: 600;">
+              ${bookingData.booking.booking_id}
+            </p>
+          </div>
+
+          <!-- Flight info -->
+          <div style="width: 100%; border-top: 1px solid #e2e8f0; padding-top: 16px;">
+            <p style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0 0 4px 0; font-family: 'Courier New', monospace;">
+              ${flight.origin_code || 'DAC'} → ${flight.destination_code || 'CTG'}
+            </p>
+            <p style="font-size: 12px; color: #64748b; margin: 0; font-weight: 600; font-family: 'Courier New', monospace;">
+              ${flight.flight_number}
+            </p>
+            <p style="font-size: 10px; color: #64748b; margin: 4px 0 0 0; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+              Keep This Coupon
+            </p>
+          </div>
+        </div>
+      </div>
           `;
           
           // Create temporary container
@@ -360,28 +531,49 @@ const UserDashboard = () => {
           tempContainer.style.top = '-9999px';
           tempContainer.style.left = '0';
           tempContainer.style.width = '900px';
-          tempContainer.style.height = '500px';
+          tempContainer.style.height = '600px';
+          tempContainer.style.backgroundColor = 'white';
+          tempContainer.style.fontFamily = 'Arial, sans-serif';
           tempContainer.style.zIndex = '9999';
           tempContainer.innerHTML = boardingPassHTML;
           
           document.body.appendChild(tempContainer);
           
+          // Wait for any images to load
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
           // Generate image and add to PDF
           const canvas = await html2canvas(tempContainer, {
-            width: 900,
-            height: 500,
             scale: 2,
             useCORS: true,
-            allowTaint: true
+            allowTaint: false,
+            backgroundColor: '#ffffff',
+            width: 900,
+            height: 600,
+            scrollX: 0,
+            scrollY: 0
           });
           
           document.body.removeChild(tempContainer);
           
-          const imgData = canvas.toDataURL('image/png');
-          const imgWidth = 280;
-          const imgHeight = (canvas.height * imgWidth) / canvas.width;
-          const x = (297 - imgWidth) / 2;
-          const y = (210 - imgHeight) / 2;
+          // Add to PDF
+          const imgData = canvas.toDataURL('image/png', 1.0);
+          const pageWidth = pdf.internal.pageSize.getWidth();
+          const pageHeight = pdf.internal.pageSize.getHeight();
+          
+          // Calculate dimensions to fit the boarding pass properly
+          const aspectRatio = canvas.width / canvas.height;
+          let imgWidth = Math.min(280, pageWidth - 20); // Leave 10mm margin on each side
+          let imgHeight = imgWidth / aspectRatio;
+          
+          // If height is too tall, scale down
+          if (imgHeight > pageHeight - 20) {
+            imgHeight = pageHeight - 20;
+            imgWidth = imgHeight * aspectRatio;
+          }
+          
+          const x = (pageWidth - imgWidth) / 2;
+          const y = (pageHeight - imgHeight) / 2;
           
           pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
         }

@@ -70,7 +70,7 @@ const TicketConfirmation = () => {
   // Helper functions to get data from either source
   const getPassengers = () => {
     if (regenerateTicket && bookingData?.tickets) {
-      // Convert ticket data to passenger format - group by passenger to avoid duplicates
+      // Convert ticket data to passenger format - group by passenger but collect all seat info
       const passengerMap = new Map();
       bookingData.tickets.forEach(ticket => {
         const passengerKey = `${ticket.passenger_first_name}_${ticket.passenger_last_name}`;
@@ -78,13 +78,20 @@ const TicketConfirmation = () => {
           passengerMap.set(passengerKey, {
             first_name: ticket.passenger_first_name,
             last_name: ticket.passenger_last_name,
-            seat_class: ticket.seat_class,
-            seat_number: ticket.seat_number,
             passport_number: ticket.passport_number,
             nationality: ticket.nationality,
-            date_of_birth: ticket.date_of_birth
+            date_of_birth: ticket.date_of_birth,
+            seats: [] // Array to store all seat assignments for this passenger
           });
         }
+        // Add seat information for this flight
+        const passenger = passengerMap.get(passengerKey);
+        passenger.seats.push({
+          seat_number: ticket.seat_number,
+          seat_class: ticket.seat_class,
+          flight_number: ticket.flight_number,
+          departure_time: ticket.departure_time
+        });
       });
       const result = Array.from(passengerMap.values());
       console.log('getPassengers (regenerated):', result);
@@ -103,6 +110,7 @@ const TicketConfirmation = () => {
         const flightKey = ticket.flight_number;
         if (!flightMap.has(flightKey)) {
           flightMap.set(flightKey, {
+            ...ticket,
             flight_number: ticket.flight_number,
             airline_name: ticket.airline_name,
             departure_time: ticket.departure_time,
@@ -151,34 +159,22 @@ const TicketConfirmation = () => {
 
   const bookingDetails = getBookingDetails();
 
-  // Enhanced airline logo handler
+  // Airline logo handler - uses logo_url from database
   const getAirlineLogo = () => {
     const currentFlights = getFlights();
     const currentFlight = currentFlights[0];
     
+    // Use logo_url from the database if available
     if (currentFlight?.logo_url) {
       return currentFlight.logo_url;
     }
     
-    // Fallback logic for common airlines based on airline name
-    const airlineName = currentFlight?.airline_name?.toLowerCase();
-    if (airlineName?.includes('american')) return '/aa.jpeg';
-    if (airlineName?.includes('british')) return '/ba.png';
-    if (airlineName?.includes('biman')) return '/bba.png';
-    if (airlineName?.includes('us bangla')) return '/usba.png';
-    if (airlineName?.includes('saudi')) return '/saa.png';
-    if (airlineName?.includes('novoair')) return '/na.png';
-    
-    // Default to NimbusFly logo
+    // Default to NimbusFly logo if no logo_url is provided
     return '/nimbusfly_logo.png';
   };
 
   // Get airline brand colors for theming
   const getAirlineColors = () => {
-    const currentFlights = getFlights();
-    const currentFlight = currentFlights[0];
-    const airlineName = currentFlight?.airline_name?.toLowerCase() || '';
-    
     // Default NimbusFly colors
     return { primary: '#1e40af', secondary: '#3b82f6', accent: '#60a5fa' };
   };
@@ -883,25 +879,63 @@ const downloadBoardingPass = async () => {
                 <h2 className="text-lg font-bold text-gray-900 mb-4">Passenger Details</h2>
                 <div className="space-y-4">
                   {getPassengers().map((passenger, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                          <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                          </svg>
+                    <div key={index} className="p-4 bg-gray-50 rounded-xl">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                            <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                          </div>
+                          <div>
+                            <p className="font-semibold">
+                              {passenger.title} {passenger.first_name} {passenger.last_name}
+                            </p>
+                            <p className="text-sm text-gray-500">Adult</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-semibold">
-                            {passenger.title} {passenger.first_name} {passenger.last_name}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            Adult • Seat: {passenger.seat_number || generateSeatAssignment(index, passenger.seat_class || getFlights()[0]?.seatClass || 'Economy')}
-                          </p>
+                        <div className="text-right">
+                          <p className="text-sm text-gray-500">Passport</p>
+                          <p className="font-semibold">{passenger.passport_number || 'N/A'}</p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm text-gray-500">Passport</p>
-                        <p className="font-semibold">{passenger.passport_number || 'N/A'}</p>
+                      
+                      {/* Seat Information */}
+                      <div className="mt-3 ml-14">
+                        {regenerateTicket && passenger.seats ? (
+                          // Show all seat assignments for regenerated tickets
+                          <div className="space-y-2">
+                            {passenger.seats.map((seat, seatIndex) => (
+                              <div key={seatIndex} className="flex items-center justify-between p-2 bg-white rounded-lg border border-gray-200">
+                                <div className="flex items-center space-x-3">
+                                  <span className="text-sm font-medium text-gray-700">
+                                    Flight {seat.flight_number}:
+                                  </span>
+                                  <span className="text-sm font-semibold text-blue-600">
+                                    Seat {seat.seat_number}
+                                  </span>
+                                  <span className="text-xs text-gray-500">
+                                    ({seat.seat_class})
+                                  </span>
+                                </div>
+                                <span className="text-xs text-gray-400">
+                                  {formatTime(seat.departure_time)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          // Show single seat assignment for new bookings
+                          <div className="flex items-center space-x-2">
+                            <span className="text-sm text-gray-500">Seat:</span>
+                            <span className="text-sm font-semibold text-blue-600">
+                              {passenger.seat_number || generateSeatAssignment(index, passenger.seat_class || getFlights()[0]?.seatClass || 'Economy')}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              ({passenger.seat_class || getFlights()[0]?.seatClass || 'Economy'})
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}

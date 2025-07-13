@@ -43,7 +43,13 @@ const getAvailableSeatsByFlight = async (req, res) => {
       FROM seats s
       JOIN aircraft a ON s.aircraft_id = a.aircraft_id
       JOIN flights f ON f.aircraft_id = a.aircraft_id
-      WHERE f.flight_id = $1 AND s.is_booked = FALSE
+      WHERE f.flight_id = $1 
+      AND s.seat_id NOT IN (
+        -- Exclude seats already assigned to tickets for this specific flight
+        SELECT DISTINCT t.seat_id 
+        FROM ticket t 
+        WHERE t.flight_id = $1 AND t.seat_id IS NOT NULL
+      )
     `;
     
     const queryParams = [flight_id];
@@ -81,26 +87,50 @@ const getAvailableSeatsByFlight = async (req, res) => {
 const bookSeat = async (req, res) => {
   try {
     const seat_id = parseInt(req.params.id);
+    const { flight_id, passenger_id, booking_id } = req.body;
 
     if (isNaN(seat_id)) {
       return res.status(400).json({ success: false, message: 'Invalid seat ID' });
     }
 
-    // Check if already booked
-    const seatCheck = await pool.query(`SELECT is_booked FROM seats WHERE seat_id = $1`, [seat_id]);
+    if (!flight_id || !passenger_id || !booking_id) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'flight_id, passenger_id, and booking_id are required' 
+      });
+    }
+
+    // Check if seat exists
+    const seatCheck = await pool.query(`SELECT * FROM seats WHERE seat_id = $1`, [seat_id]);
     if (seatCheck.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'Seat not found' });
     }
 
-    if (seatCheck.rows[0].is_booked) {
-      return res.status(409).json({ success: false, message: 'Seat already booked' });
+    // Check if seat is already booked for this specific flight
+    const flightSeatCheck = await pool.query(`
+      SELECT * FROM ticket WHERE flight_id = $1 AND seat_id = $2
+    `, [flight_id, seat_id]);
+
+    if (flightSeatCheck.rows.length > 0) {
+      return res.status(409).json({ success: false, message: 'Seat already booked for this flight' });
     }
 
+    // Book the seat by creating a ticket record (assuming price needs to be provided)
+    const price = req.body.price || 0;
     const result = await pool.query(`
-      UPDATE seats SET is_booked = TRUE WHERE seat_id = $1 RETURNING *
-    `, [seat_id]);
+      INSERT INTO ticket (booking_id, flight_id, passenger_id, seat_id, price)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *
+    `, [booking_id, flight_id, passenger_id, seat_id, price]);
 
-    res.json({ success: true, message: 'Seat booked successfully', data: result.rows[0] });
+    res.json({ 
+      success: true, 
+      message: 'Seat booked successfully for flight', 
+      data: {
+        ticket: result.rows[0],
+        seat: seatCheck.rows[0]
+      }
+    });
 
   } catch (error) {
     res.status(500).json({
@@ -115,26 +145,44 @@ const bookSeat = async (req, res) => {
 const releaseSeat = async (req, res) => {
   try {
     const seat_id = parseInt(req.params.id);
+    const { flight_id } = req.body;
 
     if (isNaN(seat_id)) {
       return res.status(400).json({ success: false, message: 'Invalid seat ID' });
     }
 
+    if (!flight_id) {
+      return res.status(400).json({ success: false, message: 'flight_id is required' });
+    }
+
     // Check if seat exists
-    const seatCheck = await pool.query(`SELECT is_booked FROM seats WHERE seat_id = $1`, [seat_id]);
+    const seatCheck = await pool.query(`SELECT * FROM seats WHERE seat_id = $1`, [seat_id]);
     if (seatCheck.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'Seat not found' });
     }
 
-    if (!seatCheck.rows[0].is_booked) {
-      return res.status(409).json({ success: false, message: 'Seat is already available' });
+    // Check if seat is booked for this specific flight
+    const ticketCheck = await pool.query(`
+      SELECT * FROM ticket WHERE flight_id = $1 AND seat_id = $2
+    `, [flight_id, seat_id]);
+
+    if (ticketCheck.rows.length === 0) {
+      return res.status(409).json({ success: false, message: 'Seat is not booked for this flight' });
     }
 
+    // Release the seat by deleting the ticket record
     const result = await pool.query(`
-      UPDATE seats SET is_booked = FALSE WHERE seat_id = $1 RETURNING *
-    `, [seat_id]);
+      DELETE FROM ticket WHERE flight_id = $1 AND seat_id = $2 RETURNING *
+    `, [flight_id, seat_id]);
 
-    res.json({ success: true, message: 'Seat released successfully', data: result.rows[0] });
+    res.json({ 
+      success: true, 
+      message: 'Seat released successfully for flight', 
+      data: {
+        released_ticket: result.rows[0],
+        seat: seatCheck.rows[0]
+      }
+    });
 
   } catch (error) {
     res.status(500).json({
