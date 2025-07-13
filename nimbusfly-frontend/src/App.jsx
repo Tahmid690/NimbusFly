@@ -15,7 +15,8 @@ import UserDashboard from './components/UserDashboard'
 import Footer from './components/Footer'
 import AdminPublicRoute from './components/Authnication/AdminPublicRoute'
 import AdminProtectedRoute from './components/Authnication/AdminProtectedRoute'
-import AdminLoginForm from './components/AirlineLogin' 
+import AdminLoginForm from './components/AirlineLogin'
+import AdminDashboard from './components/AdminDashboard' 
 
 function App() {
   console.log("App component is rendering");
@@ -88,7 +89,7 @@ function App() {
               path="/admin/dashboard" 
               element={
                 <AdminProtectedRoute>
-                  <AdminLoginForm />
+                  <AdminDashboard/>
                 </AdminProtectedRoute>
               } 
             />
