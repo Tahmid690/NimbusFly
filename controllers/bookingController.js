@@ -254,6 +254,7 @@ const getBookingDetails = async (req, res) => {
         dest_airport.iata_code as destination_code,
         dest_airport.airport_name as destination_airport,
         al.airline_name,
+        al.logo_url,
         ac.model as aircraft_model,
         p.first_name as passenger_first_name,
         p.last_name as passenger_last_name,
