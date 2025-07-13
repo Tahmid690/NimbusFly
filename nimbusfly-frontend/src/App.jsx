@@ -17,7 +17,10 @@ import AdminPublicRoute from './components/Authnication/AdminPublicRoute'
 import AdminProtectedRoute from './components/Authnication/AdminProtectedRoute'
 import AdminLoginForm from './components/AirlineLogin'
 import AdminDashboard from './components/AdminDashboard' 
+import EnhancedAdminDashboard from './components/EnhancedAdminDashboard'
 import FlightManagement from './components/FlightManagement'
+import AdminBookings from './components/AdminBookings'
+import TravelGuide from './components/TravelGuide'
 
 function App() {
   console.log("App component is rendering");
@@ -31,6 +34,14 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/flight-results" element={<FlightResults />} />
 
+            <Route 
+              path="/travel-guide"
+              element={
+                <PublicRoute>
+                  <TravelGuide />
+                </PublicRoute>
+              }
+            />
 
             <Route 
               path="/login" 
@@ -90,7 +101,7 @@ function App() {
               path="/admin/dashboard" 
               element={
                 <AdminProtectedRoute>
-                  <AdminDashboard/>
+                  <EnhancedAdminDashboard/>
                 </AdminProtectedRoute>
               } 
             />
@@ -100,6 +111,15 @@ function App() {
               element={
                 <AdminProtectedRoute>
                   <FlightManagement/>
+                </AdminProtectedRoute>
+              } 
+            />
+
+            <Route 
+              path="/admin/bookings" 
+              element={
+                <AdminProtectedRoute>
+                  <AdminBookings/>
                 </AdminProtectedRoute>
               } 
             />
