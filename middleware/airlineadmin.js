@@ -6,7 +6,7 @@ const addMiddleware=async(req,res,next)=>{
 
         const head=req.headers.authorization;
         if(!head){
-            return res.status(400).json({
+            return res.status(401).json({
                 success: false,
                 message: 'No token provided'
             });
@@ -16,7 +16,7 @@ const addMiddleware=async(req,res,next)=>{
        req.user=decoded;
        next();
     }catch(error){
-        return res.status(500).json({
+        return res.status(401).json({
             success: false,
             message: 'Invalid token',
             error: error.message

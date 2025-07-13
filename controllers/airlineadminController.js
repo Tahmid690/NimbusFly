@@ -302,7 +302,7 @@ const getAirlineFlights = async (req, res) => {
         dest_airport.airport_name as destination_airport,
         al.airline_name,
         ac.model as aircraft_model,
-        ac.capacity as aircraft_capacity
+        ac.total_seats as aircraft_capacity
       FROM flights f
       LEFT JOIN airports origin_airport ON f.origin_airport_id = origin_airport.airport_id
       LEFT JOIN airports dest_airport ON f.destination_airport_id = dest_airport.airport_id
@@ -403,7 +403,7 @@ const getDashboardAnalytics = async (req, res) => {
         origin_airport.iata_code as origin_code,
         dest_airport.iata_code as destination_code,
         COUNT(t.ticket_id) as booked_passengers,
-        ac.capacity as total_capacity
+        ac.total_seats as total_capacity
       FROM flights f
       LEFT JOIN airports origin_airport ON f.origin_airport_id = origin_airport.airport_id
       LEFT JOIN airports dest_airport ON f.destination_airport_id = dest_airport.airport_id
@@ -411,7 +411,7 @@ const getDashboardAnalytics = async (req, res) => {
       LEFT JOIN airlines al ON ac.airline_id = al.airline_id
       LEFT JOIN ticket t ON f.flight_id = t.flight_id
       WHERE al.airline_id = $1 AND f.departure_time > NOW()
-      GROUP BY f.flight_id, f.flight_number, f.departure_time, f.arrival_time, origin_airport.iata_code, dest_airport.iata_code, ac.capacity
+      GROUP BY f.flight_id, f.flight_number, f.departure_time, f.arrival_time, origin_airport.iata_code, dest_airport.iata_code, ac.total_seats
       ORDER BY f.departure_time ASC
       LIMIT 5
     `, [airline_id]);

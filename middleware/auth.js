@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const JWT_SECRET = 'jibon_onk_kothin';
+const JWT_SECRET = 'bugi_na_bai_bugi_na'; // Standardized with airlineadmin controller
 
 const authMiddleware = (req, res, next) => {
     try {

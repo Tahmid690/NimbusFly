@@ -17,8 +17,6 @@ import AdminPublicRoute from './components/Authnication/AdminPublicRoute'
 import AdminProtectedRoute from './components/Authnication/AdminProtectedRoute'
 import AdminLoginForm from './components/AirlineLogin'
 import AdminDashboard from './components/AdminDashboard' 
-import EnhancedAdminDashboard from './components/EnhancedAdminDashboard'
-import FlightManagement from './components/FlightManagement'
 import AdminBookings from './components/AdminBookings'
 import TravelGuide from './components/TravelGuide'
 
@@ -37,9 +35,7 @@ function App() {
             <Route 
               path="/travel-guide"
               element={
-                <PublicRoute>
-                  <TravelGuide />
-                </PublicRoute>
+                  <TravelGuide/>
               }
             />
 
@@ -101,19 +97,12 @@ function App() {
               path="/admin/dashboard" 
               element={
                 <AdminProtectedRoute>
-                  <EnhancedAdminDashboard/>
+                  <AdminDashboard/>
                 </AdminProtectedRoute>
               } 
             />
 
-             <Route 
-              path="/admin/flightmanagement" 
-              element={
-                <AdminProtectedRoute>
-                  <FlightManagement/>
-                </AdminProtectedRoute>
-              } 
-            />
+            
 
             <Route 
               path="/admin/bookings" 

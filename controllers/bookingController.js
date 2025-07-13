@@ -1,5 +1,52 @@
 const pool = require('../config/database');
 
+// Get all bookings with customer and flight information
+const getAllBookings = async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        bk.*,
+        cus.first_name,
+        cus.last_name,
+        cus.email as customer_email,
+        cus.phone_number as customer_phone,
+        COUNT(t.ticket_id) as total_passengers,
+        STRING_AGG(DISTINCT f.flight_number, ', ') as flight_numbers,
+        STRING_AGG(DISTINCT (origin_airport.iata_code || '-' || dest_airport.iata_code), ', ') as routes,
+        STRING_AGG(DISTINCT origin_airport.iata_code, ', ') as origin_iata,
+        STRING_AGG(DISTINCT dest_airport.iata_code, ', ') as destination_iata,
+        MIN(f.departure_time) as earliest_departure,
+        MAX(f.arrival_time) as latest_arrival,
+        STRING_AGG(DISTINCT al.airline_name, ', ') as airlines,
+        STRING_AGG(DISTINCT al.logo_url, ', ') as logo_url
+      FROM bookings bk
+      LEFT JOIN customer cus ON bk.customer_id = cus.customer_id
+      LEFT JOIN ticket t ON bk.booking_id = t.booking_id
+      LEFT JOIN flights f ON t.flight_id = f.flight_id
+      LEFT JOIN airports origin_airport ON f.origin_airport_id = origin_airport.airport_id
+      LEFT JOIN airports dest_airport ON f.destination_airport_id = dest_airport.airport_id
+      LEFT JOIN aircraft ac ON f.aircraft_id = ac.aircraft_id
+      LEFT JOIN airlines al ON ac.airline_id = al.airline_id
+      GROUP BY bk.booking_id, cus.first_name, cus.last_name, cus.email, cus.phone_number
+      ORDER BY bk.booking_date DESC
+      LIMIT 50
+    `);
+
+    res.json({
+      success: true,
+      data: result.rows
+    });
+
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Could not fetch bookings',
+      error: error.message
+    });
+  }
+};
+
 const getCustomerBooking = async (req, res) => {
   try {
     const id = parseInt(req.params.customer_id);
@@ -296,6 +343,7 @@ const getBookingDetails = async (req, res) => {
 };
 
 module.exports = {
+  getAllBookings,
   getCustomerBooking,
   getBookingById,
   createBooking,

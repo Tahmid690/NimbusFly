@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, act } from 'react';
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from './Authnication/AuthContext';
 
-const Navbar = ({flg}) => {
+const Navbar = ({flg,page_name}) => {
     const [isScrolled, setIsScrolled] = useState(flg);
-    const [activeLink, setActiveLink] = useState('Home');
+    const [activeLink, setActiveLink] = useState(page_name || 'Home');
     const [showUserMenu, setShowUserMenu] = useState(false);
     const { isAuthenticated, user, logout } = useAuth();
     const navigate = useNavigate();
@@ -29,10 +29,10 @@ const Navbar = ({flg}) => {
     }, [showUserMenu]);
 
     const navLinks = [
-        { name: 'Home', href: '#home' },
-        { name: 'About Us', href: '#about' },
-        { name: 'Travel Guide', href: '#guide' },
-        { name: 'Contact', href: '#contact' }
+        { name: 'Home', href: '/' },
+        { name: 'About Us', href: '/' },
+        { name: 'Travel Guide', href: '/travel-guide' },
+        { name: 'Contact', href: '/' }
     ];
 
 
@@ -74,7 +74,9 @@ const Navbar = ({flg}) => {
                         </div>
 
                         <div className="flex items-center space-x-8">
+                            
                             {navLinks.map((link) => (
+                                
                                 <a
                                     key={link.name}
                                     href={link.href}
