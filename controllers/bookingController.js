@@ -9,7 +9,7 @@ const getCustomerBooking = async (req, res) => {
         message: 'Invalid Customer ID'
       });
     }
-
+    
     const result = await pool.query(`
       SELECT 
         bk.*,
@@ -21,7 +21,8 @@ const getCustomerBooking = async (req, res) => {
         STRING_AGG(DISTINCT (origin_airport.iata_code || '-' || dest_airport.iata_code), ', ') as routes,
         MIN(f.departure_time) as earliest_departure,
         MAX(f.arrival_time) as latest_arrival,
-        STRING_AGG(DISTINCT al.airline_name, ', ') as airlines
+        STRING_AGG(DISTINCT al.airline_name, ', ') as airlines,
+        STRING_AGG(DISTINCT al.logo_url, ', ') as logo_url
       FROM bookings bk
       LEFT JOIN customer cus ON bk.customer_id = cus.customer_id
       LEFT JOIN ticket t ON bk.booking_id = t.booking_id
@@ -34,7 +35,7 @@ const getCustomerBooking = async (req, res) => {
       GROUP BY bk.booking_id, cus.first_name, cus.last_name, cus.email, cus.phone_number
       ORDER BY bk.booking_date DESC
     `, [id]);
-
+      
     if (result.rows.length === 0) {
       return res.status(404).json({
         success: false,
@@ -48,10 +49,12 @@ const getCustomerBooking = async (req, res) => {
     });
 
   } catch (error) {
+    console.log(error.message);
     res.status(500).json({
       success: false,
       message: 'Could not fetch bookings for customer',
       error: error.message
+      
     });
   }
 };

@@ -65,6 +65,7 @@ const UserDashboard = () => {
         setError(null);
         if (user?.customer_id) {
           const response = await axios.get(`http://localhost:3000/bookings/customer/${user.customer_id}`);
+          console.log(response);
           if (response.data.success) {
             setBookings(response.data.data || []);
           } else {
@@ -450,7 +451,7 @@ const UserDashboard = () => {
     
     return matchesSearch && matchesStatus;
   });
-
+  // console.log(bookings)
   const upcomingFlights = bookings.filter(booking => 
     booking.earliest_departure && new Date(booking.earliest_departure) > new Date()
   ).length;
@@ -648,9 +649,14 @@ const UserDashboard = () => {
                         <div key={index} className="border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-300 bg-gradient-to-r from-white to-gray-50">
                           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-4">
                             <div className="flex items-center space-x-4">
-                              <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-md">
-                                <Plane className="w-6 h-6 text-white" />
-                              </div>
+                                <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center  group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                                    <img
+                                        src={booking.logo_url}
+                                        alt="Logo"
+                                        className="max-w-8 max-h-8 lg:max-w-17 lg:max-h-10 object-contain"
+                                    />
+                                </div>
+                              
                               <div>
                                 <h4 className="text-lg font-semibold text-gray-900">
                                   Booking #{booking.booking_id}
@@ -679,6 +685,7 @@ const UserDashboard = () => {
                               <div>
                                 <span className="text-gray-500">Route:</span>
                                 <span className="font-medium ml-1">{booking.routes || 'N/A'}</span>
+                                {/* {console.log('bal',booking)} */}
                               </div>
                             </div>
                             <div className="flex items-center space-x-2">
@@ -963,6 +970,7 @@ const UserDashboard = () => {
                 <X className="w-6 h-6" />
               </button>
             </div>
+            {console.log(selectedBooking)}
 
             {/* Modal Content */}
             <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
@@ -1041,6 +1049,7 @@ const UserDashboard = () => {
                     
                     return flights.map((flightGroup, flightIndex) => {
                       const ticket = flightGroup.flight;
+                      console.log(ticket);
                       const isReturnFlight = flightIndex > 0 && selectedBooking.booking.trip_type === 'round-trip';
                       
                       console.log(`Flight ${flightIndex}: ${ticket.flight_number} - ${ticket.origin_code} → ${ticket.destination_code} - ${isReturnFlight ? 'RETURN' : 'OUTBOUND'}`);
@@ -1050,9 +1059,13 @@ const UserDashboard = () => {
                           {/* Flight Header */}
                           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-4">
                             <div className="flex items-center space-x-3">
-                              <div className={`p-2 rounded-lg ${isReturnFlight ? 'bg-green-100' : 'bg-blue-100'}`}>
-                                <Plane className={`w-5 h-5 ${isReturnFlight ? 'text-green-600 rotate-180' : 'text-blue-600'}`} />
-                              </div>
+                               <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center  group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                                    <img
+                                        src={ticket.logo_url}
+                                        alt="Logo"
+                                        className="max-w-8 max-h-8 lg:max-w-17 lg:max-h-10 object-contain"
+                                    />
+                                </div>
                               <div>
                                 <div className="flex items-center space-x-2">
                                   <h4 className="font-semibold text-gray-900">{ticket.airline_name}</h4>
@@ -1121,16 +1134,14 @@ const UserDashboard = () => {
                               ))}
                             </div>
                           </div>
+
                         </div>
                       );
                     });
                   })()}
                 </div>
               </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-t border-gray-200">
+              <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-t border-gray-200">
               <div className="text-sm text-gray-500">
                 Total Passengers: {selectedBooking.tickets.length}
               </div>
@@ -1150,6 +1161,10 @@ const UserDashboard = () => {
                 </button>
               </div>
             </div>
+            </div>
+                
+            {/* Modal Footer */}
+            
           </div>
         </div>
       )}

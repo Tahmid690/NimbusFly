@@ -19,6 +19,6 @@
     "pg": "^8.16.0"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "concurrently": "^9.2.0"
   }
 }

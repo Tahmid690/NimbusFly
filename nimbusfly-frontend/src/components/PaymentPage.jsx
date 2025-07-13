@@ -154,6 +154,7 @@ const PaymentPage = () => {
     console.log(flightData);
     try {
       // Comprehensive payment payload that matches backend API schema
+      // console.log(flightData)
       const paymentPayload = {
         customer_id: user_id,
         passengers: passengers.map(passenger => ({
@@ -165,6 +166,7 @@ const PaymentPage = () => {
           title: passenger.title || 'Mr'
         })),
         flight_data: {
+          ...flightData,
           flight_id: flightData.flight_id, // Optional - will be extracted if not provided
           flight_number: flightData.flight_number,
           origin: flightData.origin,
@@ -191,7 +193,7 @@ const PaymentPage = () => {
         },
         total_amount: calculateTotal()
       };
-
+      
       // Process payment and create booking through backend
       try {
         const response = await axios.post('http://localhost:3000/payments/process', paymentPayload);
@@ -356,7 +358,7 @@ const PaymentPage = () => {
             </div>
 
             {/* Enhanced Continue Button */}
-            <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6 rounded-t-3xl shadow-lg">
+            <div className="bottom-0 bg-white border-t border-gray-200 p-6 rounded-t-3xl shadow-lg">
               <div className="max-w-md mx-auto">
                 <button
                   className="w-full flex items-center justify-center space-x-3 px-6 py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"

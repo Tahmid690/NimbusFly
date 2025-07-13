@@ -117,6 +117,7 @@ const processPayment = async (req, res) => {
       billing_address, 
       total_amount 
     } = req.body;
+   
 
     // Validation
     if (!customer_id) return res.status(400).json({ success: false, message: 'Customer ID is required' });
@@ -215,7 +216,7 @@ const processPayment = async (req, res) => {
         LIMIT 1
       `;
       const seatResult = await client.query(seatQuery, [flightDetails.aircraft_id, requestedClass]);
-      
+      console.log(seatResult);
       if (seatResult.rows.length === 0) {
         throw new Error(`No available ${requestedClass} class seats`);
       }
