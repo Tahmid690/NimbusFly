@@ -87,7 +87,7 @@ const AdminDashboard = () => {
     setActiveTab(tab);
     switch (tab) {
       case 'bookings':
-        if (allBookings.length === 0) fetchData(`/admin/admin/bookings`, setAllBookings);
+        if (allBookings.length === 0) fetchData(`/admin/bookings/${admin.airline_id}`, setAllBookings);
         break;
       case 'flights':
         if (allFlights.length === 0) fetchData(`/admin/flights/${admin.airline_id}`, setAllFlights);
@@ -97,7 +97,7 @@ const AdminDashboard = () => {
         break;
       case 'passengers':
         // Passengers data is derived from bookings
-        if (allBookings.length === 0) fetchData(`/admin/admin/bookings`, setAllBookings);
+        if (allBookings.length === 0) fetchData(`/admin/bookings/${admin.airline_id}`, setAllBookings);
         break;
       default:
         break;
