@@ -84,9 +84,9 @@ const TravelGuide = () => {
             id: 3,
             name: 'Bali, Indonesia',
             images: [
-                'https://images.unsplash.com/photo-1537953773345-d172ccf13cf1?w=800&h=600&fit=crop',
-                'https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?w=800&h=600&fit=crop',
-                'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=600&fit=crop'
+                'bali1.jpg',
+                'bali2.jpg',
+                'bali3.jpg'
             ],
             category: 'beach',
             rating: 4.7,
@@ -194,9 +194,9 @@ const TravelGuide = () => {
             id: 8,
             name: 'Kyoto, Japan',
             images: [
-                'https://images.unsplash.com/photo-1550993993-3d0277334751?q=80&w=800&h=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-                'https://images.unsplash.com/photo-1563456383661-82fe33830c33?q=80&w=800&h=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-                'https://images.unsplash.com/photo-1557984855-900257008a9f?q=80&w=800&h=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
+                '/kyoto2.jpg',
+                '/kyoto1.jpg',
+                '/kyoto3.jpg'
             ],
             category: 'culture',
             rating: 4.9,
@@ -216,9 +216,9 @@ const TravelGuide = () => {
             id: 9,
             name: 'Machu Picchu, Peru',
             images: [
-                'https://images.unsplash.com/photo-1536254477651-7f9a2f71f6c7?q=80&w=800&h=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-                'https://images.unsplash.com/photo-1572970591079-5e76a6f0d7e6?q=80&w=800&h=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-                'https://images.unsplash.com/photo-1526466981881-2ac269a8433d?q=80&w=800&h=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
+                'machupichu1.jpg',
+                'machupichu2.jpg',
+                'machupichu3.jpg'
             ],
             category: 'adventure',
             rating: 4.9,
@@ -238,9 +238,9 @@ const TravelGuide = () => {
             id: 10,
             name: 'Cairo, Egypt',
             images: [
-                'https://images.unsplash.com/photo-1601760561198-d3e5245961d6?q=80&w=800&h=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-                'https://images.unsplash.com/photo-1594951460517-c4e9081e7d0f?q=80&w=800&h=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-                'https://images.unsplash.com/photo-1563234907-7d88bc4878a0?q=80&w=800&h=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
+                'cairo2.jpg',
+                'cairo1.jpg',
+                'cairo3.jpg'
             ],
             category: 'culture',
             rating: 4.6,

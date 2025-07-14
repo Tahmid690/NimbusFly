@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAdminAuth } from './Authnication/AdminContext';
+import { useAdminAuth } from '../Authnication/AdminContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {

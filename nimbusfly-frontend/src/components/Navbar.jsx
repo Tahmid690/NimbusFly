@@ -30,9 +30,9 @@ const Navbar = ({flg,page_name}) => {
 
     const navLinks = [
         { name: 'Home', href: '/' },
-        { name: 'About Us', href: '/' },
+        { name: 'About Us', href: '/about-us' },
         { name: 'Travel Guide', href: '/travel-guide' },
-        { name: 'Contact', href: '/' }
+        { name: 'Contact', href: '/contact' }
     ];
 
 

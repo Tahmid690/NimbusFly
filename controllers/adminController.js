@@ -1,6 +1,6 @@
 const pool = require('../config/database');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 // Admin login
 const adminLogin = async (req, res) => {
@@ -50,15 +50,15 @@ const adminLogin = async (req, res) => {
         email: admin.email,
         role: 'admin'
       },
-      process.env.JWT_SECRET || 'nimbusfly_admin_secret',
+      process.env.JWT_SECRET || 'bugi_na_bai_bugi_na',
       { expiresIn: '24h' }
     );
 
-    // Log admin activity
-    await pool.query(
-      'INSERT INTO admin_activity_logs (admin_id, action, details) VALUES ($1, $2, $3)',
-      [admin.admin_id, 'LOGIN', `Admin login from IP: ${req.ip}`]
-    );
+    // Log admin activity (commented out - table may not exist)
+    // await pool.query(
+    //   'INSERT INTO admin_activity_logs (admin_id, action, details) VALUES ($1, $2, $3)',
+    //   [admin.admin_id, 'LOGIN', `Admin login from IP: ${req.ip}`]
+    // );
 
     res.json({
       success: true,
@@ -246,8 +246,544 @@ const getRevenueAnalytics = async (req, res) => {
   }
 };
 
+// Get bookings for admin's airline
+const getAdminBookings = async (req, res) => {
+  try {
+    const { airline_id } = req.admin;
+    const { page = 1, limit = 20, status, search } = req.query;
+    const offset = (page - 1) * limit;
+
+    let whereClause = 'WHERE ac.airline_id = $1';
+    let params = [airline_id];
+    let paramCount = 1;
+
+    // Add status filter
+    if (status && status !== 'all') {
+      whereClause += ` AND b.payment_status = $${++paramCount}`;
+      params.push(status);
+    }
+
+    // Add search filter
+    if (search) {
+      whereClause += ` AND (
+        LOWER(c.first_name || ' ' || c.last_name) LIKE $${++paramCount} OR
+        LOWER(c.email) LIKE $${++paramCount} OR
+        CAST(b.booking_id AS TEXT) LIKE $${++paramCount} OR
+        LOWER(f.flight_number) LIKE $${++paramCount}
+      )`;
+      const searchTerm = `%${search.toLowerCase()}%`;
+      params.push(searchTerm, searchTerm, searchTerm, searchTerm);
+    }
+
+    // Get total count
+    const countQuery = `
+      SELECT COUNT(DISTINCT b.booking_id) as total
+      FROM bookings b
+      JOIN customer c ON b.customer_id = c.customer_id
+      JOIN ticket t ON b.booking_id = t.booking_id
+      JOIN flights f ON t.flight_id = f.flight_id
+      JOIN aircraft ac ON f.aircraft_id = ac.aircraft_id
+      ${whereClause}
+    `;
+    const countResult = await pool.query(countQuery, params);
+    const totalBookings = parseInt(countResult.rows[0].total);
+
+    // Get bookings with pagination
+    const bookingsQuery = `
+      SELECT 
+        b.booking_id,
+        b.booking_date,
+        b.total_amount,
+        b.payment_status,
+        b.trip_type,
+        c.first_name || ' ' || c.last_name as customer_name,
+        c.email as customer_email,
+        c.phone_number as customer_phone,
+        COUNT(DISTINCT t.ticket_id) as total_passengers,
+        STRING_AGG(DISTINCT f.flight_number, ', ') as flight_numbers,
+        STRING_AGG(DISTINCT (origin_airport.iata_code || '-' || dest_airport.iata_code), ', ') as routes,
+        MIN(f.departure_time) as earliest_departure,
+        MAX(f.arrival_time) as latest_arrival,
+        al.airline_name,
+        al.logo_url,
+        b.booking_date as created_at
+      FROM bookings b
+      JOIN customer c ON b.customer_id = c.customer_id
+      JOIN ticket t ON b.booking_id = t.booking_id
+      JOIN flights f ON t.flight_id = f.flight_id
+      JOIN aircraft ac ON f.aircraft_id = ac.aircraft_id
+      JOIN airlines al ON ac.airline_id = al.airline_id
+      JOIN airports origin_airport ON f.origin_airport_id = origin_airport.airport_id
+      JOIN airports dest_airport ON f.destination_airport_id = dest_airport.airport_id
+      ${whereClause}
+      GROUP BY b.booking_id, c.first_name, c.last_name, c.email, c.phone_number, al.airline_name, al.logo_url
+      ORDER BY b.booking_date DESC
+      LIMIT $${++paramCount} OFFSET $${++paramCount}
+    `;
+    params.push(limit, offset);
+
+    const bookingsResult = await pool.query(bookingsQuery, params);
+
+    res.json({
+      success: true,
+      data: bookingsResult.rows,
+      pagination: {
+        total: totalBookings,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        totalPages: Math.ceil(totalBookings / limit)
+      }
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch bookings',
+      error: error.message
+    });
+  }
+};
+
+// Get booking analytics for admin
+const getBookingAnalytics = async (req, res) => {
+  try {
+    const { airline_id } = req.admin;
+    const today = new Date().toISOString().split('T')[0];
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+    // Get booking statistics
+    const statsQuery = `
+      SELECT 
+        COUNT(DISTINCT b.booking_id) as total_bookings,
+        COUNT(DISTINCT CASE WHEN b.payment_status = 'PAID' THEN b.booking_id END) as confirmed_bookings,
+        COUNT(DISTINCT CASE WHEN b.payment_status = 'UNPAID' THEN b.booking_id END) as pending_bookings,
+        COUNT(DISTINCT CASE WHEN b.payment_status = 'CANCELLED' THEN b.booking_id END) as cancelled_bookings,
+        COALESCE(SUM(CASE WHEN b.payment_status = 'PAID' THEN b.total_amount END), 0) as total_revenue,
+        COUNT(DISTINCT CASE WHEN DATE(b.booking_date) = $2 THEN b.booking_id END) as today_bookings,
+        COALESCE(SUM(CASE WHEN DATE(b.booking_date) = $2 AND b.payment_status = 'PAID' THEN b.total_amount END), 0) as today_revenue,
+        COUNT(DISTINCT c.customer_id) as total_passengers,
+        COUNT(DISTINCT t.ticket_id) as total_tickets
+      FROM bookings b
+      JOIN customer c ON b.customer_id = c.customer_id
+      JOIN ticket t ON b.booking_id = t.booking_id
+      JOIN flights f ON t.flight_id = f.flight_id
+      JOIN aircraft ac ON f.aircraft_id = ac.aircraft_id
+      WHERE ac.airline_id = $1 AND b.booking_date >= $3
+    `;
+    const statsResult = await pool.query(statsQuery, [airline_id, today, thirtyDaysAgo]);
+
+    // Get recent bookings
+    const recentBookingsQuery = `
+      SELECT 
+        b.booking_id,
+        b.booking_date,
+        b.total_amount,
+        b.payment_status,
+        c.first_name || ' ' || c.last_name as customer_name,
+        STRING_AGG(DISTINCT f.flight_number, ', ') as flight_numbers,
+        MIN(f.departure_time) as earliest_departure
+      FROM bookings b
+      JOIN customer c ON b.customer_id = c.customer_id
+      JOIN ticket t ON b.booking_id = t.booking_id
+      JOIN flights f ON t.flight_id = f.flight_id
+      JOIN aircraft ac ON f.aircraft_id = ac.aircraft_id
+      WHERE ac.airline_id = $1
+      GROUP BY b.booking_id, c.first_name, c.last_name
+      ORDER BY b.booking_date DESC
+      LIMIT 10
+    `;
+    const recentBookingsResult = await pool.query(recentBookingsQuery, [airline_id]);
+
+    // Get flight statistics
+    const flightStatsQuery = `
+      SELECT 
+        COUNT(*) as total_flights,
+        COUNT(CASE WHEN f.departure_time > NOW() THEN 1 END) as upcoming_flights
+      FROM flights f
+      JOIN aircraft ac ON f.aircraft_id = ac.aircraft_id
+      WHERE ac.airline_id = $1
+    `;
+    const flightStatsResult = await pool.query(flightStatsQuery, [airline_id]);
+
+    // Get upcoming flights
+    const upcomingFlightsQuery = `
+      SELECT 
+        f.flight_id,
+        f.flight_number,
+        f.departure_time,
+        f.arrival_time,
+        origin_airport.iata_code as origin_code,
+        dest_airport.iata_code as destination_code,
+        f.available_seats,
+        (ac.total_seats - f.available_seats) as booked_seats
+      FROM flights f
+      JOIN aircraft ac ON f.aircraft_id = ac.aircraft_id
+      JOIN airports origin_airport ON f.origin_airport_id = origin_airport.airport_id
+      JOIN airports dest_airport ON f.destination_airport_id = dest_airport.airport_id
+      WHERE ac.airline_id = $1 AND f.departure_time > NOW()
+      ORDER BY f.departure_time
+      LIMIT 10
+    `;
+    const upcomingFlightsResult = await pool.query(upcomingFlightsQuery, [airline_id]);
+
+    // Transform the stats to camelCase for frontend compatibility
+    const stats = statsResult.rows[0];
+    const flightStats = flightStatsResult.rows[0];
+    const transformedStats = {
+      totalBookings: parseInt(stats.total_bookings),
+      confirmedBookings: parseInt(stats.confirmed_bookings),
+      pendingBookings: parseInt(stats.pending_bookings),
+      cancelledBookings: parseInt(stats.cancelled_bookings),
+      totalRevenue: parseFloat(stats.total_revenue),
+      todayBookings: parseInt(stats.today_bookings),
+      todayRevenue: parseFloat(stats.today_revenue),
+      totalPassengers: parseInt(stats.total_passengers),
+      totalTickets: parseInt(stats.total_tickets),
+      totalFlights: parseInt(flightStats.total_flights),
+      upcomingFlights: parseInt(flightStats.upcoming_flights)
+    };
+
+    res.json({
+      success: true,
+      data: {
+        stats: transformedStats,
+        recentBookings: recentBookingsResult.rows,
+        upcomingFlights: upcomingFlightsResult.rows
+      }
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch booking analytics',
+      error: error.message
+    });
+  }
+};
+
+// Update booking status
+const updateBookingStatus = async (req, res) => {
+  try {
+    const { airline_id } = req.admin;
+    const { booking_id } = req.params;
+    const { payment_status } = req.body;
+
+    if (!payment_status || !['pending', 'confirmed', 'cancelled'].includes(payment_status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid payment status'
+      });
+    }
+
+    // Verify booking belongs to admin's airline
+    const verifyQuery = `
+      SELECT b.booking_id 
+      FROM bookings b
+      JOIN ticket t ON b.booking_id = t.booking_id
+      JOIN flights f ON t.flight_id = f.flight_id
+      JOIN aircraft ac ON f.aircraft_id = ac.aircraft_id
+      WHERE b.booking_id = $1 AND ac.airline_id = $2
+      LIMIT 1
+    `;
+    const verifyResult = await pool.query(verifyQuery, [booking_id, airline_id]);
+
+    if (verifyResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Booking not found or access denied'
+      });
+    }
+
+    // Update booking status
+    const updateQuery = `
+      UPDATE bookings 
+      SET payment_status = $1
+      WHERE booking_id = $2
+      RETURNING *
+    `;
+    const updateResult = await pool.query(updateQuery, [payment_status, booking_id]);
+
+    res.json({
+      success: true,
+      message: 'Booking status updated successfully',
+      data: updateResult.rows[0]
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update booking status',
+      error: error.message
+    });
+  }
+};
+
+// Get detailed booking information
+const getBookingDetails = async (req, res) => {
+  try {
+    const { airline_id } = req.admin;
+    const { booking_id } = req.params;
+
+    // Get booking details
+    const bookingQuery = `
+      SELECT 
+        b.*,
+        c.first_name || ' ' || c.last_name as customer_name,
+        c.email as customer_email,
+        c.phone_number as customer_phone,
+        c.address as customer_address,
+        c.date_of_birth as customer_dob
+      FROM bookings b
+      JOIN customer c ON b.customer_id = c.customer_id
+      WHERE b.booking_id = $1
+    `;
+    const bookingResult = await pool.query(bookingQuery, [booking_id]);
+
+    if (bookingResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Booking not found'
+      });
+    }
+
+    // Verify booking belongs to admin's airline
+    const verifyQuery = `
+      SELECT DISTINCT ac.airline_id
+      FROM bookings b
+      JOIN ticket t ON b.booking_id = t.booking_id
+      JOIN flights f ON t.flight_id = f.flight_id
+      JOIN aircraft ac ON f.aircraft_id = ac.aircraft_id
+      WHERE b.booking_id = $1 AND ac.airline_id = $2
+    `;
+    const verifyResult = await pool.query(verifyQuery, [booking_id, airline_id]);
+    
+    if (verifyResult.rows.length === 0) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied - booking not associated with your airline'
+      });
+    }
+
+    // Get tickets and flight details
+    const ticketsQuery = `
+      SELECT 
+        t.*,
+        f.flight_number,
+        f.departure_time,
+        f.arrival_time,
+        origin_airport.iata_code as origin_code,
+        origin_airport.airport_name as origin_airport,
+        dest_airport.iata_code as destination_code,
+        dest_airport.airport_name as destination_airport,
+        ac.model as aircraft_model,
+        al.airline_name,
+        p.first_name as passenger_first_name,
+        p.last_name as passenger_last_name,
+        p.passport_number,
+        p.date_of_birth as passenger_dob,
+        p.nationality,
+        s.seat_number,
+        s.seat_class
+      FROM ticket t
+      JOIN flights f ON t.flight_id = f.flight_id
+      JOIN aircraft ac ON f.aircraft_id = ac.aircraft_id
+      JOIN airlines al ON ac.airline_id = al.airline_id
+      JOIN airports origin_airport ON f.origin_airport_id = origin_airport.airport_id
+      JOIN airports dest_airport ON f.destination_airport_id = dest_airport.airport_id
+      JOIN passengers p ON t.passenger_id = p.passenger_id
+      LEFT JOIN seats s ON t.seat_id = s.seat_id
+      WHERE t.booking_id = $1
+      ORDER BY f.departure_time, p.first_name
+    `;
+    const ticketsResult = await pool.query(ticketsQuery, [booking_id]);
+
+    // Get payment details
+    const paymentQuery = `
+      SELECT * FROM payments 
+      WHERE booking_id = $1
+      ORDER BY payment_date DESC
+    `;
+    const paymentResult = await pool.query(paymentQuery, [booking_id]);
+
+    res.json({
+      success: true,
+      data: {
+        booking: bookingResult.rows[0],
+        tickets: ticketsResult.rows,
+        payments: paymentResult.rows
+      }
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch booking details',
+      error: error.message
+    });
+  }
+};
+
+// Test database connectivity
+const testDatabase = async (req, res) => {
+  try {
+    console.log('Testing database connection...');
+    
+    // Test basic connection
+    const testQuery = 'SELECT COUNT(*) as total FROM bookings';
+    const testResult = await pool.query(testQuery);
+    console.log('Total bookings in database:', testResult.rows[0].total);
+    
+    // Test airlines
+    const airlinesQuery = 'SELECT * FROM airlines';
+    const airlinesResult = await pool.query(airlinesQuery);
+    console.log('Airlines in database:', airlinesResult.rows);
+    
+    // Test admin table
+    const adminQuery = 'SELECT * FROM airline_admin';
+    const adminResult = await pool.query(adminQuery);
+    console.log('Admins in database:', adminResult.rows);
+    
+    // Test bookings by airline
+    const bookingsByAirlineQuery = `
+      SELECT ac.airline_id, al.airline_name, COUNT(DISTINCT b.booking_id) as booking_count
+      FROM bookings b
+      JOIN ticket t ON b.booking_id = t.booking_id
+      JOIN flights f ON t.flight_id = f.flight_id
+      JOIN aircraft ac ON f.aircraft_id = ac.aircraft_id
+      JOIN airlines al ON ac.airline_id = al.airline_id
+      GROUP BY ac.airline_id, al.airline_name
+      ORDER BY booking_count DESC
+    `;
+    const bookingsByAirlineResult = await pool.query(bookingsByAirlineQuery);
+    console.log('Bookings by airline:', bookingsByAirlineResult.rows);
+    
+    res.json({
+      success: true,
+      data: {
+        totalBookings: testResult.rows[0].total,
+        airlines: airlinesResult.rows,
+        admins: adminResult.rows,
+        bookingsByAirline: bookingsByAirlineResult.rows
+      }
+    });
+  } catch (error) {
+    console.error('Database test error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Database test failed',
+      error: error.message
+    });
+  }
+};
+
+// Reset admin password
+const resetAdminPassword = async (req, res) => {
+  try {
+    const email = 'bimanbangla@nimbusfly.com';
+    const newPassword = 'admin123';
+    
+    // Hash password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    
+    // Update admin password
+    const updateQuery = `
+      UPDATE airline_admin 
+      SET password = $1 
+      WHERE email = $2
+      RETURNING *
+    `;
+    
+    const result = await pool.query(updateQuery, [hashedPassword, email]);
+    
+    if (result.rows.length > 0) {
+      res.json({
+        success: true,
+        message: 'Password reset successfully',
+        email: email,
+        password: newPassword,
+        data: result.rows[0]
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        message: 'Admin not found'
+      });
+    }
+    
+  } catch (error) {
+    console.error('Error resetting admin password:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to reset admin password',
+      error: error.message
+    });
+  }
+};
+
+// Export bookings as CSV
+const exportBookings = async (req, res) => {
+  try {
+    const { airline_id } = req.admin;
+    
+    const bookingsQuery = `
+      SELECT 
+        b.booking_id,
+        b.booking_date,
+        b.total_amount,
+        b.payment_status,
+        b.trip_type,
+        c.first_name || ' ' || c.last_name as customer_name,
+        c.email as customer_email,
+        c.phone_number as customer_phone,
+        STRING_AGG(DISTINCT f.flight_number, ', ') as flight_numbers,
+        STRING_AGG(DISTINCT (origin_airport.iata_code || '-' || dest_airport.iata_code), ', ') as routes,
+        MIN(f.departure_time) as earliest_departure,
+        MAX(f.arrival_time) as latest_arrival
+      FROM bookings b
+      JOIN customer c ON b.customer_id = c.customer_id
+      JOIN ticket t ON b.booking_id = t.booking_id
+      JOIN flights f ON t.flight_id = f.flight_id
+      JOIN aircraft ac ON f.aircraft_id = ac.aircraft_id
+      JOIN airlines al ON ac.airline_id = al.airline_id
+      JOIN airports origin_airport ON f.origin_airport_id = origin_airport.airport_id
+      JOIN airports dest_airport ON f.destination_airport_id = dest_airport.airport_id
+      WHERE ac.airline_id = $1
+      GROUP BY b.booking_id, c.first_name, c.last_name, c.email, c.phone_number
+      ORDER BY b.booking_date DESC
+    `;
+    
+    const result = await pool.query(bookingsQuery, [airline_id]);
+    
+    // Create CSV content
+    const csvHeader = 'Booking ID,Date,Customer Name,Email,Phone,Routes,Status,Amount,Trip Type,Flight Numbers,Departure,Arrival\n';
+    const csvRows = result.rows.map(row => 
+      `${row.booking_id},${row.booking_date},${row.customer_name},${row.customer_email},${row.customer_phone},"${row.routes}",${row.payment_status},${row.total_amount},${row.trip_type},"${row.flight_numbers}",${row.earliest_departure},${row.latest_arrival}`
+    ).join('\n');
+    
+    const csvContent = csvHeader + csvRows;
+    
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename=bookings.csv');
+    res.send(csvContent);
+    
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to export bookings',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   adminLogin,
   getDashboardAnalytics,
-  getRevenueAnalytics
+  getRevenueAnalytics,
+  getAdminBookings,
+  getBookingAnalytics,
+  updateBookingStatus,
+  getBookingDetails,
+  exportBookings,
+  testDatabase,
+  resetAdminPassword
 };

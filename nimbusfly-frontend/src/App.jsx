@@ -16,9 +16,12 @@ import Footer from './components/Footer'
 import AdminPublicRoute from './components/Authnication/AdminPublicRoute'
 import AdminProtectedRoute from './components/Authnication/AdminProtectedRoute'
 import AdminLoginForm from './components/AirlineLogin'
-import AdminDashboard from './components/AdminDashboard' 
-import AdminBookings from './components/AdminBookings'
+import AdminDashboard from './components/AdminDashboard/AdminDashboard' 
+import AdminBookings from './components/AdminDashboard/AdminBookings'
 import TravelGuide from './components/TravelGuide'
+import AboutUs from './components/AboutUs'
+import { Contact } from 'lucide-react'
+import ContactUs from './components/ContactUs'
 
 function App() {
   console.log("App component is rendering");
@@ -36,6 +39,20 @@ function App() {
               path="/travel-guide"
               element={
                   <TravelGuide/>
+              }
+            />
+
+            <Route 
+              path="/about-us"
+              element={
+                  <AboutUs/>
+              }
+            />
+
+            <Route 
+              path="/contact"
+              element={
+                  <ContactUs/>
               }
             />
 

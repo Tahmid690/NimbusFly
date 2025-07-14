@@ -93,7 +93,8 @@ const login=async(req,res)=>{
     }
     const token= jwt.sign({
         admin_id:result.rows[0].admin_id,
-        email:email
+        email:email,
+        airline_id:result.rows[0].airline_id
      },JWT_SECRET,{expiresIn:'24h'});
 
 

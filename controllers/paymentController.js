@@ -240,7 +240,7 @@ const processPayment = async (req, res) => {
     `;
     const bookingResult = await client.query(bookingQuery, [
       customer_id,
-      payment_date.toISOString().split('T')[0],
+      payment_date.toISOString().split('T')[0]+" "+payment_date.toISOString().split('T')[1],
       total_amount,
       'PAID',
       flight_data.trip_type

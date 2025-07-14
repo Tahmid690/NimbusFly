@@ -14,7 +14,6 @@ const seat=require('./routes/seat')
 const admin=require('./routes/airline_admin')
 const app = express()
 
-app.listen(3000)
 app.use(express.json());
 
 app.use(cors({
@@ -44,6 +43,10 @@ app.use((req, res) => {
     success: false,
     message: 'Endpoint not found'
   });
+});
+
+app.listen(3000, () => {
+  console.log('Server running on port 3000');
 });
  
 

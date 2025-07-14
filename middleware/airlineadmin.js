@@ -13,7 +13,7 @@ const addMiddleware=async(req,res,next)=>{
         }
        const token=head.split(' ')[1];
        const decoded=jwt.verify(token,JWT_SECRET);
-       req.user=decoded;
+       req.admin=decoded;
        next();
     }catch(error){
         return res.status(401).json({
