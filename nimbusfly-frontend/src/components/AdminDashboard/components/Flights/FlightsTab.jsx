@@ -3,23 +3,97 @@ import { useState, useMemo, useEffect } from 'react';
 import GlowCard from '../UI/GlowCard';
 import FlightsTable from './FlightsTable';
 import StatCard from '../Dashboard/StatCard';
-import { Plus, Navigation, Clock, AlertCircle, CheckCircle, Download, Filter } from 'lucide-react';
+import { Plus, Navigation, Clock, AlertCircle, CheckCircle, Download, Filter, ChevronDown } from 'lucide-react';
 
 const FlightsTab = ({ allFlights }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('all');
+  const [showExportDropdown, setShowExportDropdown] = useState(false);
   const flightsPerPage = 20;
 
+  const exportToCSV = (data, filename) => {
+    if (!data || data.length === 0) {
+      alert('No data to export');
+      return;
+    }
+    
+    const headers = Object.keys(data[0]);
+    const csvContent = [
+      headers.join(','),
+      ...data.map(row => headers.map(header => {
+        const value = row[header];
+        return typeof value === 'string' && value.includes(',') 
+          ? `"${value.replace(/"/g, '""')}"` 
+          : value || '';
+      }).join(','))
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${filename}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const exportToJSON = (data, filename) => {
+    if (!data) {
+      alert('No data to export');
+      return;
+    }
+    
+    const jsonContent = JSON.stringify(data, null, 2);
+    const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${filename}.json`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleExport = (format) => {
+    const timestamp = new Date().toISOString().slice(0, 10);
+    const dataToExport = statusFilter === 'all' ? allFlights : filteredFlights;
+    
+    switch (format) {
+      case 'csv-flights':
+        exportToCSV(dataToExport, `flights-${statusFilter}-${timestamp}`);
+        break;
+      case 'csv-stats':
+        exportToCSV([flightStats], `flight-statistics-${timestamp}`);
+        break;
+      case 'json-flights':
+        exportToJSON(dataToExport, `flights-${statusFilter}-${timestamp}`);
+        break;
+      case 'json-full':
+        exportToJSON({
+          statistics: flightStats,
+          flights: dataToExport,
+          filters: { status: statusFilter },
+          exportedAt: new Date().toISOString()
+        }, `flight-report-${timestamp}`);
+        break;
+      default:
+        exportToJSON(dataToExport, `flights-export-${timestamp}`);
+    }
+    setShowExportDropdown(false);
+  };
+  // console.log('All Flights:', allFlights);
   // Calculate flight statistics
   const flightStats = useMemo(() => {
     if (!allFlights.length) return {};
     
     const now = new Date();
-    const scheduled = allFlights.filter(f => f.flight_status === 'scheduled');
-    const active = allFlights.filter(f => f.flight_status === 'active');
-    const delayed = allFlights.filter(f => f.flight_status === 'delayed');
-    const completed = allFlights.filter(f => f.flight_status === 'completed');
-    const cancelled = allFlights.filter(f => f.flight_status === 'cancelled');
+    const scheduled = allFlights.filter(f => f.flight_status === 'Scheduled');
+    const active = allFlights.filter(f => f.flight_status === 'Active');
+    const completed = allFlights.filter(f => f.flight_status === 'Completed');
+    const cancelled = allFlights.filter(f => f.flight_status === 'Cancelled');
     const upcomingFlights = allFlights.filter(f => {
       const departureTime = new Date(f.departure_time);
       return departureTime > now;
@@ -29,7 +103,6 @@ const FlightsTab = ({ allFlights }) => {
       totalFlights: allFlights.length,
       scheduled: scheduled.length,
       active: active.length,
-      delayed: delayed.length,
       completed: completed.length,
       cancelled: cancelled.length,
       upcomingFlights: upcomingFlights.length,
@@ -42,8 +115,11 @@ const FlightsTab = ({ allFlights }) => {
     
     // Apply status filter
     if (statusFilter !== 'all') {
+      console.log('Applying status filter:', statusFilter);
       filtered = filtered.filter(flight => flight.flight_status === statusFilter);
     }
+
+    console.log('Filtered Flights:', filtered);
     
    
     
@@ -76,7 +152,7 @@ const FlightsTab = ({ allFlights }) => {
     },
     {
       label: 'Cancelled',
-      value: flightStats.delayed?.toLocaleString() || '0',
+      value: flightStats.cancelled?.toLocaleString() || '0',
       icon: Clock,
       gradient: 'from-red-500 to-red-700',
       description: 'Cancelled flights'
@@ -100,13 +176,51 @@ const FlightsTab = ({ allFlights }) => {
           <p className="text-gray-600 text-lg">Comprehensive flight operations control</p>
         </div>
         <div className="flex items-center space-x-4">
-          <button
-            onClick={() => alert('Exporting flight data...')}
-            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl hover:from-blue-700 hover:to-indigo-700 flex items-center space-x-2 shadow-lg shadow-blue-500/25 transition-all duration-300"
-          >
-            <Download className="w-5 h-5" />
-            <span className="font-semibold">Export</span>
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => setShowExportDropdown(!showExportDropdown)}
+              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl hover:from-blue-700 hover:to-indigo-700 flex items-center space-x-2 shadow-lg shadow-blue-500/25 transition-all duration-300"
+            >
+              <Download className="w-5 h-5" />
+              <span className="font-semibold">Export</span>
+              <ChevronDown className="w-4 h-4" />
+            </button>
+            
+            {showExportDropdown && (
+              <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-gray-200 z-50">
+                <div className="p-2">
+                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide px-3 py-2">CSV Exports</div>
+                  <button 
+                    onClick={() => handleExport('csv-flights')}
+                    className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
+                  >
+                    Flight Data ({statusFilter === 'all' ? 'All' : statusFilter})
+                  </button>
+                  <button 
+                    onClick={() => handleExport('csv-stats')}
+                    className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
+                  >
+                    Flight Statistics
+                  </button>
+                  
+                  <div className="border-t border-gray-200 my-2"></div>
+                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide px-3 py-2">JSON Exports</div>
+                  <button 
+                    onClick={() => handleExport('json-flights')}
+                    className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
+                  >
+                    Flight Data Only
+                  </button>
+                  <button 
+                    onClick={() => handleExport('json-full')}
+                    className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
+                  >
+                    Complete Flight Report
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
           <button
             onClick={() => alert('Add flight functionality not implemented')}
             className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-2xl hover:from-blue-600 hover:to-indigo-700 shadow-lg shadow-blue-500/25 transition-all duration-300 flex items-center space-x-2"
@@ -132,11 +246,10 @@ const FlightsTab = ({ allFlights }) => {
           className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         >
           <option value="all">All Flights</option>
-          <option value="scheduled">Scheduled</option>
-          <option value="active">Active</option>
-          <option value="delayed">Delayed</option>
-          <option value="completed">Completed</option>
-          <option value="cancelled">Cancelled</option>
+          <option value="Scheduled">Scheduled</option>
+          <option value="Active">Active</option>
+          <option value="Completed">Completed</option>
+          <option value="Cancelled">Cancelled</option>
         </select>
         <span className="text-gray-600 text-sm">Showing {filteredFlights.length} of {allFlights.length} flights</span>
       </div>

@@ -16,7 +16,7 @@ router.put('/admin/booking/:booking_id/status', airlineadminMiddleware, adminCon
 // Admin dashboard specific routes 
 router.get('/bookings/:airline_id', airlineadminMiddleware, airlineadminController.getAirlineBookings);
 router.get('/flights/:airline_id', airlineadminMiddleware, airlineadminController.getAirlineFlights);
-router.get('/analytics/:airline_id', airlineadminController.getDashboardAnalytics);
+router.get('/analytics/:airline_id', airlineadminMiddleware,airlineadminController.getDashboardAnalytics);
 
 // Parameterized routes (MUST come after specific routes)
 router.get('/:id', airlineadminMiddleware, airlineadminController.getAdminById);

@@ -6,7 +6,9 @@ import Pagination from '../UI/Pagination';
 import { formatDate, formatTime } from '../../utils/formatters';
 
 const FlightsTable = ({ flights, currentPage, onPageChange, totalPages, totalItems, itemsPerPage }) => (
+  
   <div className="overflow-hidden">
+    {console.log('Flights Data:', flights)}
     <div className="overflow-x-auto">
       <table className="w-full">
         <thead className="bg-gradient-to-r from-gray-50 to-blue-50">
@@ -42,11 +44,11 @@ const FlightsTable = ({ flights, currentPage, onPageChange, totalPages, totalIte
               </td>
               <td className="px-8 py-6">
                 <div className="text-sm">
-                  <span className="font-medium text-gray-900">{flight.total_seats - flight.available_seats}/{flight.total_seats}</span>
-                  <p className="text-xs text-gray-500">{Math.round(((flight.total_seats - flight.available_seats) / flight.total_seats) * 100)}% full</p>
+                  <span className="font-medium text-gray-900">{flight.aircraft_capacity - flight.available_seats}/{flight.aircraft_capacity}</span>
+                  <p className="text-xs text-gray-500">{Math.round(((flight.aircraft_capacity - flight.available_seats) / flight.aircraft_capacity) * 100)}% full</p>
                 </div>
               </td>
-              <td className="px-8 py-6"><StatusBadge status={flight.status || 'Scheduled'} /></td>
+              <td className="px-8 py-6"><StatusBadge status={flight.flight_status || 'Scheduled'} /></td>
               <td className="px-8 py-6">
                 <div className="flex items-center space-x-2">
                   <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg"><Eye className="w-5 h-5" /></button>

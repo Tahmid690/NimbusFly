@@ -120,6 +120,7 @@ const AdminDashboard = () => {
       case 'bookings':
         return <BookingsTab allBookings={allBookings} />;
       case 'flights':
+        // console.log('All Flights:', allFlights);
         return <FlightsTab allFlights={allFlights} />;
       case 'aircraft':
         return <AircraftTab allAircraft={allAircraft} />;
