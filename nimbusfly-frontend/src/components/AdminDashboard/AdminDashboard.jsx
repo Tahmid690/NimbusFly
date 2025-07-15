@@ -77,6 +77,7 @@ const AdminDashboard = () => {
       setDataLoading(true);
       Promise.all([
         fetchData(`/admin/analytics/${admin.airline_id}`, (data) => {
+          console.log(data);
           setAnalytics(data.stats || {});
           setRecentBookings(data.recentBookings || []);
           setUpcomingFlights(data.upcomingFlights || []);

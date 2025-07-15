@@ -391,7 +391,7 @@ const getDashboardAnalytics = async (req, res) => {
       WHERE al.airline_id = $1
     `, [airline_id]);
 
-
+    
     
 
     // Get recent bookings
