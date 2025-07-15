@@ -131,18 +131,7 @@ const SettingsTab = ({ admin }) => {
               </div>
               <p className="text-xs text-gray-500 mt-1">This field cannot be changed</p>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Admin ID</label>
-              <div className="relative">
-                <User className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  value={admin.admin_id || admin.id || ''}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl bg-gray-50 cursor-not-allowed text-gray-600"
-                  readOnly
-                />
-              </div>
-            </div>
+            
           </div>
         </GlowCard>
 

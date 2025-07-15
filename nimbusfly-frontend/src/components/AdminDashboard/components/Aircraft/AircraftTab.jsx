@@ -3,9 +3,10 @@ import React, { useState, useMemo, useEffect } from 'react';
 import GlowCard from '../UI/GlowCard';
 import AircraftTable from './AircraftTable';
 import StatCard from '../Dashboard/StatCard';
-import { Plus, Plane, Wrench, CheckCircle, AlertTriangle, Download, Filter, ChevronDown, X } from 'lucide-react';
+import { Plus, Plane, Wrench, AlertTriangle, Download, Filter, ChevronDown, X } from 'lucide-react';
+import axios from 'axios';
 
-const AircraftTab = ({ allAircraft }) => {
+const AircraftTab = ({ allAircraft, admin }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [showExportDropdown, setShowExportDropdown] = useState(false);
   const [showAddAircraftModal, setShowAddAircraftModal] = useState(false);
@@ -117,6 +118,52 @@ const AircraftTab = ({ allAircraft }) => {
     setShowDetailsModal(false);
     setShowEditModal(false);
     setSelectedAircraft(null);
+  };
+
+  const addAircraftDb = async (formData) => {
+    if (!admin?.airline_id) {
+      alert('Error: Airline ID not found. Please log in again.');
+      return;
+    }
+
+    const aircraftData = {
+      model: formData.get('model'),
+      total_seats: parseInt(formData.get('total_seats')),
+      econ_seats: parseInt(formData.get('econ_seats')),
+      busi_seats: parseInt(formData.get('busi_seats')),
+      airline_id: admin.airline_id,
+      registration_number: formData.get('registration_number') || null,
+      manufacturer: formData.get('manufacturer') || null,
+      year_manufactured: formData.get('year_manufactured') ? parseInt(formData.get('year_manufactured')) : null,
+      status: formData.get('status') || 'Active',
+      max_range_km: formData.get('max_range_km') ? parseInt(formData.get('max_range_km')) : null
+    };
+
+    try {
+      const response = await axios.post(
+        'http://localhost:3000/aircraft/add',
+        aircraftData,
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.data.success) {
+        // alert('Aircraft created successfully!');
+        closeModals();
+        // Store current tab in localStorage before reload
+        // localStorage.setItem('lastActiveTab', 'aircraft');
+        window.location.reload();
+      } else {
+        alert('Failed to create aircraft: ' + response.data.message);
+      }
+    } catch (error) {
+      console.error('Error creating aircraft:', error);
+      alert('Error creating aircraft: ' + (error.response?.data?.message || error.message));
+    }
   };
 
   const filteredAircraft = useMemo(() => {
@@ -245,6 +292,7 @@ const AircraftTab = ({ allAircraft }) => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Aircraft Model</label>
                   <input 
                     type="text" 
+                    name="model"
                     placeholder="e.g., Boeing 737-800"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
@@ -255,6 +303,7 @@ const AircraftTab = ({ allAircraft }) => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Total Seats</label>
                   <input 
                     type="number" 
+                    name="total_seats"
                     placeholder="e.g., 180"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
@@ -265,6 +314,7 @@ const AircraftTab = ({ allAircraft }) => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Economy Seats</label>
                   <input 
                     type="number" 
+                    name="econ_seats"
                     placeholder="e.g., 150"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
@@ -275,26 +325,20 @@ const AircraftTab = ({ allAircraft }) => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Business Seats</label>
                   <input 
                     type="number" 
+                    name="busi_seats"
                     placeholder="e.g., 30"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
                   />
                 </div>
                 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Airline ID</label>
-                  <input 
-                    type="number" 
-                    placeholder="Airline ID"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    required
-                  />
-                </div>
+               
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Registration Number</label>
                   <input 
                     type="text" 
+                    name="registration_number"
                     placeholder="e.g., N12345"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
@@ -304,6 +348,7 @@ const AircraftTab = ({ allAircraft }) => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Manufacturer</label>
                   <input 
                     type="text" 
+                    name="manufacturer"
                     placeholder="e.g., Boeing"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
@@ -313,6 +358,7 @@ const AircraftTab = ({ allAircraft }) => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Year Manufactured</label>
                   <input 
                     type="number" 
+                    name="year_manufactured"
                     placeholder="e.g., 2020"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
@@ -321,13 +367,14 @@ const AircraftTab = ({ allAircraft }) => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
                   <select 
+                    name="status"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
                   >
                     <option value="">Select Status</option>
-                    <option value="operational">Operational</option>
-                    <option value="maintenance">Maintenance</option>
-                    <option value="grounded">Grounded</option>
+                    <option value="Active">Active</option>
+                    <option value="Maintenance">Maintenance</option>
+                    <option value="Retired">Retired</option>
                   </select>
                 </div>
                 
@@ -335,6 +382,7 @@ const AircraftTab = ({ allAircraft }) => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Max Range (km)</label>
                   <input 
                     type="number" 
+                    name="max_range_km"
                     placeholder="e.g., 5000"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
@@ -353,8 +401,8 @@ const AircraftTab = ({ allAircraft }) => {
                   type="submit"
                   onClick={(e) => {
                     e.preventDefault();
-                    alert('Add aircraft functionality not implemented yet');
-                    closeModals();
+                    const formData = new FormData(e.target.form);
+                    addAircraftDb(formData);
                   }}
                   className="px-6 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
                 >
@@ -518,9 +566,9 @@ const AircraftTab = ({ allAircraft }) => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="">Select Status</option>
-                    <option value="operational">Operational</option>
+                    <option value="Active">Active</option>
                     <option value="maintenance">Maintenance</option>
-                    <option value="grounded">Grounded</option>
+                    <option value="Retired">Retired</option>
                   </select>
                 </div>
               </div>

@@ -105,9 +105,20 @@ const getAircraftByAirline = async (req, res) => {
 
 const createAircraft = async (req, res) => {
   try {
-    const { model, total_seats, econ_seats, busi_seats, airline_id } = req.body;
+    const { 
+      model, 
+      total_seats, 
+      econ_seats, 
+      busi_seats, 
+      airline_id,
+      registration_number,
+      manufacturer,
+      year_manufactured,
+      max_range_km,
+      status 
+    } = req.body;
     
-    // Validation
+    // Validation for required fields
     if (!model) {
       return res.status(400).json({
         success: false,
@@ -148,6 +159,21 @@ const createAircraft = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Economy seats + Business seats must equal total seats'
+      });
+    }
+    
+    // Validate optional fields
+    if (year_manufactured && (year_manufactured < 1950 || year_manufactured > new Date().getFullYear() + 5)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Year manufactured must be between 1950 and ' + (new Date().getFullYear() + 5)
+      });
+    }
+    
+    if (max_range_km && max_range_km < 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Max range must be a non-negative number'
       });
     }
     
@@ -164,13 +190,33 @@ const createAircraft = async (req, res) => {
       });
     }
     
-    // Get next ID (you should set this to SERIAL in your database)
-    
-    
+    // Insert aircraft with all fields
     const result = await pool.query(`
-      INSERT INTO aircraft(model, total_seats, econ_seats, busi_seats, airline_id) 
-      VALUES ($1, $2, $3, $4, $5) RETURNING *
-    `, [model, total_seats, econ_seats, busi_seats, airline_id]);
+      INSERT INTO aircraft(
+        model, 
+        total_seats, 
+        econ_seats, 
+        busi_seats, 
+        airline_id,
+        registration_number,
+        manufacturer,
+        year_manufactured,
+        max_range_km,
+        status
+      ) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *
+    `, [
+      model, 
+      total_seats, 
+      econ_seats, 
+      busi_seats, 
+      airline_id,
+      registration_number || null,
+      manufacturer || null,
+      year_manufactured || null,
+      max_range_km || null,
+      status || 'Active'
+    ]);
     
     res.status(201).json({
       success: true,
@@ -183,6 +229,11 @@ const createAircraft = async (req, res) => {
       res.status(404).json({
         success: false,
         message: 'Airline not found'
+      });
+    } else if (error.code === '23505') { // Unique constraint violation
+      res.status(409).json({
+        success: false,
+        message: 'Aircraft with this registration number already exists'
       });
     } else {
       res.status(500).json({
@@ -197,7 +248,18 @@ const createAircraft = async (req, res) => {
 const updateAircraft = async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const { model, total_seats, econ_seats, busi_seats, airline_id } = req.body;
+    const { 
+      model, 
+      total_seats, 
+      econ_seats, 
+      busi_seats, 
+      airline_id,
+      registration_number,
+      manufacturer,
+      year_manufactured,
+      max_range_km,
+      status 
+    } = req.body;
     
     if (isNaN(id)) {
       return res.status(400).json({
@@ -206,7 +268,7 @@ const updateAircraft = async (req, res) => {
       });
     }
     
-    // Validation
+    // Validation for required fields
     if (!model) {
       return res.status(400).json({
         success: false,
@@ -247,6 +309,21 @@ const updateAircraft = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Economy seats + Business seats must equal total seats'
+      });
+    }
+    
+    // Validate optional fields
+    if (year_manufactured && (year_manufactured < 1950 || year_manufactured > new Date().getFullYear() + 5)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Year manufactured must be between 1950 and ' + (new Date().getFullYear() + 5)
+      });
+    }
+    
+    if (max_range_km && max_range_km < 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Max range must be a non-negative number'
       });
     }
     
@@ -265,10 +342,32 @@ const updateAircraft = async (req, res) => {
 
     const result = await pool.query(`
       UPDATE aircraft
-      SET model = $1, total_seats = $2, econ_seats = $3, busi_seats = $4, airline_id = $5
-      WHERE aircraft_id = $6
+      SET 
+        model = $1, 
+        total_seats = $2, 
+        econ_seats = $3, 
+        busi_seats = $4, 
+        airline_id = $5,
+        registration_number = $6,
+        manufacturer = $7,
+        year_manufactured = $8,
+        max_range_km = $9,
+        status = $10
+      WHERE aircraft_id = $11
       RETURNING *
-    `, [model, total_seats, econ_seats, busi_seats, airline_id, id]);
+    `, [
+      model, 
+      total_seats, 
+      econ_seats, 
+      busi_seats, 
+      airline_id,
+      registration_number || null,
+      manufacturer || null,
+      year_manufactured || null,
+      max_range_km || null,
+      status || 'Active',
+      id
+    ]);
     
     if (result.rowCount === 0) {
       return res.status(404).json({
@@ -288,6 +387,11 @@ const updateAircraft = async (req, res) => {
       res.status(404).json({
         success: false,
         message: 'Airline not found'
+      });
+    } else if (error.code === '23505') { // Unique constraint violation
+      res.status(409).json({
+        success: false,
+        message: 'Aircraft with this registration number already exists'
       });
     } else {
       res.status(500).json({

@@ -20,7 +20,14 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
 
   // UI State
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState(() => {
+    const savedTab = localStorage.getItem('lastActiveTab');
+    if (savedTab) {
+      localStorage.removeItem('lastActiveTab'); // Remove after reading
+      return savedTab;
+    }
+    return 'overview';
+  });
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
   
@@ -121,7 +128,7 @@ const AdminDashboard = () => {
       case 'flights':
         return <FlightsTab allFlights={allFlights} />;
       case 'aircraft':
-        return <AircraftTab allAircraft={allAircraft} />;
+        return <AircraftTab allAircraft={allAircraft} admin={admin} />;
       case 'passengers':
         return <PassengersTab allBookings={allBookings} />;
       case 'settings':

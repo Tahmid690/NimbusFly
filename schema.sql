@@ -8,6 +8,11 @@ CREATE TABLE public.aircraft (
   econ_seats integer NOT NULL,
   busi_seats integer NOT NULL,
   airline_id integer NOT NULL,
+  registration_number character varying,
+  manufacturer character varying,
+  year_manufactured integer,
+  max_range_km integer,
+  status character varying,
   CONSTRAINT aircraft_pkey PRIMARY KEY (aircraft_id),
   CONSTRAINT aircraft_airline_id_fkey FOREIGN KEY (airline_id) REFERENCES public.airlines(airline_id)
 );
@@ -37,7 +42,7 @@ CREATE TABLE public.airports (
 CREATE TABLE public.bookings (
   booking_id integer GENERATED ALWAYS AS IDENTITY NOT NULL,
   customer_id integer NOT NULL,
-  booking_date date NOT NULL,
+  booking_date timestamp without time zone NOT NULL,
   total_amount numeric NOT NULL,
   payment_status character varying NOT NULL,
   trip_type character varying NOT NULL CHECK (trip_type::text = ANY (ARRAY['ONE-WAY'::character varying::text, 'ROUND-WAY'::character varying::text, 'MULTI-CITY'::character varying::text])),
@@ -70,9 +75,10 @@ CREATE TABLE public.flights (
   available_busi_seats integer NOT NULL,
   available_econ_seats integer NOT NULL,
   baggage_limit integer,
+  status boolean DEFAULT true,
   CONSTRAINT flights_pkey PRIMARY KEY (flight_id),
-  CONSTRAINT flights_destination_airport_id_fkey FOREIGN KEY (destination_airport_id) REFERENCES public.airports(airport_id),
   CONSTRAINT flights_aircraft_id_fkey FOREIGN KEY (aircraft_id) REFERENCES public.aircraft(aircraft_id),
+  CONSTRAINT flights_destination_airport_id_fkey FOREIGN KEY (destination_airport_id) REFERENCES public.airports(airport_id),
   CONSTRAINT flights_origin_airport_id_fkey FOREIGN KEY (origin_airport_id) REFERENCES public.airports(airport_id)
 );
 CREATE TABLE public.passengers (
@@ -90,7 +96,6 @@ CREATE TABLE public.passengers (
 CREATE TABLE public.payments (
   payment_id integer GENERATED ALWAYS AS IDENTITY NOT NULL,
   booking_id integer NOT NULL,
-  amount numeric NOT NULL,
   payment_method character varying NOT NULL,
   transaction_id character varying NOT NULL UNIQUE,
   payment_date date NOT NULL,
@@ -113,10 +118,9 @@ CREATE TABLE public.ticket (
   flight_id integer NOT NULL,
   passenger_id integer NOT NULL,
   seat_id integer NOT NULL,
-  price numeric NOT NULL,
   CONSTRAINT ticket_pkey PRIMARY KEY (ticket_id),
   CONSTRAINT ticket_passenger_id_fkey FOREIGN KEY (passenger_id) REFERENCES public.passengers(passenger_id),
   CONSTRAINT ticket_seat_id_fkey FOREIGN KEY (seat_id) REFERENCES public.seats(seat_id),
-  CONSTRAINT ticket_flight_id_fkey FOREIGN KEY (flight_id) REFERENCES public.flights(flight_id),
-  CONSTRAINT ticket_booking_id_fkey FOREIGN KEY (booking_id) REFERENCES public.bookings(booking_id)
+  CONSTRAINT ticket_booking_id_fkey FOREIGN KEY (booking_id) REFERENCES public.bookings(booking_id),
+  CONSTRAINT ticket_flight_id_fkey FOREIGN KEY (flight_id) REFERENCES public.flights(flight_id)
 );

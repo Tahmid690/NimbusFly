@@ -6,6 +6,7 @@ import StatCard from '../Dashboard/StatCard';
 import { Plus, Navigation, Clock, AlertCircle, CheckCircle, Download, Filter, ChevronDown, X } from 'lucide-react';
 import StatusBadge from '../UI/StatusBadge';
 import { formatDate, formatTime } from '../../utils/formatters';
+import axios from 'axios';
 
 const FlightsTab = ({ allFlights }) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -15,6 +16,10 @@ const FlightsTab = ({ allFlights }) => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddFlightModal, setShowAddFlightModal] = useState(false);
+  const [availableAircraft, setAvailableAircraft] = useState([]);
+  const [availableAirports, setAvailableAirports] = useState([]);
+  const [loadingAircraft, setLoadingAircraft] = useState(false);
+  const [loadingAirports, setLoadingAirports] = useState(false);
   const flightsPerPage = 20;
 
   const exportToCSV = (data, filename) => {
@@ -117,6 +122,48 @@ const FlightsTab = ({ allFlights }) => {
     setShowAddFlightModal(false);
     setSelectedFlight(null);
   };
+
+  // Fetch available aircraft
+  const fetchAvailableAircraft = async () => {
+    setLoadingAircraft(true);
+    try {
+      const response = await axios.get('http://localhost:3000/admin/admin/aircraft', {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
+      });
+      if (response.data.success) {
+        setAvailableAircraft(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching aircraft:', error);
+    } finally {
+      setLoadingAircraft(false);
+    }
+  };
+
+  // Fetch available airports
+  const fetchAvailableAirports = async () => {
+    setLoadingAirports(true);
+    try {
+      const response = await axios.get('http://localhost:3000/admin/admin/airports', {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
+      });
+      if (response.data.success) {
+        setAvailableAirports(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching airports:', error);
+    } finally {
+      setLoadingAirports(false);
+    }
+  };
+
+  // Load aircraft and airports when Add Flight modal opens
+  useEffect(() => {
+    if (showAddFlightModal) {
+      fetchAvailableAircraft();
+      fetchAvailableAirports();
+    }
+  }, [showAddFlightModal]);
 
   // console.log('All Flights:', allFlights);
   // Calculate flight statistics
@@ -468,33 +515,58 @@ const FlightsTab = ({ allFlights }) => {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Aircraft ID</label>
-                  <input 
-                    type="number" 
-                    placeholder="Aircraft ID"
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Aircraft</label>
+                  <select 
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
-                  />
+                    disabled={loadingAircraft}
+                  >
+                    <option value="">
+                      {loadingAircraft ? 'Loading aircraft...' : 'Select aircraft'}
+                    </option>
+                    {availableAircraft.map((aircraft) => (
+                      <option key={aircraft.aircraft_id} value={aircraft.aircraft_id}>
+                        {aircraft.model} - {aircraft.registration_number || `ID: ${aircraft.aircraft_id}`} 
+                        ({aircraft.total_seats} seats)
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Origin Airport ID</label>
-                  <input 
-                    type="number" 
-                    placeholder="Origin Airport ID"
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Origin Airport</label>
+                  <select 
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
-                  />
+                    disabled={loadingAirports}
+                  >
+                    <option value="">
+                      {loadingAirports ? 'Loading airports...' : 'Select origin airport'}
+                    </option>
+                    {availableAirports.map((airport) => (
+                      <option key={airport.airport_id} value={airport.airport_id}>
+                        {airport.iata_code} - {airport.airport_name} ({airport.city}, {airport.country})
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Destination Airport ID</label>
-                  <input 
-                    type="number" 
-                    placeholder="Destination Airport ID"
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Destination Airport</label>
+                  <select 
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
-                  />
+                    disabled={loadingAirports}
+                  >
+                    <option value="">
+                      {loadingAirports ? 'Loading airports...' : 'Select destination airport'}
+                    </option>
+                    {availableAirports.map((airport) => (
+                      <option key={airport.airport_id} value={airport.airport_id}>
+                        {airport.iata_code} - {airport.airport_name} ({airport.city}, {airport.country})
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 
                 <div>
