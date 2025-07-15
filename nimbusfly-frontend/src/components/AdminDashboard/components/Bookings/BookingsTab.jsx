@@ -4,7 +4,7 @@ import GlowCard from '../UI/GlowCard';
 import BookingsTable from './BookingsTable';
 import BookingDetailsModal from './BookingDetailsModal';
 import StatCard from '../Dashboard/StatCard';
-import { DollarSign, Calendar, CheckCircle, Clock, Download, Filter, RefreshCw } from 'lucide-react';
+import { DollarSign, Calendar, CheckCircle, Clock, Download, Filter, RefreshCw, ChevronDown } from 'lucide-react';
 import axios from 'axios';
 
 const BookingsTab = ({ allBookings, searchQuery }) => {
@@ -16,6 +16,7 @@ const BookingsTab = ({ allBookings, searchQuery }) => {
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [showExportDropdown, setShowExportDropdown] = useState(false);
   const bookingsPerPage = 20;
 
   // Update bookings when allBookings prop changes
@@ -131,7 +132,84 @@ const BookingsTab = ({ allBookings, searchQuery }) => {
     fetchBookings(1, apiStatus, searchQuery);
   };
 
-  const handleExportData = async () => {
+  const exportToCSV = (data, filename) => {
+    if (!data || data.length === 0) {
+      alert('No data to export');
+      return;
+    }
+    
+    const headers = Object.keys(data[0]);
+    const csvContent = [
+      headers.join(','),
+      ...data.map(row => headers.map(header => {
+        const value = row[header];
+        return typeof value === 'string' && value.includes(',') 
+          ? `"${value.replace(/"/g, '""')}"` 
+          : value || '';
+      }).join(','))
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${filename}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const exportToJSON = (data, filename) => {
+    if (!data) {
+      alert('No data to export');
+      return;
+    }
+    
+    const jsonContent = JSON.stringify(data, null, 2);
+    const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${filename}.json`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleExport = (format) => {
+    const timestamp = new Date().toISOString().slice(0, 10);
+    const dataToExport = statusFilter === 'all' ? bookings : filteredBookings;
+    
+    switch (format) {
+      case 'csv-bookings':
+        exportToCSV(dataToExport, `bookings-${statusFilter}-${timestamp}`);
+        break;
+      case 'csv-stats':
+        exportToCSV([bookingStats], `booking-statistics-${timestamp}`);
+        break;
+      case 'json-bookings':
+        exportToJSON(dataToExport, `bookings-${statusFilter}-${timestamp}`);
+        break;
+      case 'json-full':
+        exportToJSON({
+          statistics: bookingStats,
+          bookings: dataToExport,
+          filters: { status: statusFilter },
+          exportedAt: new Date().toISOString()
+        }, `booking-report-${timestamp}`);
+        break;
+      case 'api-csv':
+        handleExportDataAPI();
+        break;
+      default:
+        exportToJSON(dataToExport, `bookings-export-${timestamp}`);
+    }
+    setShowExportDropdown(false);
+  };
+
+  const handleExportDataAPI = async () => {
     try {
       const response = await axios.get(`http://localhost:3000/admin/admin/bookings/export`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` },
@@ -242,13 +320,57 @@ const BookingsTab = ({ allBookings, searchQuery }) => {
           <p className="text-gray-600 text-lg">Advanced reservation control system</p>
         </div>
         <div className="flex items-center space-x-4">
-          <button
-            onClick={handleExportData}
-            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl hover:from-blue-700 hover:to-indigo-700 flex items-center space-x-2 shadow-lg shadow-blue-500/25 transition-all duration-300"
-          >
-            <Download className="w-5 h-5" />
-            <span className="font-semibold">Export</span>
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => setShowExportDropdown(!showExportDropdown)}
+              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl hover:from-blue-700 hover:to-indigo-700 flex items-center space-x-2 shadow-lg shadow-blue-500/25 transition-all duration-300"
+            >
+              <Download className="w-5 h-5" />
+              <span className="font-semibold">Export</span>
+              <ChevronDown className="w-4 h-4" />
+            </button>
+            
+            {showExportDropdown && (
+              <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-gray-200 z-50">
+                <div className="p-2">
+                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide px-3 py-2">CSV Exports</div>
+                  <button 
+                    onClick={() => handleExport('csv-bookings')}
+                    className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
+                  >
+                    Booking Data ({statusFilter === 'all' ? 'All' : statusFilter})
+                  </button>
+                  <button 
+                    onClick={() => handleExport('csv-stats')}
+                    className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
+                  >
+                    Booking Statistics
+                  </button>
+                  <button 
+                    onClick={() => handleExport('api-csv')}
+                    className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
+                  >
+                    Server Export (API)
+                  </button>
+                  
+                  <div className="border-t border-gray-200 my-2"></div>
+                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide px-3 py-2">JSON Exports</div>
+                  <button 
+                    onClick={() => handleExport('json-bookings')}
+                    className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
+                  >
+                    Booking Data Only
+                  </button>
+                  <button 
+                    onClick={() => handleExport('json-full')}
+                    className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
+                  >
+                    Complete Booking Report
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

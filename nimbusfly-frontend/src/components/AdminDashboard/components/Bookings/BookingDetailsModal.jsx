@@ -75,10 +75,10 @@ const BookingDetailsModal = ({ booking, isOpen, onClose, onStatusUpdate }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4 pt-20">
+      <div className="bg-white/90 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[calc(100vh-15rem)] overflow-y-auto my-4">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between rounded-t-2xl">
+        <div className=" top-0 bg-white/80 backdrop-blur-xl border-b border-white/20 p-6 flex items-center justify-between rounded-t-2xl">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">Booking Details</h2>
             <p className="text-gray-600">Booking ID: {booking?.booking_id}</p>
@@ -113,7 +113,7 @@ const BookingDetailsModal = ({ booking, isOpen, onClose, onStatusUpdate }) => {
             <div className="space-y-6">
               {/* Booking Overview */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-gray-50 rounded-lg p-4">
+                <div className="bg-white/60 backdrop-blur-sm border border-white/30 rounded-lg p-4">
                   <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
                     <Calendar className="w-5 h-5 mr-2" />
                     Booking Information
@@ -141,7 +141,7 @@ const BookingDetailsModal = ({ booking, isOpen, onClose, onStatusUpdate }) => {
                   </div>
                 </div>
 
-                <div className="bg-gray-50 rounded-lg p-4">
+                <div className="bg-white/60 backdrop-blur-sm border border-white/30 rounded-lg p-4">
                   <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
                     <User className="w-5 h-5 mr-2" />
                     Customer Information
@@ -179,7 +179,7 @@ const BookingDetailsModal = ({ booking, isOpen, onClose, onStatusUpdate }) => {
                 </h3>
                 <div className="space-y-4">
                   {bookingDetails.tickets.map((ticket, index) => (
-                    <div key={index} className="bg-gray-50 rounded-lg p-4">
+                    <div key={index} className="bg-white/60 backdrop-blur-sm border border-white/30 rounded-lg p-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <h4 className="font-medium text-gray-900 mb-2">Flight {ticket.flight_number}</h4>
@@ -215,7 +215,7 @@ const BookingDetailsModal = ({ booking, isOpen, onClose, onStatusUpdate }) => {
                   </h3>
                   <div className="space-y-2">
                     {bookingDetails.payments.map((payment, index) => (
-                      <div key={index} className="bg-gray-50 rounded-lg p-4">
+                      <div key={index} className="bg-white/60 backdrop-blur-sm border border-white/30 rounded-lg p-4">
                         <div className="flex justify-between items-center">
                           <div>
                             <p className="font-medium">{formatCurrency(bookingDetails.booking.total_amount)}</p>
