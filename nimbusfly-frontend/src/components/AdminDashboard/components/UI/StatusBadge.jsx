@@ -7,7 +7,7 @@ const StatusBadge = ({ status }) => {
     'confirmed': { bg: 'bg-gradient-to-r from-emerald-500 to-green-600', glow: 'shadow-emerald-500/25' },
     'Pending': { bg: 'bg-gradient-to-r from-amber-500 to-orange-600', glow: 'shadow-amber-500/25' },
     'pending': { bg: 'bg-gradient-to-r from-amber-500 to-orange-600', glow: 'shadow-amber-500/25' },
-    'Cancelled': { bg: 'bg-gradient-to-r from-red-500 to-rose-600', glow: 'shadow-red-500/25' },
+    'CANCELLED': { bg: 'bg-gradient-to-r from-red-500 to-rose-600', glow: 'shadow-red-500/25' },
     'cancelled': { bg: 'bg-gradient-to-r from-red-500 to-rose-600', glow: 'shadow-red-500/25' },
     'On Time': { bg: 'bg-gradient-to-r from-emerald-500 to-green-600', glow: 'shadow-emerald-500/25' },
     'Scheduled': { bg: 'bg-gradient-to-r from-blue-500 to-indigo-600', glow: 'shadow-blue-500/25' },
@@ -15,7 +15,8 @@ const StatusBadge = ({ status }) => {
     'Active': { bg: 'bg-gradient-to-r from-green-500 to-emerald-600', glow: 'shadow-green-500/25' },
     'active': { bg: 'bg-gradient-to-r from-green-500 to-emerald-600', glow: 'shadow-green-500/25' },
     'Delayed': { bg: 'bg-gradient-to-r from-red-500 to-rose-600', glow: 'shadow-red-500/25' },
-    'Boarding': { bg: 'bg-gradient-to-r from-blue-500 to-indigo-600', glow: 'shadow-blue-500/25' }
+    'Boarding': { bg: 'bg-gradient-to-r from-blue-500 to-indigo-600', glow: 'shadow-blue-500/25' },
+    'PAID': { bg: 'bg-gradient-to-r from-emerald-500 to-green-600', glow: 'shadow-emerald-500/25' },
   };
 
   const config = configs[status] || { bg: 'bg-gray-500', glow: 'shadow-gray-500/25' };

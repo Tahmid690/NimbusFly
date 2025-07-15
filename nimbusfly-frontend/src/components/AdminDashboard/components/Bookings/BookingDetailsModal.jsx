@@ -26,6 +26,7 @@ const BookingDetailsModal = ({ booking, isOpen, onClose, onStatusUpdate }) => {
       console.log('Booking details response:', response.data);
       
       if (response.data.success) {
+        console.log(response.data.data);
         setBookingDetails(response.data.data);
       } else {
         setError(response.data.message || 'Failed to fetch booking details');
@@ -38,54 +39,18 @@ const BookingDetailsModal = ({ booking, isOpen, onClose, onStatusUpdate }) => {
     }
   };
 
-  const updateBookingStatus = async (newStatus) => {
-    setUpdating(true);
-    try {
-      const response = await axios.put(
-        `http://localhost:3000/admin/admin/booking/${booking.booking_id}/status`,
-        { payment_status: newStatus },
-        { headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` } }
-      );
-      
-      if (response.data.success) {
-        // Update local state
-        setBookingDetails(prev => ({
-          ...prev,
-          booking: { ...prev.booking, payment_status: newStatus }
-        }));
-        
-        // Notify parent component
-        if (onStatusUpdate) {
-          onStatusUpdate(booking.booking_id, newStatus);
-        }
-        
-        // Show success message
-        alert('Booking status updated successfully');
-      } else {
-        alert('Failed to update booking status');
-      }
-    } catch (err) {
-      alert('Error updating booking status');
-      console.error('Error:', err);
-    } finally {
-      setUpdating(false);
-    }
-  };
-
   const getStatusColor = (status) => {
     switch (status) {
-      case 'confirmed': return 'text-green-600 bg-green-100';
-      case 'pending': return 'text-yellow-600 bg-yellow-100';
-      case 'cancelled': return 'text-red-600 bg-red-100';
+      case 'PAID': return 'text-green-600 bg-green-100';
+      case 'CANCELLED': return 'text-red-600 bg-red-100';
       default: return 'text-gray-600 bg-gray-100';
     }
   };
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'confirmed': return <CheckCircle className="w-4 h-4" />;
-      case 'pending': return <Clock className="w-4 h-4" />;
-      case 'cancelled': return <XCircle className="w-4 h-4" />;
+      case 'PAID': return <CheckCircle className="w-4 h-4" />;
+      case 'CANCELLED': return <XCircle className="w-4 h-4" />;
       default: return <AlertCircle className="w-4 h-4" />;
     }
   };
@@ -204,30 +169,7 @@ const BookingDetailsModal = ({ booking, isOpen, onClose, onStatusUpdate }) => {
                 </div>
               </div>
 
-              {/* Status Update Actions */}
-              <div className="bg-blue-50 rounded-lg p-4">
-                <h3 className="font-semibold text-gray-900 mb-3">Update Booking Status</h3>
-                <div className="flex flex-wrap gap-2">
-                  {['pending', 'confirmed', 'cancelled'].map(status => (
-                    <button
-                      key={status}
-                      onClick={() => updateBookingStatus(status)}
-                      disabled={updating || bookingDetails.booking.payment_status === status}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        bookingDetails.booking.payment_status === status
-                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                          : status === 'confirmed'
-                          ? 'bg-green-600 text-white hover:bg-green-700'
-                          : status === 'pending'
-                          ? 'bg-yellow-600 text-white hover:bg-yellow-700'
-                          : 'bg-red-600 text-white hover:bg-red-700'
-                      }`}
-                    >
-                      {updating ? 'Updating...' : `Mark as ${status.charAt(0).toUpperCase() + status.slice(1)}`}
-                    </button>
-                  ))}
-                </div>
-              </div>
+
 
               {/* Flight Details */}
               <div>
@@ -256,7 +198,6 @@ const BookingDetailsModal = ({ booking, isOpen, onClose, onStatusUpdate }) => {
                             <p><span className="text-gray-600">Seat:</span> {ticket.seat_number} ({ticket.seat_class})</p>
                             <p><span className="text-gray-600">Nationality:</span> {ticket.nationality}</p>
                             <p><span className="text-gray-600">Passport:</span> {ticket.passport_number}</p>
-                            <p><span className="text-gray-600">Price:</span> {formatCurrency(ticket.price)}</p>
                           </div>
                         </div>
                       </div>
@@ -277,7 +218,7 @@ const BookingDetailsModal = ({ booking, isOpen, onClose, onStatusUpdate }) => {
                       <div key={index} className="bg-gray-50 rounded-lg p-4">
                         <div className="flex justify-between items-center">
                           <div>
-                            <p className="font-medium">{formatCurrency(payment.amount)}</p>
+                            <p className="font-medium">{formatCurrency(bookingDetails.booking.total_amount)}</p>
                             <p className="text-sm text-gray-600">
                               {payment.payment_method} • {formatDate(payment.payment_date)}
                             </p>

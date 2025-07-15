@@ -39,7 +39,7 @@ const BookingsTab = ({ allBookings, searchQuery }) => {
       const response = await axios.get(`http://localhost:3000/admin/admin/bookings?${params}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
       });
-      
+        console.log("response ",response);
       if (response.data.success) {
         setBookings(response.data.data);
         return response.data.pagination;
@@ -124,7 +124,11 @@ const BookingsTab = ({ allBookings, searchQuery }) => {
   const handleStatusFilterChange = (newStatus) => {
     setStatusFilter(newStatus);
     setCurrentPage(1);
-    fetchBookings(1, newStatus, searchQuery);
+    console.log(newStatus);
+      let apiStatus = newStatus;
+    if (newStatus === 'confirmed')  apiStatus = 'PAID';
+    if (newStatus === 'cancelled')  apiStatus = 'CANCELLED';
+    fetchBookings(1, apiStatus, searchQuery);
   };
 
   const handleExportData = async () => {
@@ -239,14 +243,6 @@ const BookingsTab = ({ allBookings, searchQuery }) => {
         </div>
         <div className="flex items-center space-x-4">
           <button
-            onClick={refreshBookings}
-            disabled={refreshing}
-            className="px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-2xl hover:from-green-700 hover:to-teal-700 flex items-center space-x-2 shadow-lg shadow-green-500/25 transition-all duration-300"
-          >
-            <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
-            <span className="font-semibold">Refresh</span>
-          </button>
-          <button
             onClick={handleExportData}
             className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl hover:from-blue-700 hover:to-indigo-700 flex items-center space-x-2 shadow-lg shadow-blue-500/25 transition-all duration-300"
           >
@@ -272,7 +268,6 @@ const BookingsTab = ({ allBookings, searchQuery }) => {
         >
           <option value="all">All Bookings</option>
           <option value="confirmed">Confirmed</option>
-          <option value="pending">Pending</option>
           <option value="cancelled">Cancelled</option>
         </select>
         <span className="text-gray-600 text-sm">Showing {filteredBookings.length} of {bookings.length} bookings</span>
