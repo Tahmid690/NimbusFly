@@ -248,23 +248,56 @@ const processPayment = async (req, res) => {
     const db_booking_id = bookingResult.rows[0].booking_id;
 
     // 2. Create passenger records
-    const passengerIds = [];
-    for (const passenger of passengers) {
-      const passengerQuery = `
-        INSERT INTO passengers (customer_id, first_name, last_name, date_of_birth, passport_number, nationality, title) 
-        VALUES ($1, $2, $3, $4, $5, $6, $7) 
-        RETURNING passenger_id
-      `;
-      const passengerResult = await client.query(passengerQuery, [
-        customer_id,
-        passenger.first_name,
-        passenger.last_name,
-        passenger.date_of_birth,
-        passenger.passport_number,
-        passenger.nationality,
-        passenger.title || 'Mr'
-      ]);
-      passengerIds.push(passengerResult.rows[0].passenger_id);
+     const passengerIds = [];
+    for (const p of passengers) {
+       const pp = await pool.query(
+        `SELECT COUNT(passenger_id) AS cnt 
+         FROM passengers 
+         WHERE passport_number = $1`,
+        [p.passport_number]
+      );
+      console.log("Cnt ",pp.rows[0].cnt);
+
+      if (parseInt(pp.rows[0].cnt, 10) === 0) {
+        // 2a) Insert new passenger
+       const passengerResult= await pool.query(
+          `INSERT INTO passengers
+            (customer_id, first_name, last_name, date_of_birth, passport_number, nationality)
+           VALUES ($1, $2, $3, $4, $5, $6) returning passenger_id`,
+          [
+            p.customer_id,
+            p.first_name,
+            p.last_name,
+            p.date_of_birth,
+            p.passport_number,
+            p.nationality,
+          ]
+        );
+         passengerIds.push(passengerResult.rows[0].passenger_id);
+      } else {
+        // 2b) Update existing passenger (match on passenger_id)
+       const passengerResult= await pool.query(
+          `UPDATE passengers
+             SET customer_id     = $1,
+                 first_name      = $2,
+                 last_name       = $3,
+                 date_of_birth   = $4,
+                 passport_number = $5,
+                 nationality     = $6
+           WHERE passport_number  = $7 returning passenger_id`,
+          [
+            p.customer_id,
+            p.first_name,
+            p.last_name,
+            p.date_of_birth,
+            p.passport_number,
+            p.nationality,
+            p.passport_number,   
+          ]
+        );
+         passengerIds.push(passengerResult.rows[0].passenger_id);
+      }
+
     }
 
     // 3. Create payment record

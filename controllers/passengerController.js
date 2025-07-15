@@ -82,41 +82,75 @@ const addPassenger = async (req, res) => {
   try {
     const { passengers } = req.body;
     for (const p of passengers) {
-      await pool.query(
-        `
-        INSERT INTO passengers (customer_id, first_name, last_name, date_of_birth,passport_number,nationality)
-        VALUES ($1, $2, $3, $4,$5,$6)
-      `,
-        [
-          p.customer_id,
-          p.first_name,
-          p.last_name,
-          p.date_of_birth,
-          p.passport_number,
-          p.nationality,
-        ]
+      const pp = await pool.query(
+        `SELECT COUNT(passenger_id) AS cnt 
+         FROM passengers 
+         WHERE passport_number = $1`,
+        [p.passport_number]
       );
+      console.log("Cnt ",pp.rows[0].cnt);
+
+      if (parseInt(pp.rows[0].cnt, 10) === 0) {
+        // 2a) Insert new passenger
+        await pool.query(
+          `INSERT INTO passengers
+            (customer_id, first_name, last_name, date_of_birth, passport_number, nationality)
+           VALUES ($1, $2, $3, $4, $5, $6)`,
+          [
+            p.customer_id,
+            p.first_name,
+            p.last_name,
+            p.date_of_birth,
+            p.passport_number,
+            p.nationality,
+          ]
+        );
+      } else {
+        // 2b) Update existing passenger (match on passenger_id)
+        await pool.query(
+          `UPDATE passengers
+             SET customer_id     = $1,
+                 first_name      = $2,
+                 last_name       = $3,
+                 date_of_birth   = $4,
+                 passport_number = $5,
+                 nationality     = $6
+           WHERE passport_number  = $7`,
+          [
+            p.customer_id,
+            p.first_name,
+            p.last_name,
+            p.date_of_birth,
+            p.passport_number,
+            p.nationality,
+            p.passport_number,   
+          ]
+        );
+      }
     }
+
     res.status(200).json({
       success: true,
-      message: "Passengers added",
+      message: "Passengers added/updated successfully"
     });
+
   } catch (error) {
     if (error.code === "23503") {
       // Foreign key constraint violation
-      res.status(409).json({
+      return res.status(409).json({
         success: false,
-        message: "Customer not found.",
-      });
-    } else {
-      res.status(500).json({
-        success: false,
-        message: "Failed to create passenger",
-        error: error.message,
+        message: "Customer not found."
       });
     }
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to create/update passengers",
+      error: error.message,
+    });
   }
 };
+
 
 const updatePassenger = async (req, res) => {
   try {

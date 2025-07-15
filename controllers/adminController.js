@@ -475,7 +475,7 @@ const getPassengers=async(req,res)=>{
       });
 
     }
-    const qry=`      SELECT p.* 
+    const qry=`           SELECT distinct p.* 
       FROM airlines al
       JOIN aircraft ac ON al.airline_id = ac.airline_id
       JOIN flights f ON ac.aircraft_id = f.aircraft_id

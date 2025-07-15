@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronUp, ChevronDown, X, Search } from 'lucide-react';
 
-const PassengerForm = ({ index,update,adult,passengerData,ontraveller,savedtraveller }) => {
+const PassengerForm = ({ index,update,adult,passengerData,savedtraveller }) => {
 
 
   const [isExpanded, setIsExpanded] = useState(true);
@@ -45,7 +45,7 @@ const PassengerForm = ({ index,update,adult,passengerData,ontraveller,savedtrave
     handleInputChange('date_of_birth', formattedDob);
     handleInputChange('passport_number', traveler.passport_number);
     handleInputChange('nationality', traveler.nationality);
-    ontraveller(index,traveler);
+  //  ontraveller(index,traveler);
   };
 
 

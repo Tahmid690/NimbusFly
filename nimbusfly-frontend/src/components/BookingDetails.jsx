@@ -82,8 +82,7 @@ const BookingDetails = () => {
       console.log(passengers);
       const newp = getnewpassenger();
       console.log(newp);
-      const response = await axios.post('http://localhost:3000/passenger/add', { passengers: newp });
-      console.log("Passengers added successfully: ", response.data);
+  
       navigate('/payment',{state:{passengers, flight: flight.data}});
 
     } catch (err) {
@@ -114,7 +113,6 @@ const BookingDetails = () => {
                         update={updatepassenger}
                         adult={index >= flight.data.adult ? 0 : 1}
                         passengerData={passenger}
-                        ontraveller={handletravellerselection}
                         savedtraveller={savedpassenger}
                       />
                     </div>

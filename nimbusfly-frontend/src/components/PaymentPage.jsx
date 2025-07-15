@@ -158,6 +158,7 @@ const PaymentPage = () => {
       const paymentPayload = {
         customer_id: user_id,
         passengers: passengers.map(passenger => ({
+          customer_id:user_id,
           first_name: passenger.first_name,
           last_name: passenger.last_name,
           date_of_birth: passenger.date_of_birth,
