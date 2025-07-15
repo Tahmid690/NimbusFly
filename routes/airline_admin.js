@@ -7,9 +7,6 @@ const router = express.Router();
 router.post('/register', airlineadminController.register);
 router.post('/login', adminController.adminLogin);
 
-// New admin booking management routes (MUST come before parameterized routes)
-router.get('/admin/test-db', adminController.testDatabase);
-router.get('/admin/reset-password', adminController.resetAdminPassword);
 router.get('/admin/bookings', airlineadminMiddleware, adminController.getAdminBookings);
 router.get('/admin/bookings/export', airlineadminMiddleware, adminController.exportBookings);
 router.get('/admin/booking-analytics', airlineadminMiddleware, adminController.getBookingAnalytics);

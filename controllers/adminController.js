@@ -2,7 +2,6 @@ const pool = require('../config/database');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
-// Admin login
 const adminLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -60,18 +59,21 @@ const adminLogin = async (req, res) => {
     //   [admin.admin_id, 'LOGIN', `Admin login from IP: ${req.ip}`]
     // );
 
-    res.json({
-      success: true,
-      message: 'Login successful',
-      data: {
-        admin_id: admin.admin_id,
-        email: admin.email,
-        airline_id: admin.airline_id,
-        airline_name: admin.airline_name,
-        role: 'admin',
-        token: token
-      }
-    });
+res.json({
+  success: true,
+  message: 'Login successful',
+  data: {
+    admin: {
+      admin_id: admin.admin_id,
+      email: admin.email,
+      airline_id: admin.airline_id,
+      airline_name: admin.airline_name,
+      role: 'admin'
+    },
+    token: token
+  }
+});
+
 
   } catch (error) {
     res.status(500).json({
@@ -81,7 +83,6 @@ const adminLogin = async (req, res) => {
     });
   }
 };
-
 // Get dashboard analytics
 const getDashboardAnalytics = async (req, res) => {
   try {
@@ -676,49 +677,6 @@ const testDatabase = async (req, res) => {
   }
 };
 
-// Reset admin password
-const resetAdminPassword = async (req, res) => {
-  try {
-    const email = 'bimanbangla@nimbusfly.com';
-    const newPassword = 'admin123';
-    
-    // Hash password
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-    
-    // Update admin password
-    const updateQuery = `
-      UPDATE airline_admin 
-      SET password = $1 
-      WHERE email = $2
-      RETURNING *
-    `;
-    
-    const result = await pool.query(updateQuery, [hashedPassword, email]);
-    
-    if (result.rows.length > 0) {
-      res.json({
-        success: true,
-        message: 'Password reset successfully',
-        email: email,
-        password: newPassword,
-        data: result.rows[0]
-      });
-    } else {
-      res.status(404).json({
-        success: false,
-        message: 'Admin not found'
-      });
-    }
-    
-  } catch (error) {
-    console.error('Error resetting admin password:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to reset admin password',
-      error: error.message
-    });
-  }
-};
 
 // Export bookings as CSV
 const exportBookings = async (req, res) => {
@@ -785,5 +743,4 @@ module.exports = {
   getBookingDetails,
   exportBookings,
   testDatabase,
-  resetAdminPassword
 };

@@ -1,11 +1,11 @@
 // src/component/AdminDashboard/components/Flights/FlightsTab.jsx
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import GlowCard from '../UI/GlowCard';
 import FlightsTable from './FlightsTable';
 import StatCard from '../Dashboard/StatCard';
 import { Plus, Navigation, Clock, AlertCircle, CheckCircle, Download, Filter } from 'lucide-react';
 
-const FlightsTab = ({ allFlights, searchQuery }) => {
+const FlightsTab = ({ allFlights, searchQuery, onFlightAdded }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('all');
   const flightsPerPage = 20;
@@ -115,7 +115,7 @@ const FlightsTab = ({ allFlights, searchQuery }) => {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="relative space-y-8">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-4xl font-bold bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent mb-2">
@@ -132,7 +132,7 @@ const FlightsTab = ({ allFlights, searchQuery }) => {
             <span className="font-semibold">Export</span>
           </button>
           <button
-            onClick={() => alert('Add Flight feature coming soon!')}
+            onClick={() => alert('Add flight functionality not implemented')}
             className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-2xl hover:from-blue-600 hover:to-indigo-700 shadow-lg shadow-blue-500/25 transition-all duration-300 flex items-center space-x-2"
           >
             <Plus className="w-5 h-5" />
@@ -176,6 +176,7 @@ const FlightsTab = ({ allFlights, searchQuery }) => {
           searchQuery={searchQuery}
         />
       </GlowCard>
+
     </div>
   );
 };
