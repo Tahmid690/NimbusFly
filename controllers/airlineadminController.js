@@ -147,42 +147,35 @@ const getAdminById = async (req, res) => {
 };
 
 
-const updateAdmin = async (req, res) => {
+const updatePassword = async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
-    const { email, password, airline_name } = req.body;
+    const id = parseInt(req.params.admin_id);
+    const { oldpassword,newpassword } = req.body;
 
-    if (isNaN(id)) {
-      return res.status(400).json({ success: false, message: 'Invalid admin ID' });
+
+    
+
+    const current = await pool.query('SELECT * FROM airline_admin WHERE admin_id = $1', [id]);
+        if(! (await bcrypt.compare(oldpassword,current.rows[0].password))){
+         return res.status(400).json({
+            status:'failed',
+            message:'The password you entered is not correct'
+        });
     }
-
-    const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
-
-    const currentAdmin = await pool.query('SELECT * FROM airline_admin WHERE admin_id = $1', [id]);
-
-    if (currentAdmin.rows.length === 0) {
-      return res.status(404).json({ success: false, message: 'Admin not found' });
-    }
-
-    const updated = await pool.query(`
-      UPDATE airline_admin
-      SET 
-        email = COALESCE($1, email),
-        password = COALESCE($2, password),
-        airline_name = COALESCE($3, airline_name)
-      WHERE admin_id = $4
-      RETURNING admin_id, email, airline_id, airline_name
-    `, [
-      email || null,
-      hashedPassword,
-      airline_name || null,
-      id
-    ]);
+    
+     const hashed_password=await bcrypt.hash(newpassword,10);
+     const result=await pool.query(`
+         update airline_admin
+         set password=$1
+         where admin_id=$2
+         returning *
+      
+      `,[hashed_password,id]);
 
     res.json({
       success: true,
-      message: 'Admin updated successfully',
-      admin: updated.rows[0]
+      message: 'Password changed successfully',
+      admin: result.rows[0]
     });
 
   } catch (error) {
@@ -468,7 +461,7 @@ module.exports={
     register,
     login,
     getAdminById,
-    updateAdmin,
+    updatePassword,
     deleteAdmin,
     getAirlineBookings,
     getAirlineFlights,

@@ -13,6 +13,7 @@ router.get('/admin/booking-analytics', airlineadminMiddleware, adminController.g
 router.get('/admin/booking/:booking_id', airlineadminMiddleware, adminController.getBookingDetails);
 router.put('/admin/booking/:booking_id/status', airlineadminMiddleware, adminController.updateBookingStatus);
 router.get('/getpassenger/:airline_id',airlineadminMiddleware,adminController.getPassengers);
+router.put('/admin/changepassword/:admin_id', airlineadminMiddleware,airlineadminController.updatePassword);
 
 // Admin dashboard specific routes 
 router.get('/bookings/:airline_id', airlineadminMiddleware, airlineadminController.getAirlineBookings);
@@ -21,7 +22,6 @@ router.get('/analytics/:airline_id', airlineadminMiddleware,airlineadminControll
 
 // Parameterized routes (MUST come after specific routes)
 router.get('/:id', airlineadminMiddleware, airlineadminController.getAdminById);
-router.put('/:id', airlineadminMiddleware, airlineadminController.updateAdmin);
 router.delete('/:id', airlineadminMiddleware, airlineadminController.deleteAdmin);
 
 module.exports = router;

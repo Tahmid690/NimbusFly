@@ -5,6 +5,7 @@ import { Shield, User, Eye, EyeOff, Lock, Mail, Building, AlertCircle, CheckCirc
 import axios from 'axios';
 
 const SettingsTab = ({ admin }) => {
+  console.log(admin);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -61,10 +62,10 @@ const SettingsTab = ({ admin }) => {
     setIsLoading(true);
     try {
       const response = await axios.put(
-        'http://localhost:3000/admin/admin/change-password',
+        `http://localhost:3000/admin/admin/changepassword/${admin.admin_id}`,
         {
-          currentPassword: passwordForm.currentPassword,
-          newPassword: passwordForm.newPassword
+          oldpassword: passwordForm.currentPassword,
+          newpassword: passwordForm.newPassword
         },
         {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
