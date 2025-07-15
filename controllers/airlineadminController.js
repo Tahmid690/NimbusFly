@@ -293,7 +293,7 @@ const getAirlineFlights = async (req, res) => {
         message: 'Invalid airline ID'
       });
     }
-
+    console.log("Fetching flights for airline ID:", airline_id);
     const result = await pool.query(`
       SELECT 
         f.*,
@@ -303,17 +303,24 @@ const getAirlineFlights = async (req, res) => {
         dest_airport.airport_name as destination_airport,
         al.airline_name,
         ac.model as aircraft_model,
-        ac.total_seats as aircraft_capacity
+        ac.total_seats as aircraft_capacity,
+        INITCAP((CASE
+          WHEN f.status = FALSE THEN 'cancelled'
+          WHEN f.arrival_time < NOW() THEN 'completed'
+          WHEN f.departure_time > NOW() THEN 'scheduled'
+          ELSE 'completed'
+          END
+    )) as flight_status,
+        f.status
       FROM flights f
       JOIN airports origin_airport ON f.origin_airport_id = origin_airport.airport_id
       JOIN airports dest_airport ON f.destination_airport_id = dest_airport.airport_id
       JOIN aircraft ac ON f.aircraft_id = ac.aircraft_id
       JOIN airlines al ON ac.airline_id = al.airline_id
       WHERE al.airline_id = $1
-      GROUP BY bk.booking_id
       ORDER BY f.departure_time DESC
     `, [airline_id]);
-
+      console.log(result.rows);
     res.json({
       success: true,
       data: result.rows

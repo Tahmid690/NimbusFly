@@ -48,16 +48,7 @@ const Header = ({ sidebarOpen, setSidebarOpen, airlineLogo, admin, handleLogout,
           </div>
         </div>
 
-        <div className="hidden lg:flex items-center space-x-4 bg-white/60 backdrop-blur-xl rounded-2xl p-2 border border-gray-200 shadow-inner">
-          <Search className="w-5 h-5 text-gray-500 ml-2" />
-          <input
-            type="text"
-            placeholder="Search bookings, flights..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="bg-transparent focus:outline-none text-gray-800 placeholder-gray-500 w-80"
-          />
-        </div>
+        
 
         <div className="flex items-center space-x-6">
           <div className="flex items-center space-x-4">

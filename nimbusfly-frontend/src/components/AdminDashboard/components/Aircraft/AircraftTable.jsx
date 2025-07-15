@@ -12,10 +12,9 @@ const AircraftTable = ({ aircraft, currentPage, onPageChange, totalPages, totalI
           <tr>
             <th className="px-8 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Aircraft ID</th>
             <th className="px-8 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Model</th>
-            <th className="px-8 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Registration</th>
-            <th className="px-8 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Capacity</th>
-            <th className="px-8 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Year</th>
-            <th className="px-8 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Status</th>
+            <th className="px-8 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Total Capacity</th>
+            <th className="px-8 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Business Class Seats</th>
+            <th className="px-8 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Economy Class Seats</th>
             <th className="px-8 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Actions</th>
           </tr>
         </thead>
@@ -24,10 +23,9 @@ const AircraftTable = ({ aircraft, currentPage, onPageChange, totalPages, totalI
             <tr key={plane.aircraft_id} className="hover:bg-gradient-to-r hover:from-cyan-50 hover:to-blue-50 transition-colors duration-200">
               <td className="px-8 py-6 font-medium text-gray-900">#{plane.aircraft_id}</td>
               <td className="px-8 py-6 text-gray-700">{plane.model}</td>
-              <td className="px-8 py-6 text-gray-700">{plane.registration_number}</td>
               <td className="px-8 py-6 text-gray-700">{plane.total_seats} seats</td>
-              <td className="px-8 py-6 text-gray-700">{plane.year_of_manufacture}</td>
-              <td className="px-8 py-6"><StatusBadge status={plane.status} /></td>
+              <td className="px-8 py-6 text-gray-700">{plane.busi_seats} seats</td>
+              <td className="px-8 py-6 text-gray-700">{plane.econ_seats} seats</td>
               <td className="px-8 py-6">
                 <div className="flex items-center space-x-2">
                   <button className="p-2 text-gray-400 hover:text-cyan-600 hover:bg-cyan-50 rounded-lg"><Eye className="w-5 h-5" /></button>
