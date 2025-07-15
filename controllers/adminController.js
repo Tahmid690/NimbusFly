@@ -462,6 +462,46 @@ const getBookingAnalytics = async (req, res) => {
   }
 };
 
+
+
+const getPassengers=async(req,res)=>{
+  try{
+    const {airline_id}=req.params;
+    if(!airline_id){
+
+       return res.status(400).json({
+        success: false,
+        message: 'Invalid airlinr id'
+      });
+
+    }
+    const qry=`      SELECT p.* 
+      FROM airlines al
+      JOIN aircraft ac ON al.airline_id = ac.airline_id
+      JOIN flights f ON ac.aircraft_id = f.aircraft_id
+      JOIN ticket t ON f.flight_id = t.flight_id
+      join passengers p on p.passenger_id=t.passenger_id
+      WHERE al.airline_id = $1`;
+
+      const allpass=await pool.query(qry,[airline_id]);
+      res.json({
+      success: true,
+      message: 'Booking status updated successfully',
+      data: allpass.rows
+    });
+
+
+
+  }catch(error){
+     res.status(500).json({
+      success: false,
+      message: 'Failed to fetch passengers',
+      error: error.message
+    });
+
+  }
+}
+
 // Update booking status
 const updateBookingStatus = async (req, res) => {
   try {
@@ -743,4 +783,5 @@ module.exports = {
   getBookingDetails,
   exportBookings,
   testDatabase,
+  getPassengers,
 };

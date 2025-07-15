@@ -13,7 +13,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, totalItems, itemsPe
   const renderPageNumbers = () => {
     const pageNumbers = [];
     const pageRange = 2; // Pages to show around current page
-    
+    console.log(totalPages);
     for (let i = 1; i <= totalPages; i++) {
       const isFirst = i === 1;
       const isLast = i === totalPages;

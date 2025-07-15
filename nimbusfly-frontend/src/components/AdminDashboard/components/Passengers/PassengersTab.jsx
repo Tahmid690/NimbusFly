@@ -3,72 +3,44 @@ import React, { useState, useMemo, useEffect } from 'react';
 import GlowCard from '../UI/GlowCard';
 import PassengersList from './PassengersList';
 import StatCard from '../Dashboard/StatCard';
+import { useAdminAuth } from '../../../Authnication/AdminContext'; 
+import axios from 'axios';
 import { Users, UserCheck, UserX, Clock, Download, Filter } from 'lucide-react';
 
 const PassengersTab = ({ allBookings, searchQuery }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('all');
+  const [allpassengers,setPassengers]=useState([]);
   const passengersPerPage = 15;
-
+  const { admin, logout, isAuthenticated, loading: adminLoading } = useAdminAuth();
+  console.log(admin);
+ // console.log("All bookings : ",allBookings);
   // Calculate passenger statistics
-  const passengerStats = useMemo(() => {
-    if (!allBookings.length) return {};
-    
-    const uniquePassengers = new Set();
-    const confirmedPassengers = new Set();
-    const pendingPassengers = new Set();
-    const cancelledPassengers = new Set();
-    
-    allBookings.forEach(booking => {
-      if (booking.customer_email) {
-        uniquePassengers.add(booking.customer_email);
-        if (booking.payment_status === 'confirmed') {
-          confirmedPassengers.add(booking.customer_email);
-        } else if (booking.payment_status === 'pending') {
-          pendingPassengers.add(booking.customer_email);
-        } else if (booking.payment_status === 'cancelled') {
-          cancelledPassengers.add(booking.customer_email);
-        }
-      }
-    });
-    
-    const totalRevenue = allBookings
-      .filter(b => b.payment_status === 'confirmed')
-      .reduce((sum, b) => sum + (parseFloat(b.total_amount) || 0), 0);
-    
-    const avgSpending = totalRevenue / (confirmedPassengers.size || 1);
-    
-    return {
-      totalPassengers: uniquePassengers.size,
-      confirmedPassengers: confirmedPassengers.size,
-      pendingPassengers: pendingPassengers.size,
-      cancelledPassengers: cancelledPassengers.size,
-      totalBookings: allBookings.length,
-      avgSpending,
-      returningCustomers: Math.round(uniquePassengers.size * 0.3) // Estimate
-    };
-  }, [allBookings]);
+
+      useEffect(() => {
+  if (!admin?.airline_id) return;         // wait until we have an airline ID
+
+  const fetchPassengers = async () => {
+    try {
+      const  response  = await axios.get(
+        `http://localhost:3000/admin/getpassenger/${admin.airline_id}`, 
+        { headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` } }
+      );
+      setPassengers(response.data.data); 
+     console.log(response.data.data);                // use the JSON payload
+    } catch (err) {
+      console.error('Failed to load passengers', err);
+    }
+  };
+
+  fetchPassengers();
+}, [admin.airline_id]); 
+
+
+
 
   // Passengers are derived from the bookings list
-  const filteredPassengers = useMemo(() => {
-    let filtered = allBookings;
-    
-    // Apply status filter
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(booking => booking.payment_status === statusFilter);
-    }
-    
-    // Apply search query
-    if (searchQuery?.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(booking =>
-        (booking.customer_name && booking.customer_name.toLowerCase().includes(query)) ||
-        (booking.customer_email && booking.customer_email.toLowerCase().includes(query))
-      );
-    }
-    
-    return filtered;
-  }, [allBookings, searchQuery, statusFilter]);
+
 
   useEffect(() => {
     setCurrentPage(1);
@@ -76,51 +48,18 @@ const PassengersTab = ({ allBookings, searchQuery }) => {
 
   const paginatedPassengers = useMemo(() => {
     const startIndex = (currentPage - 1) * passengersPerPage;
-    return filteredPassengers.slice(startIndex, startIndex + passengersPerPage);
-  }, [filteredPassengers, currentPage, passengersPerPage]);
+    return allpassengers.slice(startIndex, startIndex + passengersPerPage);
+  }, [allpassengers, currentPage, passengersPerPage]);
 
-  const totalPages = Math.ceil(filteredPassengers.length / passengersPerPage);
+  const totalPages = Math.ceil(allpassengers.length / passengersPerPage);
 
   const stats = [
     {
       label: 'Total Passengers',
-      value: passengerStats.totalPassengers?.toLocaleString() || '0',
-      change: `${passengerStats.returningCustomers || 0} returning`,
-      trend: passengerStats.returningCustomers > 0 ? 'up' : 'neutral',
+      value: allpassengers.length.toLocaleString() || '0',
       icon: Users,
       gradient: 'from-blue-500 to-indigo-600',
       description: 'Unique customers',
-      percentage: passengerStats.returningCustomers && passengerStats.totalPassengers ? `${((passengerStats.returningCustomers / passengerStats.totalPassengers) * 100).toFixed(1)}%` : '0%'
-    },
-    {
-      label: 'Confirmed',
-      value: passengerStats.confirmedPassengers?.toLocaleString() || '0',
-      change: `${((passengerStats.confirmedPassengers / (passengerStats.totalPassengers || 1)) * 100).toFixed(1)}% rate`,
-      trend: passengerStats.confirmedPassengers > passengerStats.pendingPassengers ? 'up' : 'neutral',
-      icon: UserCheck,
-      gradient: 'from-emerald-500 to-teal-600',
-      description: 'Confirmed bookings',
-      percentage: `${((passengerStats.confirmedPassengers / (passengerStats.totalPassengers || 1)) * 100).toFixed(1)}%`
-    },
-    {
-      label: 'Pending',
-      value: passengerStats.pendingPassengers?.toLocaleString() || '0',
-      change: `${passengerStats.cancelledPassengers || 0} cancelled`,
-      trend: passengerStats.pendingPassengers > 0 ? 'up' : 'neutral',
-      icon: Clock,
-      gradient: 'from-yellow-500 to-orange-600',
-      description: 'Pending bookings',
-      percentage: `${((passengerStats.pendingPassengers / (passengerStats.totalPassengers || 1)) * 100).toFixed(1)}%`
-    },
-    {
-      label: 'Avg. Spending',
-      value: `$${passengerStats.avgSpending?.toFixed(2) || '0'}`,
-      change: `${passengerStats.totalBookings || 0} total bookings`,
-      trend: passengerStats.avgSpending > 0 ? 'up' : 'neutral',
-      icon: UserX,
-      gradient: 'from-purple-500 to-pink-600',
-      description: 'Per customer',
-      percentage: '+100%'
     }
   ];
 
@@ -148,24 +87,6 @@ const PassengersTab = ({ allBookings, searchQuery }) => {
         {stats.map((stat, index) => <StatCard key={index} {...stat} />)}
       </div>
 
-      <div className="flex items-center space-x-4 bg-white p-4 rounded-2xl shadow-lg">
-        <div className="flex items-center space-x-2">
-          <Filter className="w-5 h-5 text-gray-600" />
-          <span className="text-gray-700 font-medium">Filter by Status:</span>
-        </div>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        >
-          <option value="all">All Passengers</option>
-          <option value="confirmed">Confirmed</option>
-          <option value="pending">Pending</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
-        <span className="text-gray-600 text-sm">Showing {filteredPassengers.length} of {allBookings.length} passengers</span>
-      </div>
-
       <GlowCard className="p-6">
         <h3 className="text-xl font-bold text-gray-900 mb-6">All Passengers</h3>
         <PassengersList
@@ -173,7 +94,7 @@ const PassengersTab = ({ allBookings, searchQuery }) => {
           currentPage={currentPage}
           onPageChange={setCurrentPage}
           totalPages={totalPages}
-          totalItems={filteredPassengers.length}
+          totalItems={allpassengers.length}
           itemsPerPage={passengersPerPage}
           searchQuery={searchQuery}
         />

@@ -12,6 +12,7 @@ router.get('/admin/bookings/export', airlineadminMiddleware, adminController.exp
 router.get('/admin/booking-analytics', airlineadminMiddleware, adminController.getBookingAnalytics);
 router.get('/admin/booking/:booking_id', airlineadminMiddleware, adminController.getBookingDetails);
 router.put('/admin/booking/:booking_id/status', airlineadminMiddleware, adminController.updateBookingStatus);
+router.get('/getpassenger/:airline_id',airlineadminMiddleware,adminController.getPassengers);
 
 // Admin dashboard specific routes 
 router.get('/bookings/:airline_id', airlineadminMiddleware, airlineadminController.getAirlineBookings);
