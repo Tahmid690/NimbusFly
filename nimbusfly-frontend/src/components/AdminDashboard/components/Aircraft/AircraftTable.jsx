@@ -4,7 +4,7 @@ import { Eye, Edit3, Navigation } from 'lucide-react';
 import StatusBadge from '../UI/StatusBadge';
 import Pagination from '../UI/Pagination';
 
-const AircraftTable = ({ aircraft, currentPage, onPageChange, totalPages, totalItems, itemsPerPage, searchQuery }) => (
+const AircraftTable = ({ aircraft, currentPage, onPageChange, totalPages, totalItems, itemsPerPage, searchQuery, onViewDetails, onEditAircraft }) => (
   <div className="overflow-hidden">
     <div className="overflow-x-auto">
       <table className="w-full">
@@ -28,8 +28,20 @@ const AircraftTable = ({ aircraft, currentPage, onPageChange, totalPages, totalI
               <td className="px-8 py-6 text-gray-700">{plane.econ_seats} seats</td>
               <td className="px-8 py-6">
                 <div className="flex items-center space-x-2">
-                  <button className="p-2 text-gray-400 hover:text-cyan-600 hover:bg-cyan-50 rounded-lg"><Eye className="w-5 h-5" /></button>
-                  <button className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg"><Edit3 className="w-5 h-5" /></button>
+                  <button 
+                    onClick={() => onViewDetails(plane)}
+                    className="p-2 text-gray-400 hover:text-cyan-600 hover:bg-cyan-50 rounded-lg transition-colors"
+                    title="View Details"
+                  >
+                    <Eye className="w-5 h-5" />
+                  </button>
+                  <button 
+                    onClick={() => onEditAircraft(plane)}
+                    className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                    title="Edit Aircraft"
+                  >
+                    <Edit3 className="w-5 h-5" />
+                  </button>
                 </div>
               </td>
             </tr>

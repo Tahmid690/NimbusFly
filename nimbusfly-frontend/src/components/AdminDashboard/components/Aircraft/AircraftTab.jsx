@@ -9,6 +9,9 @@ const AircraftTab = ({ allAircraft }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [showExportDropdown, setShowExportDropdown] = useState(false);
   const [showAddAircraftModal, setShowAddAircraftModal] = useState(false);
+  const [selectedAircraft, setSelectedAircraft] = useState(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const aircraftPerPage = 15;
 
   // Calculate aircraft statistics
@@ -99,8 +102,21 @@ const AircraftTab = ({ allAircraft }) => {
     setShowAddAircraftModal(true);
   };
 
+  const handleViewDetails = (aircraft) => {
+    setSelectedAircraft(aircraft);
+    setShowDetailsModal(true);
+  };
+
+  const handleEditAircraft = (aircraft) => {
+    setSelectedAircraft(aircraft);
+    setShowEditModal(true);
+  };
+
   const closeModals = () => {
     setShowAddAircraftModal(false);
+    setShowDetailsModal(false);
+    setShowEditModal(false);
+    setSelectedAircraft(null);
   };
 
   const filteredAircraft = useMemo(() => {
@@ -204,7 +220,8 @@ const AircraftTab = ({ allAircraft }) => {
           totalPages={totalPages}
           totalItems={filteredAircraft.length}
           itemsPerPage={aircraftPerPage}
-  
+          onViewDetails={handleViewDetails}
+          onEditAircraft={handleEditAircraft}
         />
       </GlowCard>
 
@@ -342,6 +359,190 @@ const AircraftTab = ({ allAircraft }) => {
                   className="px-6 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
                 >
                   Add Aircraft
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* View Aircraft Details Modal */}
+      {showDetailsModal && selectedAircraft && (
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white/90 backdrop-blur-xl border border-white/20 rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold text-gray-900">Aircraft Details</h3>
+              <button 
+                onClick={closeModals}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Aircraft ID</label>
+                  <p className="text-lg font-semibold">#{selectedAircraft.aircraft_id}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Model</label>
+                  <p className="text-lg font-semibold">{selectedAircraft.model}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Total Seats</label>
+                  <p>{selectedAircraft.total_seats} seats</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Business Class Seats</label>
+                  <p>{selectedAircraft.busi_seats} seats</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Economy Class Seats</label>
+                  <p>{selectedAircraft.econ_seats} seats</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Airline ID</label>
+                  <p>{selectedAircraft.airline_id}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Registration Number</label>
+                  <p>{selectedAircraft.registration_number || 'N/A'}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Manufacturer</label>
+                  <p>{selectedAircraft.manufacturer || 'N/A'}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Year Manufactured</label>
+                  <p>{selectedAircraft.year_manufactured || 'N/A'}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                  <p className="capitalize">{selectedAircraft.status || 'N/A'}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Aircraft Modal */}
+      {showEditModal && selectedAircraft && (
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white/90 backdrop-blur-xl border border-white/20 rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold text-gray-900">Edit Aircraft</h3>
+              <button 
+                onClick={closeModals}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <form className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Aircraft Model</label>
+                  <input 
+                    type="text" 
+                    defaultValue={selectedAircraft.model}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Total Seats</label>
+                  <input 
+                    type="number" 
+                    defaultValue={selectedAircraft.total_seats}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Economy Seats</label>
+                  <input 
+                    type="number" 
+                    defaultValue={selectedAircraft.econ_seats}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Business Seats</label>
+                  <input 
+                    type="number" 
+                    defaultValue={selectedAircraft.busi_seats}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Registration Number</label>
+                  <input 
+                    type="text" 
+                    defaultValue={selectedAircraft.registration_number || ''}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Manufacturer</label>
+                  <input 
+                    type="text" 
+                    defaultValue={selectedAircraft.manufacturer || ''}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Year Manufactured</label>
+                  <input 
+                    type="number" 
+                    defaultValue={selectedAircraft.year_manufactured || ''}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                  <select 
+                    defaultValue={selectedAircraft.status || ''}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Select Status</option>
+                    <option value="operational">Operational</option>
+                    <option value="maintenance">Maintenance</option>
+                    <option value="grounded">Grounded</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+                <button 
+                  type="button"
+                  onClick={closeModals}
+                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    alert('Save changes functionality not implemented yet');
+                    closeModals();
+                  }}
+                  className="px-6 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
+                >
+                  Save Changes
                 </button>
               </div>
             </form>
