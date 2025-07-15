@@ -96,7 +96,6 @@ const AdminDashboard = () => {
         if (allAircraft.length === 0) fetchData(`/aircraft/airline/${admin.airline_id}`, setAllAircraft);
         break;
       case 'passengers':
-        // Passengers data is derived from bookings
         if (allBookings.length === 0) fetchData(`/admin/bookings/${admin.airline_id}`, setAllBookings);
         break;
       default:
@@ -120,7 +119,6 @@ const AdminDashboard = () => {
       case 'bookings':
         return <BookingsTab allBookings={allBookings} />;
       case 'flights':
-        // console.log('All Flights:', allFlights);
         return <FlightsTab allFlights={allFlights} />;
       case 'aircraft':
         return <AircraftTab allAircraft={allAircraft} />;

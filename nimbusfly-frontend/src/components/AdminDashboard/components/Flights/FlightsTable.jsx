@@ -5,10 +5,27 @@ import StatusBadge from '../UI/StatusBadge';
 import Pagination from '../UI/Pagination';
 import { formatDate, formatTime } from '../../utils/formatters';
 
-const FlightsTable = ({ flights, currentPage, onPageChange, totalPages, totalItems, itemsPerPage }) => (
-  
-  <div className="overflow-hidden">
-    {console.log('Flights Data:', flights)}
+const FlightsTable = ({ 
+  flights, 
+  currentPage, 
+  onPageChange, 
+  totalPages, 
+  totalItems, 
+  itemsPerPage,
+  onViewDetails,
+  onEditFlight
+}) => {
+  const handleViewDetails = (flight) => {
+    onViewDetails(flight);
+  };
+
+  const handleEditFlight = (flight) => {
+    onEditFlight(flight);
+  };
+
+  return (
+    <div className="overflow-hidden">
+      {console.log('Flights Data:', flights)}
     <div className="overflow-x-auto">
       <table className="w-full">
         <thead className="bg-gradient-to-r from-gray-50 to-blue-50">
@@ -51,8 +68,20 @@ const FlightsTable = ({ flights, currentPage, onPageChange, totalPages, totalIte
               <td className="px-8 py-6"><StatusBadge status={flight.flight_status || 'Scheduled'} /></td>
               <td className="px-8 py-6">
                 <div className="flex items-center space-x-2">
-                  <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg"><Eye className="w-5 h-5" /></button>
-                  <button className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg"><Edit3 className="w-5 h-5" /></button>
+                  <button 
+                    onClick={() => handleViewDetails(flight)}
+                    className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    title="View Details"
+                  >
+                    <Eye className="w-5 h-5" />
+                  </button>
+                  <button 
+                    onClick={() => handleEditFlight(flight)}
+                    className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                    title="Edit Flight"
+                  >
+                    <Edit3 className="w-5 h-5" />
+                  </button>
                 </div>
               </td>
             </tr>
@@ -77,6 +106,7 @@ const FlightsTable = ({ flights, currentPage, onPageChange, totalPages, totalIte
       itemName="flights"
     />
   </div>
-);
+  );
+};
 
 export default FlightsTable;
