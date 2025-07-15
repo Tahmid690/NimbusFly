@@ -200,33 +200,10 @@ const BookingsTab = ({ allBookings, searchQuery }) => {
           exportedAt: new Date().toISOString()
         }, `booking-report-${timestamp}`);
         break;
-      case 'api-csv':
-        handleExportDataAPI();
-        break;
       default:
         exportToJSON(dataToExport, `bookings-export-${timestamp}`);
     }
     setShowExportDropdown(false);
-  };
-
-  const handleExportDataAPI = async () => {
-    try {
-      const response = await axios.get(`http://localhost:3000/admin/admin/bookings/export`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` },
-        responseType: 'blob'
-      });
-      
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'bookings.csv');
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (err) {
-      alert('Error exporting data');
-      console.error('Error:', err);
-    }
   };
 
   const filteredBookings = useMemo(() => {
