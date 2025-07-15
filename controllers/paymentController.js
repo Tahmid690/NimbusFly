@@ -269,13 +269,12 @@ const processPayment = async (req, res) => {
 
     // 3. Create payment record
     const paymentQuery = `
-      INSERT INTO payments (booking_id, amount, payment_method, transaction_id, payment_date, status) 
-      VALUES ($1, $2, $3, $4, $5, $6) 
+      INSERT INTO payments (booking_id, payment_method, transaction_id, payment_date, status) 
+      VALUES ($1, $2, $3, $4, $5) 
       RETURNING payment_id
     `;
     const paymentResult = await client.query(paymentQuery, [
       db_booking_id,
-      total_amount,
       payment_method,
       transaction_id,
       payment_date,
@@ -341,16 +340,15 @@ const processPayment = async (req, res) => {
         
         // Create ticket (seat assignment is now tracked through the ticket table)
         const ticketQuery = `
-          INSERT INTO ticket (booking_id, flight_id, passenger_id, seat_id, price) 
-          VALUES ($1, $2, $3, $4, $5) 
+          INSERT INTO ticket (booking_id, flight_id, passenger_id, seat_id) 
+          VALUES ($1, $2, $3, $4) 
           RETURNING ticket_id
         `;
         const ticketResult = await client.query(ticketQuery, [
           db_booking_id,
           flightInfo.flight_id,
           passenger_id,
-          seat_id,
-          ticketPrice
+          seat_id
         ]);
         
         // Note: We no longer use the global is_booked flag since seats are tracked per flight

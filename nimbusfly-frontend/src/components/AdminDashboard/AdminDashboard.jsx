@@ -22,7 +22,6 @@ const AdminDashboard = () => {
   // UI State
   const [activeTab, setActiveTab] = useState('overview');
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
   const [lastUpdated, setLastUpdated] = useState(null);
   
   // Data State
@@ -119,13 +118,13 @@ const AdminDashboard = () => {
       case 'overview':
         return <OverviewTab analytics={analytics} bookings={recentBookings} flights={upcomingFlights} dataLoading={dataLoading} error={error} lastUpdated={lastUpdated} />;
       case 'bookings':
-        return <BookingsTab allBookings={allBookings} searchQuery={searchQuery} />;
+        return <BookingsTab allBookings={allBookings} />;
       case 'flights':
-        return <FlightsTab allFlights={allFlights} searchQuery={searchQuery} />;
+        return <FlightsTab allFlights={allFlights} />;
       case 'aircraft':
-        return <AircraftTab allAircraft={allAircraft} searchQuery={searchQuery} />;
+        return <AircraftTab allAircraft={allAircraft} />;
       case 'passengers':
-        return <PassengersTab allBookings={allBookings} searchQuery={searchQuery} />;
+        return <PassengersTab allBookings={allBookings} />;
       case 'settings':
         return <SettingsTab admin={admin} />;
       default:
@@ -152,8 +151,6 @@ const AdminDashboard = () => {
         airlineLogo={airlineLogo}
         admin={admin}
         handleLogout={handleLogout}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
       />
       <div className="flex relative z-30">
         <Sidebar 
@@ -165,14 +162,7 @@ const AdminDashboard = () => {
           {renderContent()}
         </main>
       </div>
-      <div className="fixed bottom-8 right-8 z-50">
-        <button 
-          onClick={() => alert('Add new item!')}
-          className="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full shadow-2xl shadow-blue-500/50 flex items-center justify-center text-white hover:shadow-lg transition-all animate-pulse"
-        >
-          <Plus className="w-8 h-8" />
-        </button>
-      </div>
+      
     </div>
   );
 };

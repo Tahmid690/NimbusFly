@@ -5,7 +5,7 @@ import StatusBadge from '../UI/StatusBadge';
 import Pagination from '../UI/Pagination';
 import { formatDate, formatTime } from '../../utils/formatters';
 
-const FlightsTable = ({ flights, currentPage, onPageChange, totalPages, totalItems, itemsPerPage, searchQuery }) => (
+const FlightsTable = ({ flights, currentPage, onPageChange, totalPages, totalItems, itemsPerPage }) => (
   <div className="overflow-hidden">
     <div className="overflow-x-auto">
       <table className="w-full">
@@ -59,7 +59,7 @@ const FlightsTable = ({ flights, currentPage, onPageChange, totalPages, totalIte
             <tr>
               <td colSpan="7" className="px-8 py-12 text-center text-gray-500">
                 <Plane className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>{searchQuery ? 'No flights match your search' : 'No flights available'}</p>
+                <p>{'No flights available'}</p>
               </td>
             </tr>
           )}

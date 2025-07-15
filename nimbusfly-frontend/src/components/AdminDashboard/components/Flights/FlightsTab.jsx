@@ -5,7 +5,7 @@ import FlightsTable from './FlightsTable';
 import StatCard from '../Dashboard/StatCard';
 import { Plus, Navigation, Clock, AlertCircle, CheckCircle, Download, Filter } from 'lucide-react';
 
-const FlightsTab = ({ allFlights, searchQuery, onFlightAdded }) => {
+const FlightsTab = ({ allFlights }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('all');
   const flightsPerPage = 20;
@@ -45,24 +45,12 @@ const FlightsTab = ({ allFlights, searchQuery, onFlightAdded }) => {
       filtered = filtered.filter(flight => flight.flight_status === statusFilter);
     }
     
-    // Apply search query
-    if (searchQuery?.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(flight =>
-        (flight.flight_number && flight.flight_number.toLowerCase().includes(query)) ||
-        (flight.origin_airport && flight.origin_airport.toLowerCase().includes(query)) ||
-        (flight.destination_airport && flight.destination_airport.toLowerCase().includes(query)) ||
-        (flight.origin_code && flight.origin_code.toLowerCase().includes(query)) ||
-        (flight.destination_code && flight.destination_code.toLowerCase().includes(query))
-      );
-    }
+   
     
     return filtered;
-  }, [allFlights, searchQuery, statusFilter]);
+  }, [allFlights, , statusFilter]);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery]);
+  
 
   const paginatedFlights = useMemo(() => {
     const startIndex = (currentPage - 1) * flightsPerPage;
@@ -75,42 +63,30 @@ const FlightsTab = ({ allFlights, searchQuery, onFlightAdded }) => {
     {
       label: 'Total Flights',
       value: flightStats.totalFlights?.toLocaleString() || '0',
-      change: `${flightStats.upcomingFlights || 0} upcoming`,
-      trend: flightStats.upcomingFlights > 0 ? 'up' : 'neutral',
       icon: Navigation,
       gradient: 'from-blue-500 to-indigo-600',
-      description: 'All flights',
-      percentage: flightStats.upcomingFlights && flightStats.totalFlights ? `${((flightStats.upcomingFlights / flightStats.totalFlights) * 100).toFixed(1)}%` : '0%'
+      description: 'All flights'
     },
     {
       label: 'Active',
       value: flightStats.active?.toLocaleString() || '0',
-      change: `${flightStats.scheduled || 0} scheduled`,
-      trend: flightStats.active > 0 ? 'up' : 'neutral',
       icon: CheckCircle,
       gradient: 'from-emerald-500 to-teal-600',
-      description: 'Active flights',
-      percentage: `${((flightStats.active / (flightStats.totalFlights || 1)) * 100).toFixed(1)}%`
+      description: 'Active flights'
     },
     {
-      label: 'Delayed',
+      label: 'Cancelled',
       value: flightStats.delayed?.toLocaleString() || '0',
-      change: `${flightStats.onTimeRate || 0}% on-time`,
-      trend: flightStats.delayed > 0 ? 'down' : 'neutral',
       icon: Clock,
-      gradient: 'from-yellow-500 to-orange-600',
-      description: 'Delayed flights',
-      percentage: `${((flightStats.delayed / (flightStats.totalFlights || 1)) * 100).toFixed(1)}%`
+      gradient: 'from-red-500 to-red-700',
+      description: 'Cancelled flights'
     },
     {
       label: 'Completed',
       value: flightStats.completed?.toLocaleString() || '0',
-      change: `${flightStats.cancelled || 0} cancelled`,
-      trend: flightStats.completed > flightStats.cancelled ? 'up' : 'neutral',
       icon: AlertCircle,
       gradient: 'from-purple-500 to-pink-600',
-      description: 'Completed flights',
-      percentage: `${((flightStats.completed / (flightStats.totalFlights || 1)) * 100).toFixed(1)}%`
+      description: 'Completed flights'
     }
   ];
 
@@ -173,7 +149,6 @@ const FlightsTab = ({ allFlights, searchQuery, onFlightAdded }) => {
           totalPages={totalPages}
           totalItems={filteredFlights.length}
           itemsPerPage={flightsPerPage}
-          searchQuery={searchQuery}
         />
       </GlowCard>
 

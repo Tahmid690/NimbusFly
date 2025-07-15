@@ -255,13 +255,13 @@ const getAirlineBookings = async (req, res) => {
         MAX(f.arrival_time) as latest_arrival,
         STRING_AGG(DISTINCT al.airline_name, ', ') as airlines
       FROM bookings bk
-      LEFT JOIN customer cus ON bk.customer_id = cus.customer_id
-      LEFT JOIN ticket t ON bk.booking_id = t.booking_id
-      LEFT JOIN flights f ON t.flight_id = f.flight_id
-      LEFT JOIN airports origin_airport ON f.origin_airport_id = origin_airport.airport_id
-      LEFT JOIN airports dest_airport ON f.destination_airport_id = dest_airport.airport_id
-      LEFT JOIN aircraft ac ON f.aircraft_id = ac.aircraft_id
-      LEFT JOIN airlines al ON ac.airline_id = al.airline_id
+      JOIN customer cus ON bk.customer_id = cus.customer_id
+      JOIN ticket t ON bk.booking_id = t.booking_id
+      JOIN flights f ON t.flight_id = f.flight_id
+      JOIN airports origin_airport ON f.origin_airport_id = origin_airport.airport_id
+      JOIN airports dest_airport ON f.destination_airport_id = dest_airport.airport_id
+      JOIN aircraft ac ON f.aircraft_id = ac.aircraft_id
+      JOIN airlines al ON ac.airline_id = al.airline_id
       WHERE al.airline_id = $1
       GROUP BY bk.booking_id, cus.first_name, cus.last_name, cus.email, cus.phone_number
       ORDER BY bk.booking_date DESC
@@ -305,11 +305,12 @@ const getAirlineFlights = async (req, res) => {
         ac.model as aircraft_model,
         ac.total_seats as aircraft_capacity
       FROM flights f
-      LEFT JOIN airports origin_airport ON f.origin_airport_id = origin_airport.airport_id
-      LEFT JOIN airports dest_airport ON f.destination_airport_id = dest_airport.airport_id
-      LEFT JOIN aircraft ac ON f.aircraft_id = ac.aircraft_id
-      LEFT JOIN airlines al ON ac.airline_id = al.airline_id
+      JOIN airports origin_airport ON f.origin_airport_id = origin_airport.airport_id
+      JOIN airports dest_airport ON f.destination_airport_id = dest_airport.airport_id
+      JOIN aircraft ac ON f.aircraft_id = ac.aircraft_id
+      JOIN airlines al ON ac.airline_id = al.airline_id
       WHERE al.airline_id = $1
+      GROUP BY bk.booking_id
       ORDER BY f.departure_time DESC
     `, [airline_id]);
 
@@ -340,37 +341,51 @@ const getDashboardAnalytics = async (req, res) => {
       });
     }
 
-    // Get basic stats
-    const statsQuery = await pool.query(`
-      SELECT 
-        COUNT(DISTINCT bk.booking_id) as total_bookings,
-        COALESCE(SUM(bk.total_amount), 0) as total_revenue,
-        COUNT(DISTINCT CASE WHEN bk.payment_status = 'confirmed' THEN bk.booking_id END) as confirmed_bookings,
-        COUNT(DISTINCT CASE WHEN bk.payment_status = 'pending' THEN bk.booking_id END) as pending_bookings,
-        COUNT(DISTINCT f.flight_id) as total_flights,
-        COUNT(DISTINCT CASE WHEN f.departure_time > NOW() THEN f.flight_id END) as upcoming_flights,
-        COUNT(DISTINCT t.ticket_id) as total_passengers
-      FROM airlines al
-      LEFT JOIN aircraft ac ON al.airline_id = ac.airline_id
-      LEFT JOIN flights f ON ac.aircraft_id = f.aircraft_id
-      LEFT JOIN ticket t ON f.flight_id = t.flight_id
-      LEFT JOIN bookings bk ON t.booking_id = bk.booking_id
+    
+    const totBook = await pool.query(`
+      SELECT COUNT(DISTINCT bk.booking_id) as total_bookings
+      FROM bookings bk
+      JOIN ticket t ON bk.booking_id = t.booking_id
+      JOIN flights f ON t.flight_id = f.flight_id
+      JOIN aircraft ac ON f.aircraft_id = ac.aircraft_id
+      JOIN airlines al ON ac.airline_id = al.airline_id
       WHERE al.airline_id = $1
     `, [airline_id]);
 
-    // Get today's stats
-    const todayStatsQuery = await pool.query(`
-      SELECT 
-        COUNT(DISTINCT bk.booking_id) as today_bookings,
-        COALESCE(SUM(bk.total_amount), 0) as today_revenue,
-        COUNT(DISTINCT CASE WHEN f.departure_time::date = CURRENT_DATE THEN f.flight_id END) as today_flights
+
+    const totRev = await pool.query(`
+      SELECT sum(price) as total_revenue
+      FROM (
+        SELECT distinct bk.booking_id,bk.total_amount as price
+        FROM bookings bk
+        JOIN ticket t ON bk.booking_id = t.booking_id
+        JOIN flights f ON t.flight_id = f.flight_id
+        JOIN aircraft ac ON f.aircraft_id = ac.aircraft_id
+        JOIN airlines al ON ac.airline_id = al.airline_id
+        WHERE al.airline_id = $1
+        )
+    `, [airline_id]);
+
+    const totfli = await pool.query(`
+      SELECT COUNT(DISTINCT f.flight_id) as total_flights
       FROM airlines al
-      LEFT JOIN aircraft ac ON al.airline_id = ac.airline_id
-      LEFT JOIN flights f ON ac.aircraft_id = f.aircraft_id
-      LEFT JOIN ticket t ON f.flight_id = t.flight_id
-      LEFT JOIN bookings bk ON t.booking_id = bk.booking_id AND bk.booking_date::date = CURRENT_DATE
+      JOIN aircraft ac ON al.airline_id = ac.airline_id
+      JOIN flights f ON ac.aircraft_id = f.aircraft_id
       WHERE al.airline_id = $1
     `, [airline_id]);
+
+    const totpas = await pool.query(`
+      SELECT COUNT(DISTINCT t.ticket_id) as total_passengers
+      FROM airlines al
+      JOIN aircraft ac ON al.airline_id = ac.airline_id
+      JOIN flights f ON ac.aircraft_id = f.aircraft_id
+      JOIN ticket t ON f.flight_id = t.flight_id
+      JOIN bookings bk ON t.booking_id = bk.booking_id
+      WHERE al.airline_id = $1
+    `, [airline_id]);
+
+
+    
 
     // Get recent bookings
     const recentBookingsQuery = await pool.query(`
@@ -382,13 +397,13 @@ const getDashboardAnalytics = async (req, res) => {
         bk.booking_date,
         STRING_AGG(DISTINCT (origin_airport.iata_code || '-' || dest_airport.iata_code), ', ') as routes
       FROM bookings bk
-      LEFT JOIN customer cus ON bk.customer_id = cus.customer_id
-      LEFT JOIN ticket t ON bk.booking_id = t.booking_id
-      LEFT JOIN flights f ON t.flight_id = f.flight_id
-      LEFT JOIN airports origin_airport ON f.origin_airport_id = origin_airport.airport_id
-      LEFT JOIN airports dest_airport ON f.destination_airport_id = dest_airport.airport_id
-      LEFT JOIN aircraft ac ON f.aircraft_id = ac.aircraft_id
-      LEFT JOIN airlines al ON ac.airline_id = al.airline_id
+      JOIN customer cus ON bk.customer_id = cus.customer_id
+      JOIN ticket t ON bk.booking_id = t.booking_id
+      JOIN flights f ON t.flight_id = f.flight_id
+      JOIN airports origin_airport ON f.origin_airport_id = origin_airport.airport_id
+      JOIN airports dest_airport ON f.destination_airport_id = dest_airport.airport_id
+      JOIN aircraft ac ON f.aircraft_id = ac.aircraft_id
+      JOIN airlines al ON ac.airline_id = al.airline_id
       WHERE al.airline_id = $1
       GROUP BY bk.booking_id, cus.first_name, cus.last_name, bk.total_amount, bk.payment_status, bk.booking_date
       ORDER BY bk.booking_date DESC
@@ -403,37 +418,29 @@ const getDashboardAnalytics = async (req, res) => {
         f.arrival_time,
         origin_airport.iata_code as origin_code,
         dest_airport.iata_code as destination_code,
-        COUNT(t.ticket_id) as booked_passengers,
         ac.total_seats as total_capacity
       FROM flights f
-      LEFT JOIN airports origin_airport ON f.origin_airport_id = origin_airport.airport_id
-      LEFT JOIN airports dest_airport ON f.destination_airport_id = dest_airport.airport_id
-      LEFT JOIN aircraft ac ON f.aircraft_id = ac.aircraft_id
-      LEFT JOIN airlines al ON ac.airline_id = al.airline_id
-      LEFT JOIN ticket t ON f.flight_id = t.flight_id
+      JOIN airports origin_airport ON f.origin_airport_id = origin_airport.airport_id
+      JOIN airports dest_airport ON f.destination_airport_id = dest_airport.airport_id
+      JOIN aircraft ac ON f.aircraft_id = ac.aircraft_id
+      JOIN airlines al ON ac.airline_id = al.airline_id
+      JOIN ticket t ON f.flight_id = t.flight_id
       WHERE al.airline_id = $1 AND f.departure_time > NOW()
       GROUP BY f.flight_id, f.flight_number, f.departure_time, f.arrival_time, origin_airport.iata_code, dest_airport.iata_code, ac.total_seats
       ORDER BY f.departure_time ASC
       LIMIT 5
     `, [airline_id]);
 
-    const stats = statsQuery.rows[0];
-    const todayStats = todayStatsQuery.rows[0];
+    
 
     res.json({
       success: true,
       data: {
         stats: {
-          totalBookings: parseInt(stats.total_bookings) || 0,
-          totalRevenue: parseFloat(stats.total_revenue) || 0,
-          confirmedBookings: parseInt(stats.confirmed_bookings) || 0,
-          pendingBookings: parseInt(stats.pending_bookings) || 0,
-          totalFlights: parseInt(stats.total_flights) || 0,
-          upcomingFlights: parseInt(stats.upcoming_flights) || 0,
-          totalPassengers: parseInt(stats.total_passengers) || 0,
-          todayBookings: parseInt(todayStats.today_bookings) || 0,
-          todayRevenue: parseFloat(todayStats.today_revenue) || 0,
-          todayFlights: parseInt(todayStats.today_flights) || 0
+          totalBookings: parseInt(totBook.rows[0].total_bookings) || 0,
+          totalRevenue: parseFloat(totRev.rows[0].total_revenue) || 0,
+          totalFlights: parseInt(totfli.rows[0].total_flights) || 0,
+          totalPassengers: parseInt(totpas.rows[0].total_passengers) || 0,
         },
         recentBookings: recentBookingsQuery.rows,
         upcomingFlights: upcomingFlightsQuery.rows
