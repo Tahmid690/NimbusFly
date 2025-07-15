@@ -301,7 +301,7 @@ const getAirlineFlights = async (req, res) => {
           WHEN f.status = FALSE THEN 'cancelled'
           WHEN f.arrival_time < NOW() THEN 'completed'
           WHEN f.departure_time > NOW() THEN 'scheduled'
-          ELSE 'completed'
+          ELSE 'active'
           END
     )) as flight_status,
         f.status

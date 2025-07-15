@@ -67,6 +67,47 @@ const getAircraftById = async (req, res) => {
   }
 };
 
+const getAircraftByIdfly = async (req, res) => {
+  try {
+    const id = parseInt(req.params.airline_id);
+    // console.log('Fetching aircraft by ID:', id);
+    if (isNaN(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid aircraft ID'
+      });
+    }
+    
+    const result = await pool.query(`
+      SELECT 
+        ac.*,
+        al.airline_name
+      FROM aircraft ac
+      JOIN airlines al ON ac.airline_id = al.airline_id
+      WHERE ac.airline_id = $1 and ac.status = 'Active'
+    `, [id]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Aircraft not found'
+      });
+    }
+    
+    res.json({
+      success: true,
+      data: result.rows[0]
+    });
+    
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch aircraft',
+      error: error.message
+    });
+  }
+};
+
 const getAircraftByAirline = async (req, res) => {
   try {
     const airlineId = parseInt(req.params.airline_id);
@@ -455,5 +496,6 @@ module.exports = {
   getAircraftByAirline,
   createAircraft,
   updateAircraft,
-  deleteAircraft
+  deleteAircraft,
+  getAircraftByIdfly
 };

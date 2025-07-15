@@ -4,6 +4,7 @@ import GlowCard from '../UI/GlowCard';
 import AircraftTable from './AircraftTable';
 import StatCard from '../Dashboard/StatCard';
 import { Plus, Plane, Wrench, AlertTriangle, Download, Filter, ChevronDown, X } from 'lucide-react';
+import { useToast } from '../UI/Toast';
 import axios from 'axios';
 
 const AircraftTab = ({ allAircraft, admin }) => {
@@ -14,6 +15,7 @@ const AircraftTab = ({ allAircraft, admin }) => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const aircraftPerPage = 15;
+  const toast = useToast();
 
   // Calculate aircraft statistics
   const aircraftStats = useMemo(() => {
@@ -29,7 +31,7 @@ const AircraftTab = ({ allAircraft, admin }) => {
 
   const exportToCSV = (data, filename) => {
     if (!data || data.length === 0) {
-      alert('No data to export');
+      toast.warning('No data to export');
       return;
     }
     
@@ -57,7 +59,7 @@ const AircraftTab = ({ allAircraft, admin }) => {
 
   const exportToJSON = (data, filename) => {
     if (!data) {
-      alert('No data to export');
+      toast.warning('No data to export');
       return;
     }
     
@@ -122,7 +124,7 @@ const AircraftTab = ({ allAircraft, admin }) => {
 
   const addAircraftDb = async (formData) => {
     if (!admin?.airline_id) {
-      alert('Error: Airline ID not found. Please log in again.');
+      toast.error('Error: Airline ID not found. Please log in again.');
       return;
     }
 
@@ -152,17 +154,68 @@ const AircraftTab = ({ allAircraft, admin }) => {
       );
 
       if (response.data.success) {
-        // alert('Aircraft created successfully!');
+        toast.success(`Aircraft ${aircraftData.model} created successfully! ✈️`);
         closeModals();
         // Store current tab in localStorage before reload
-        // localStorage.setItem('lastActiveTab', 'aircraft');
-        window.location.reload();
+        localStorage.setItem('lastActiveTab', 'aircraft');
+        setTimeout(() => window.location.reload(), 1500);
       } else {
-        alert('Failed to create aircraft: ' + response.data.message);
+        toast.error(`Failed to create aircraft: ${response.data.message}`);
       }
     } catch (error) {
       console.error('Error creating aircraft:', error);
-      alert('Error creating aircraft: ' + (error.response?.data?.message || error.message));
+      toast.error(`Error creating aircraft: ${error.response?.data?.message || error.message}`);
+    }
+  };
+
+  const editAircraftDb = async (formData) => {
+    if (!admin?.airline_id) {
+      toast.error('Error: Airline ID not found. Please log in again.');
+      return;
+    }
+
+    if (!selectedAircraft?.aircraft_id) {
+      toast.error('Error: Aircraft ID not found.');
+      return;
+    }
+
+    const aircraftData = {
+      model: formData.get('model'),
+      total_seats: parseInt(formData.get('total_seats')),
+      econ_seats: parseInt(formData.get('econ_seats')),
+      busi_seats: parseInt(formData.get('busi_seats')),
+      airline_id: admin.airline_id,
+      registration_number: formData.get('registration_number') || null,
+      manufacturer: formData.get('manufacturer') || null,
+      year_manufactured: formData.get('year_manufactured') ? parseInt(formData.get('year_manufactured')) : null,
+      status: formData.get('status') || 'Active',
+      max_range_km: formData.get('max_range_km') ? parseInt(formData.get('max_range_km')) : null
+    };
+
+    try {
+      const response = await axios.put(
+        `http://localhost:3000/aircraft/update/${selectedAircraft.aircraft_id}`,
+        aircraftData,
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.data.success) {
+        toast.success(`Aircraft ${aircraftData.model} updated successfully! ✈️`);
+        closeModals();
+        // Store current tab in localStorage before reload
+        localStorage.setItem('lastActiveTab', 'aircraft');
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        toast.error(`Failed to update aircraft: ${response.data.message}`);
+      }
+    } catch (error) {
+      console.error('Error updating aircraft:', error);
+      toast.error(`Error updating aircraft: ${error.response?.data?.message || error.message}`);
     }
   };
 
@@ -496,6 +549,7 @@ const AircraftTab = ({ allAircraft, admin }) => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Aircraft Model</label>
                   <input 
                     type="text" 
+                    name="model"
                     defaultValue={selectedAircraft.model}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
@@ -506,6 +560,7 @@ const AircraftTab = ({ allAircraft, admin }) => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Total Seats</label>
                   <input 
                     type="number" 
+                    name="total_seats"
                     defaultValue={selectedAircraft.total_seats}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
@@ -516,6 +571,7 @@ const AircraftTab = ({ allAircraft, admin }) => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Economy Seats</label>
                   <input 
                     type="number" 
+                    name="econ_seats"
                     defaultValue={selectedAircraft.econ_seats}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
@@ -526,6 +582,7 @@ const AircraftTab = ({ allAircraft, admin }) => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Business Seats</label>
                   <input 
                     type="number" 
+                    name="busi_seats"
                     defaultValue={selectedAircraft.busi_seats}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
@@ -536,6 +593,7 @@ const AircraftTab = ({ allAircraft, admin }) => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Registration Number</label>
                   <input 
                     type="text" 
+                    name="registration_number"
                     defaultValue={selectedAircraft.registration_number || ''}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
@@ -545,6 +603,7 @@ const AircraftTab = ({ allAircraft, admin }) => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Manufacturer</label>
                   <input 
                     type="text" 
+                    name="manufacturer"
                     defaultValue={selectedAircraft.manufacturer || ''}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
@@ -554,6 +613,7 @@ const AircraftTab = ({ allAircraft, admin }) => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Year Manufactured</label>
                   <input 
                     type="number" 
+                    name="year_manufactured"
                     defaultValue={selectedAircraft.year_manufactured || ''}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
@@ -562,14 +622,25 @@ const AircraftTab = ({ allAircraft, admin }) => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
                   <select 
+                    name="status"
                     defaultValue={selectedAircraft.status || ''}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="">Select Status</option>
                     <option value="Active">Active</option>
-                    <option value="maintenance">Maintenance</option>
+                    <option value="Maintenance">Maintenance</option>
                     <option value="Retired">Retired</option>
                   </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Max Range (km)</label>
+                  <input 
+                    type="number" 
+                    name="max_range_km"
+                    defaultValue={selectedAircraft.max_range_km || ''}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
                 </div>
               </div>
               
@@ -585,8 +656,8 @@ const AircraftTab = ({ allAircraft, admin }) => {
                   type="submit"
                   onClick={(e) => {
                     e.preventDefault();
-                    alert('Save changes functionality not implemented yet');
-                    closeModals();
+                    const formData = new FormData(e.target.form);
+                    editAircraftDb(formData);
                   }}
                   className="px-6 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
                 >

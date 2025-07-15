@@ -14,6 +14,7 @@ import FlightsTab from './components/Flights/FlightsTab';
 import AircraftTab from './components/Aircraft/AircraftTab';
 import PassengersTab from './components/Passengers/PassengersTab';
 import SettingsTab from './components/Settings/SettingsTab';
+import { ToastProvider } from './components/UI/Toast';
 
 const AdminDashboard = () => {
   const { admin, logout, isAuthenticated, loading: adminLoading } = useAdminAuth();
@@ -24,6 +25,7 @@ const AdminDashboard = () => {
     const savedTab = localStorage.getItem('lastActiveTab');
     if (savedTab) {
       localStorage.removeItem('lastActiveTab'); // Remove after reading
+      console.log('Restored last active tab:', savedTab);
       return savedTab;
     }
     return 'overview';
@@ -73,11 +75,28 @@ const AdminDashboard = () => {
 
   // Initial Data Load for Overview
   useEffect(() => {
+
+    switch (activeTab) {
+      case 'bookings':
+        if (allBookings.length === 0) fetchData(`/admin/bookings/${admin.airline_id}`, setAllBookings);
+        break;
+      case 'flights':
+        if (allFlights.length === 0) fetchData(`/admin/flights/${admin.airline_id}`, setAllFlights);
+        break;
+      case 'aircraft':
+        if (allAircraft.length === 0) fetchData(`/aircraft/airline/${admin.airline_id}`, setAllAircraft);
+        break;
+      case 'passengers':
+        if (allBookings.length === 0) fetchData(`/admin/bookings/${admin.airline_id}`, setAllBookings);
+        break;
+      default:
+        break;
+    }
+
     if (admin?.airline_id) {
       setDataLoading(true);
       Promise.all([
         fetchData(`/admin/analytics/${admin.airline_id}`, (data) => {
-          console.log(data);
           setAnalytics(data.stats || {});
           setRecentBookings(data.recentBookings || []);
           setUpcomingFlights(data.upcomingFlights || []);
@@ -127,7 +146,7 @@ const AdminDashboard = () => {
       case 'bookings':
         return <BookingsTab allBookings={allBookings} />;
       case 'flights':
-        return <FlightsTab allFlights={allFlights} />;
+        return <FlightsTab allFlights={allFlights} admin={admin}/>;
       case 'aircraft':
         return <AircraftTab allAircraft={allAircraft} admin={admin} />;
       case 'passengers':
@@ -151,26 +170,27 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50">
-      <Header 
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        airlineLogo={airlineLogo}
-        admin={admin}
-        handleLogout={handleLogout}
-      />
-      <div className="flex relative z-30">
-        <Sidebar 
+    <ToastProvider>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50">
+        <Header 
           sidebarOpen={sidebarOpen}
-          activeTab={activeTab}
-          handleTabChange={handleTabChange}
+          setSidebarOpen={setSidebarOpen}
+          airlineLogo={airlineLogo}
+          admin={admin}
+          handleLogout={handleLogout}
         />
-        <main className="flex-1 p-8 overflow-y-auto" style={{maxHeight: 'calc(100vh - 96px)'}}>
-          {renderContent()}
-        </main>
+        <div className="flex relative z-30">
+          <Sidebar 
+            sidebarOpen={sidebarOpen}
+            activeTab={activeTab}
+            handleTabChange={handleTabChange}
+          />
+          <main className="flex-1 p-8 overflow-y-auto" style={{maxHeight: 'calc(100vh - 96px)'}}>
+            {renderContent()}
+          </main>
+        </div>
       </div>
-      
-    </div>
+    </ToastProvider>
   );
 };
 
