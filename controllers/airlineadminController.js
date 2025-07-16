@@ -297,6 +297,7 @@ const getAirlineFlights = async (req, res) => {
         al.airline_name,
         ac.model as aircraft_model,
         ac.total_seats as aircraft_capacity,
+        COALESCE(f.available_busi_seats+f.available_econ_seats,ac.total_seats) as available_seats,
         INITCAP((CASE
           WHEN f.status = FALSE THEN 'cancelled'
           WHEN f.arrival_time < NOW() THEN 'completed'
@@ -311,7 +312,7 @@ const getAirlineFlights = async (req, res) => {
       JOIN aircraft ac ON f.aircraft_id = ac.aircraft_id
       JOIN airlines al ON ac.airline_id = al.airline_id
       WHERE al.airline_id = $1
-      ORDER BY f.departure_time DESC
+      ORDER BY f.departure_time ASC
     `, [airline_id]);
       console.log(result.rows);
     res.json({

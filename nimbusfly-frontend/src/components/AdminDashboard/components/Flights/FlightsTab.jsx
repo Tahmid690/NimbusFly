@@ -161,11 +161,11 @@ const FlightsTab = ({ allFlights,admin }) => {
         localStorage.setItem('lastActiveTab', 'flights');
         setTimeout(() => window.location.reload(), 1500);
       } else {
-        toast.error(`Failed to cancel flight: ${response.data.message}`);
+        toast.error(`Failed to cancel flight: ${response.data.error}`);
       }
     } catch (error) {
       console.error('Error cancelling flight:', error);
-      toast.error(`Error cancelling flight: ${error.response?.data?.message || error.message}`);
+      toast.error(`Error cancelling flight: ${error.response?.data?.error || error.message}`);
     }
   };
 
@@ -201,7 +201,7 @@ const FlightsTab = ({ allFlights,admin }) => {
       arrival_time: formData.get('arrival_time'),
       business_ticket_price: parseFloat(formData.get('business_ticket_price')),
       economy_ticket_price: parseFloat(formData.get('economy_ticket_price')),
-      round_trip_discount: formData.get('round_trip_discount') ? parseFloat(formData.get('round_trip_discount')) : 0,
+      round_trip_discount: formData.get('round_trip_discount') ? parseFloat(formData.get('round_trip_discount'))/100.0 : 0,
       baggage_limit: formData.get('baggage_limit') ? parseInt(formData.get('baggage_limit')) : null,
       airline_id: admin.airline_id,
       flight_status: 'Scheduled'
@@ -226,11 +226,11 @@ const FlightsTab = ({ allFlights,admin }) => {
         localStorage.setItem('lastActiveTab', 'flights');
         setTimeout(() => window.location.reload(), 1500);
       } else {
-        toast.error(`Failed to create flight: ${response.data.message}`);
+        toast.error(`Failed to create flight: ${response.data.error}`);
       }
     } catch (error) {
       console.error('Error creating flight:', error);
-      toast.error(`Error creating flight: ${error.response?.data?.message || error.message}`);
+      toast.error(`Error creating flight: ${error.response?.data?.error || error.message}`);
     }
   };
 
@@ -271,11 +271,11 @@ const FlightsTab = ({ allFlights,admin }) => {
         localStorage.setItem('lastActiveTab', 'flights');
         setTimeout(() => window.location.reload(), 1500);
       } else {
-        toast.error(`Failed to update flight: ${response.data.message}`);
+        toast.error(`Failed to update flight: ${response.data.error}`);
       }
     } catch (error) {
       console.error('Error updating flight:', error);
-      toast.error(`Error updating flight: ${error.response?.data?.message || error.message}`);
+      toast.error(`Error updating flight: ${error.response?.data?.error || error.message}`);
     }
   };
 
@@ -332,7 +332,6 @@ const FlightsTab = ({ allFlights,admin }) => {
     }
   }, [showEditModal, admin?.airline_id]);
 
-  // console.log('All Flights:', allFlights);
   // Calculate flight statistics
   const flightStats = useMemo(() => {
     if (!allFlights.length) return {};
@@ -361,7 +360,6 @@ const FlightsTab = ({ allFlights,admin }) => {
   const filteredFlights = useMemo(() => {
     let filtered = allFlights;
     
-    // Apply status filter
     if (statusFilter !== 'all') {
       console.log('Applying status filter:', statusFilter);
       filtered = filtered.filter(flight => flight.flight_status === statusFilter);
@@ -633,9 +631,7 @@ const FlightsTab = ({ allFlights,admin }) => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   />
-                  <p className="text-xs text-blue-600 mt-1">
-                    ✓ Departure time must be in the future
-                  </p>
+                 
                 </div>
                 
                 <div>
@@ -825,9 +821,7 @@ const FlightsTab = ({ allFlights,admin }) => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
                   />
-                  <p className="text-xs text-blue-600 mt-1">
-                    ✓ Departure time must be in the future
-                  </p>
+                 
                 </div>
                 
                 <div>
@@ -882,9 +876,12 @@ const FlightsTab = ({ allFlights,admin }) => {
                     type="number" 
                     name="round_trip_discount"
                     step="0.01"
+                    min="0"
+                    max="100"
                     placeholder="0.00"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
+                 
                 </div>
                 
                 <div>
@@ -938,6 +935,18 @@ const FlightsTab = ({ allFlights,admin }) => {
                     }
                     
                     const formData = new FormData(e.target.form);
+                    const roundTripDiscount = parseFloat(formData.get('round_trip_discount') || 0);
+                    
+                    if (roundTripDiscount > 100) {
+                      toast.error('Round trip discount cannot exceed 100%');
+                      return;
+                    }
+                    
+                    if (roundTripDiscount < 0) {
+                      toast.error('Round trip discount cannot be negative');
+                      return;
+                    }
+                    
                     addFlightDb(formData);
                   }}
                   className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"

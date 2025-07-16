@@ -35,7 +35,6 @@ const getFlightById = async (req, res) => {
 const createFlight = async (req, res) => {
   // console.log('Creating flight with data:', req.body);
   const {
-    flight_number,
     aircraft_id,
     origin_airport_id,
     destination_airport_id,
@@ -44,30 +43,29 @@ const createFlight = async (req, res) => {
     business_ticket_price,
     economy_ticket_price,
     round_trip_discount,
-    available_seats,
-    available_busi_seats,
-    available_econ_seats
+    baggage_limit
   } = req.body;
 
   try {
     const query = `
       INSERT INTO flights (
-        flight_number, aircraft_id,
+        aircraft_id,
         origin_airport_id, destination_airport_id,
         departure_time, arrival_time,
         business_ticket_price, economy_ticket_price, round_trip_discount,
-        available_seats, available_busi_seats, available_econ_seats
+        baggage_limit
       ) VALUES (
-        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12
+        $1,$2,$3,$4,$5,$6,$7,$8,$9
       )
     `;
+    // console.log('Creating flight with query:', query);
 
     await pool.query(query, [
-      flight_number, aircraft_id,
+      aircraft_id,
       origin_airport_id, destination_airport_id,
       departure_time, arrival_time,
       business_ticket_price, economy_ticket_price, round_trip_discount,
-      available_seats, available_busi_seats, available_econ_seats
+      baggage_limit
     ]);
     console.log('Flight updated successfully');
     res.status(201).json({ success: true, message: 'Flight created successfully' });

@@ -167,26 +167,9 @@ const createAircraft = async (req, res) => {
       });
     }
     
-    if (!total_seats || total_seats <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Total seats must be a positive number'
-      });
-    }
+
     
-    if (!econ_seats || econ_seats < 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Economy seats must be a non-negative number'
-      });
-    }
-    
-    if (!busi_seats || busi_seats < 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Business seats must be a non-negative number'
-      });
-    }
+  
     
     if (!airline_id) {
       return res.status(400).json({
@@ -195,13 +178,7 @@ const createAircraft = async (req, res) => {
       });
     }
     
-    // Check if seats add up correctly
-    if (parseInt(econ_seats) + parseInt(busi_seats) !== parseInt(total_seats)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Economy seats + Business seats must equal total seats'
-      });
-    }
+
     
     // Validate optional fields
     if (year_manufactured && (year_manufactured < 1950 || year_manufactured > new Date().getFullYear() + 5)) {
@@ -277,10 +254,12 @@ const createAircraft = async (req, res) => {
         message: 'Aircraft with this registration number already exists'
       });
     } else {
+      console.log('Error creating aircraft:', error.message)
       res.status(500).json({
         success: false,
         message: 'Failed to create aircraft',
         error: error.message
+        
       });
     }
   }
@@ -317,49 +296,15 @@ const updateAircraft = async (req, res) => {
       });
     }
     
-    if (!total_seats || total_seats <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Total seats must be a positive number'
-      });
-    }
-    
-    if (!econ_seats || econ_seats < 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Economy seats must be a non-negative number'
-      });
-    }
-    
-    if (!busi_seats || busi_seats < 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Business seats must be a non-negative number'
-      });
-    }
-    
     if (!airline_id) {
       return res.status(400).json({
         success: false,
         message: 'Airline ID is required'
       });
     }
+  
     
-    // Check if seats add up correctly
-    if (parseInt(econ_seats) + parseInt(busi_seats) !== parseInt(total_seats)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Economy seats + Business seats must equal total seats'
-      });
-    }
-    
-    // Validate optional fields
-    if (year_manufactured && (year_manufactured < 1950 || year_manufactured > new Date().getFullYear() + 5)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Year manufactured must be between 1950 and ' + (new Date().getFullYear() + 5)
-      });
-    }
+  
     
     if (max_range_km && max_range_km < 0) {
       return res.status(400).json({
@@ -424,17 +369,20 @@ const updateAircraft = async (req, res) => {
     });
     
   } catch (error) {
-    if (error.code === '23503') { // Foreign key violation
+    if (error.code === '23503') { // Foreign key violation\
+      console.log('Error creating aircraft:', error.message)
       res.status(404).json({
         success: false,
         message: 'Airline not found'
       });
     } else if (error.code === '23505') { // Unique constraint violation
+      console.log('Error creating aircraft:', error.message)
       res.status(409).json({
         success: false,
         message: 'Aircraft with this registration number already exists'
       });
     } else {
+      console.log('Error creating aircraft:', error.message)
       res.status(500).json({
         success: false,
         message: 'Failed to update aircraft',

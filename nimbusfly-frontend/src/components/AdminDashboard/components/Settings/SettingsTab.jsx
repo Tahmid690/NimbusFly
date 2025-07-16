@@ -80,10 +80,10 @@ const SettingsTab = ({ admin }) => {
           confirmPassword: ''
         });
       } else {
-        setPasswordError(response.data.message || 'Failed to change password');
+        setPasswordError(response.data.error || 'Failed to change password');
       }
     } catch (err) {
-      setPasswordError(err.response?.data?.message || 'Error changing password');
+      setPasswordError(err.response?.data?.error || 'Error changing password');
     } finally {
       setIsLoading(false);
     }

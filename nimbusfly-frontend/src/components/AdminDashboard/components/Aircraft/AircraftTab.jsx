@@ -160,11 +160,11 @@ const AircraftTab = ({ allAircraft, admin }) => {
         localStorage.setItem('lastActiveTab', 'aircraft');
         setTimeout(() => window.location.reload(), 1500);
       } else {
-        toast.error(`Failed to create aircraft: ${response.data.message}`);
+        toast.error(`Failed to create aircraft: ${response.data.error}`);
       }
     } catch (error) {
       console.error('Error creating aircraft:', error);
-      toast.error(`Error creating aircraft: ${error.response?.data?.message || error.message}`);
+      toast.error(`Error creating aircraft: ${error.response?.data?.error || error.message}`);
     }
   };
 
@@ -203,6 +203,7 @@ const AircraftTab = ({ allAircraft, admin }) => {
           }
         }
       );
+      
 
       if (response.data.success) {
         toast.success(`Aircraft ${aircraftData.model} updated successfully! ✈️`);
@@ -211,11 +212,11 @@ const AircraftTab = ({ allAircraft, admin }) => {
         localStorage.setItem('lastActiveTab', 'aircraft');
         setTimeout(() => window.location.reload(), 1500);
       } else {
-        toast.error(`Failed to update aircraft: ${response.data.message}`);
+        toast.error(`Failed to update aircraft: ${response.data.error}`);
       }
     } catch (error) {
       console.error('Error updating aircraft:', error);
-      toast.error(`Error updating aircraft: ${error.response?.data?.message || error.message}`);
+      toast.error(`Error updating aircraft: ${error.response?.data?.error || error.message}`);
     }
   };
 
