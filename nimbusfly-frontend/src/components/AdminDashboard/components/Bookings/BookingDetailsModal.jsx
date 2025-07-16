@@ -29,11 +29,11 @@ const BookingDetailsModal = ({ booking, isOpen, onClose, onStatusUpdate }) => {
         console.log(response.data.data);
         setBookingDetails(response.data.data);
       } else {
-        setError(response.data.message || 'Failed to fetch booking details');
+        setError(response.data.error || 'Failed to fetch booking details');
       }
     } catch (err) {
       console.error('Error fetching booking details:', err);
-      setError(err.response?.data?.message || 'Error fetching booking details');
+      setError(err.response?.data?.error || 'Error fetching booking details');
     } finally {
       setLoading(false);
     }

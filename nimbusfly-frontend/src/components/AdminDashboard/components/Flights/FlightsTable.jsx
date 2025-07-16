@@ -1,6 +1,6 @@
 // src/component/AdminDashboard/components/Flights/FlightsTable.jsx
 import React from 'react';
-import { Eye, Edit3, Plane } from 'lucide-react';
+import { Eye, Edit3, Plane, X } from 'lucide-react';
 import StatusBadge from '../UI/StatusBadge';
 import Pagination from '../UI/Pagination';
 import { formatDate, formatTime } from '../../utils/formatters';
@@ -13,7 +13,8 @@ const FlightsTable = ({
   totalItems, 
   itemsPerPage,
   onViewDetails,
-  onEditFlight
+  onEditFlight,
+  onCancelFlight
 }) => {
   const handleViewDetails = (flight) => {
     onViewDetails(flight);
@@ -21,6 +22,10 @@ const FlightsTable = ({
 
   const handleEditFlight = (flight) => {
     onEditFlight(flight);
+  };
+
+  const handleCancelFlight = (flight) => {
+    onCancelFlight(flight);
   };
 
   return (
@@ -82,6 +87,15 @@ const FlightsTable = ({
                   >
                     <Edit3 className="w-5 h-5" />
                   </button>
+                  {flight.flight_status !== 'Cancelled' && (
+                    <button 
+                      onClick={() => handleCancelFlight(flight)}
+                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Cancel Flight"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  )}
                 </div>
               </td>
             </tr>

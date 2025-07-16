@@ -33,9 +33,8 @@ const getFlightById = async (req, res) => {
 };
 
 const createFlight = async (req, res) => {
+  // console.log('Creating flight with data:', req.body);
   const {
-    flight_id,
-    flight_number,
     aircraft_id,
     origin_airport_id,
     destination_airport_id,
@@ -44,34 +43,34 @@ const createFlight = async (req, res) => {
     business_ticket_price,
     economy_ticket_price,
     round_trip_discount,
-    available_seats,
-    available_busi_seats,
-    available_econ_seats
+    baggage_limit
   } = req.body;
 
   try {
     const query = `
       INSERT INTO flights (
-        flight_id, flight_number, aircraft_id,
+        aircraft_id,
         origin_airport_id, destination_airport_id,
         departure_time, arrival_time,
         business_ticket_price, economy_ticket_price, round_trip_discount,
-        available_seats, available_busi_seats, available_econ_seats
+        baggage_limit
       ) VALUES (
-        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13
+        $1,$2,$3,$4,$5,$6,$7,$8,$9
       )
     `;
+    // console.log('Creating flight with query:', query);
 
     await pool.query(query, [
-      flight_id, flight_number, aircraft_id,
+      aircraft_id,
       origin_airport_id, destination_airport_id,
       departure_time, arrival_time,
       business_ticket_price, economy_ticket_price, round_trip_discount,
-      available_seats, available_busi_seats, available_econ_seats
+      baggage_limit
     ]);
-
+    console.log('Flight updated successfully');
     res.status(201).json({ success: true, message: 'Flight created successfully' });
   } catch (error) {
+    console.error('Error updating flight:', error);
     res.status(500).json({ success: false, message: 'Failed to create flight', error: error.message });
   }
 };
@@ -79,48 +78,27 @@ const createFlight = async (req, res) => {
 const updateFlight = async (req, res) => {
   const { id } = req.params;
   const {
-    flight_number,
     aircraft_id,
-    origin_airport_id,
-    destination_airport_id,
     departure_time,
-    arrival_time,
-    business_ticket_price,
-    economy_ticket_price,
-    round_trip_discount,
-    available_seats,
-    available_busi_seats,
-    available_econ_seats
+    arrival_time
   } = req.body;
 
   try {
     const query = `
       UPDATE flights SET
-        flight_number = $1,
-        aircraft_id = $2,
-        origin_airport_id = $3,
-        destination_airport_id = $4,
-        departure_time = $5,
-        arrival_time = $6,
-        business_ticket_price = $7,
-        economy_ticket_price = $8,
-        round_trip_discount = $9,
-        available_seats = $10,
-        available_busi_seats = $11,
-        available_econ_seats = $12
-      WHERE flight_id = $13
+        aircraft_id = $1,
+        departure_time = $2,
+        arrival_time = $3
+      WHERE flight_id = $4
     `;
 
     await pool.query(query, [
-      flight_number, aircraft_id, origin_airport_id, destination_airport_id,
-      departure_time, arrival_time,
-      business_ticket_price, economy_ticket_price, round_trip_discount,
-      available_seats, available_busi_seats, available_econ_seats,
-      id
+       aircraft_id, departure_time, arrival_time,id
     ]);
-
+    
     res.json({ success: true, message: 'Flight updated successfully' });
   } catch (error) {
+    
     res.status(500).json({ success: false, message: 'Failed to update flight', error: error.message });
   }
 };
@@ -138,7 +116,20 @@ const deleteFlight = async (req, res) => {
   }
 };
 
-
+const cancelFlight = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query('UPDATE flights SET status = FALSE WHERE flight_id = $1', [id]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ success: false, message: 'Flight not found' });
+    }
+    console.log('Flight cancelled successfully');
+    res.json({ success: true, message: 'Flight cancelled successfully' });
+  } catch (error) {
+    console.error('Error cancelling flight:', error);
+    res.status(500).json({ success: false, message: 'Failed to cancel flight', error: error.message });
+  }
+};
 const searchFlights = async (req, res) => {
   const {
     origin,
@@ -358,5 +349,6 @@ module.exports = {
   updateFlight,
   deleteFlight,
   searchFlights,
-  airlineFlights
+  airlineFlights,
+  cancelFlight
 };

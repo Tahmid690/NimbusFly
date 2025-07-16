@@ -6,9 +6,11 @@ import StatCard from '../Dashboard/StatCard';
 import { Plus, Navigation, Clock, AlertCircle, CheckCircle, Download, Filter, ChevronDown, X } from 'lucide-react';
 import StatusBadge from '../UI/StatusBadge';
 import { formatDate, formatTime } from '../../utils/formatters';
+import { useToast } from '../UI/Toast';
+import ConfirmationModal from '../UI/ConfirmationModal';
 import axios from 'axios';
 
-const FlightsTab = ({ allFlights }) => {
+const FlightsTab = ({ allFlights,admin }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('all');
   const [showExportDropdown, setShowExportDropdown] = useState(false);
@@ -21,10 +23,21 @@ const FlightsTab = ({ allFlights }) => {
   const [loadingAircraft, setLoadingAircraft] = useState(false);
   const [loadingAirports, setLoadingAirports] = useState(false);
   const flightsPerPage = 20;
+  const toast = useToast();
+
+  const [selectedAircraft, setSelectedAircraft] = useState('');
+  const [selectedOrigin, setSelectedOrigin] = useState('');
+  const [selectedDestination, setSelectedDestination] = useState('');
+  const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
+  const [flightToCancel, setFlightToCancel] = useState(null);
+  const [departureTime, setDepartureTime] = useState('');
+  const [arrivalTime, setArrivalTime] = useState('');
+  const [editDepartureTime, setEditDepartureTime] = useState('');
+  const [editArrivalTime, setEditArrivalTime] = useState('');
 
   const exportToCSV = (data, filename) => {
     if (!data || data.length === 0) {
-      alert('No data to export');
+      toast.warning('No data to export');
       return;
     }
     
@@ -52,7 +65,7 @@ const FlightsTab = ({ allFlights }) => {
 
   const exportToJSON = (data, filename) => {
     if (!data) {
-      alert('No data to export');
+      toast.warning('No data to export');
       return;
     }
     
@@ -103,6 +116,11 @@ const FlightsTab = ({ allFlights }) => {
 
   const handleEditFlight = (flight) => {
     setSelectedFlight(flight);
+    // Initialize edit modal time states
+    const depTime = flight.departure_time ? new Date(flight.departure_time).toISOString().slice(0, 16) : '';
+    const arrTime = flight.arrival_time ? new Date(flight.arrival_time).toISOString().slice(0, 16) : '';
+    setEditDepartureTime(depTime);
+    setEditArrivalTime(arrTime);
     setShowEditModal(true);
   };
 
@@ -113,7 +131,42 @@ const FlightsTab = ({ allFlights }) => {
   const handleStatusUpdate = (flightId, newStatus) => {
     console.log(`Updating flight ${flightId} status to ${newStatus}`);
     // TODO: Implement API call to update flight status
-    alert(`Flight status updated to ${newStatus}`);
+    toast.success(`Flight status updated to ${newStatus}`);
+  };
+
+  const handleCancelFlight = (flight) => {
+    setFlightToCancel(flight);
+    setShowCancelConfirmation(true);
+  };
+
+  const confirmCancelFlight = async () => {
+    if (!flightToCancel) return;
+
+    try {
+      const response = await axios.put(
+        `http://localhost:3000/flights/cancel/${flightToCancel.flight_id}`,
+        { flight_status: 'Cancelled' },
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      console.log('Cancel response:', response.data);
+
+      if (response.data.success) {
+        toast.success(`Flight ${flightToCancel.flight_number} cancelled successfully! 🛫`);
+        // Store current tab in localStorage before reload
+        localStorage.setItem('lastActiveTab', 'flights');
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        toast.error(`Failed to cancel flight: ${response.data.error}`);
+      }
+    } catch (error) {
+      console.error('Error cancelling flight:', error);
+      toast.error(`Error cancelling flight: ${error.response?.data?.error || error.message}`);
+    }
   };
 
   const closeModals = () => {
@@ -121,13 +174,118 @@ const FlightsTab = ({ allFlights }) => {
     setShowEditModal(false);
     setShowAddFlightModal(false);
     setSelectedFlight(null);
+    setShowCancelConfirmation(false);
+    setFlightToCancel(null);
+    
+    // Reset form fields when closing Add Flight modal
+    setSelectedAircraft('');
+    setSelectedOrigin('');
+    setSelectedDestination('');
+    setDepartureTime('');
+    setArrivalTime('');
+    setEditDepartureTime('');
+    setEditArrivalTime('');
+  };
+
+  const addFlightDb = async (formData) => {
+    if (!admin?.airline_id) {
+      toast.error('Error: Airline ID not found. Please log in again.');
+      return;
+    }
+
+    const flightData = {
+      aircraft_id: parseInt(formData.get('aircraft_id')),
+      origin_airport_id: parseInt(formData.get('origin_airport_id')),
+      destination_airport_id: parseInt(formData.get('destination_airport_id')),
+      departure_time: formData.get('departure_time'),
+      arrival_time: formData.get('arrival_time'),
+      business_ticket_price: parseFloat(formData.get('business_ticket_price')),
+      economy_ticket_price: parseFloat(formData.get('economy_ticket_price')),
+      round_trip_discount: formData.get('round_trip_discount') ? parseFloat(formData.get('round_trip_discount'))/100.0 : 0,
+      baggage_limit: formData.get('baggage_limit') ? parseInt(formData.get('baggage_limit')) : null,
+      airline_id: admin.airline_id,
+      flight_status: 'Scheduled'
+    };
+
+    try {
+      const response = await axios.post(
+        'http://localhost:3000/flights/add',
+        flightData,
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.data.success) {
+        toast.success(`Flight created successfully! ✈️`);
+        closeModals();
+        // Store current tab in localStorage before reload
+        localStorage.setItem('lastActiveTab', 'flights');
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        toast.error(`Failed to create flight: ${response.data.error}`);
+      }
+    } catch (error) {
+      console.error('Error creating flight:', error);
+      toast.error(`Error creating flight: ${error.response?.data?.error || error.message}`);
+    }
+  };
+
+  const editFlightDb = async (formData) => {
+    if (!admin?.airline_id) {
+      toast.error('Error: Airline ID not found. Please log in again.');
+      return;
+    }
+    console.log('Editing flight with data:', selectedFlight);
+
+    if (!selectedFlight?.flight_id) {
+      toast.error('Error: Flight ID not found.');
+      return;
+    }
+
+    const flightData = {
+      aircraft_id: parseInt(formData.get('aircraft_id')),
+      departure_time: formData.get('departure_time'),
+      arrival_time: formData.get('arrival_time')
+    };
+
+    try {
+      const response = await axios.put(
+        `http://localhost:3000/flights/updt/${selectedFlight.flight_id}`,
+        flightData,
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.data.success) {
+        toast.success(`Flight updated successfully! ✈️`);
+        closeModals();
+        // Store current tab in localStorage before reload
+        localStorage.setItem('lastActiveTab', 'flights');
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        toast.error(`Failed to update flight: ${response.data.error}`);
+      }
+    } catch (error) {
+      console.error('Error updating flight:', error);
+      toast.error(`Error updating flight: ${error.response?.data?.error || error.message}`);
+    }
   };
 
   // Fetch available aircraft
   const fetchAvailableAircraft = async () => {
+    if (!admin?.airline_id) return;
+    
     setLoadingAircraft(true);
     try {
-      const response = await axios.get('http://localhost:3000/admin/admin/aircraft', {
+      const response = await axios.get(`http://localhost:3000/aircraft/airline/${admin.airline_id}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
       });
       if (response.data.success) {
@@ -135,6 +293,7 @@ const FlightsTab = ({ allFlights }) => {
       }
     } catch (error) {
       console.error('Error fetching aircraft:', error);
+      toast.error('Failed to load aircraft data');
     } finally {
       setLoadingAircraft(false);
     }
@@ -144,7 +303,7 @@ const FlightsTab = ({ allFlights }) => {
   const fetchAvailableAirports = async () => {
     setLoadingAirports(true);
     try {
-      const response = await axios.get('http://localhost:3000/admin/admin/airports', {
+      const response = await axios.get('http://localhost:3000/airports', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
       });
       if (response.data.success) {
@@ -152,6 +311,7 @@ const FlightsTab = ({ allFlights }) => {
       }
     } catch (error) {
       console.error('Error fetching airports:', error);
+      toast.error('Failed to load airport data');
     } finally {
       setLoadingAirports(false);
     }
@@ -159,13 +319,19 @@ const FlightsTab = ({ allFlights }) => {
 
   // Load aircraft and airports when Add Flight modal opens
   useEffect(() => {
-    if (showAddFlightModal) {
+    if (showAddFlightModal && admin?.airline_id) {
       fetchAvailableAircraft();
       fetchAvailableAirports();
     }
-  }, [showAddFlightModal]);
+  }, [showAddFlightModal, admin?.airline_id]);
 
-  // console.log('All Flights:', allFlights);
+  // Load aircraft when Edit Flight modal opens
+  useEffect(() => {
+    if (showEditModal && admin?.airline_id) {
+      fetchAvailableAircraft();
+    }
+  }, [showEditModal, admin?.airline_id]);
+
   // Calculate flight statistics
   const flightStats = useMemo(() => {
     if (!allFlights.length) return {};
@@ -194,7 +360,6 @@ const FlightsTab = ({ allFlights }) => {
   const filteredFlights = useMemo(() => {
     let filtered = allFlights;
     
-    // Apply status filter
     if (statusFilter !== 'all') {
       console.log('Applying status filter:', statusFilter);
       filtered = filtered.filter(flight => flight.flight_status === statusFilter);
@@ -346,6 +511,7 @@ const FlightsTab = ({ allFlights }) => {
           onViewDetails={handleViewDetails}
           onEditFlight={handleEditFlight}
           onStatusUpdate={handleStatusUpdate}
+          onCancelFlight={handleCancelFlight}
         />
       </GlowCard>
 
@@ -425,45 +591,72 @@ const FlightsTab = ({ allFlights }) => {
               </button>
             </div>
             
-            <div className="space-y-4">
+            <form className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Flight Number</label>
-                  <input 
-                    type="text" 
-                    defaultValue={selectedFlight.flight_number}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Aircraft</label>
                   <select 
-                    defaultValue={selectedFlight.flight_status}
+                    name="aircraft_id"
+                    defaultValue={selectedFlight.aircraft_id || ''}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                    disabled={loadingAircraft}
                   >
-                    <option value="Scheduled">Scheduled</option>
-                    <option value="Active">Active</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Delayed">Delayed</option>
-                    <option value="Cancelled">Cancelled</option>
+                    <option value="">Select aircraft</option>
+                    {availableAircraft && availableAircraft.map((aircraft) => (
+                      <option key={aircraft.aircraft_id} value={aircraft.aircraft_id}>
+                        {aircraft.model} - {aircraft.registration_number || `ID: ${aircraft.aircraft_id}`} 
+                        ({aircraft.total_seats} seats)
+                      </option>
+                    ))}
                   </select>
                 </div>
+                
+                
+                
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Departure Time</label>
                   <input 
                     type="datetime-local" 
-                    defaultValue={selectedFlight.departure_time ? new Date(selectedFlight.departure_time).toISOString().slice(0, 16) : ''}
+                    name="departure_time"
+                    value={editDepartureTime}
+                    min={new Date().toISOString().slice(0, 16)}
+                    onChange={(e) => {
+                      setEditDepartureTime(e.target.value);
+                      // Clear arrival time if it's earlier than the new departure time
+                      if (editArrivalTime && e.target.value && new Date(e.target.value) >= new Date(editArrivalTime)) {
+                        setEditArrivalTime('');
+                      }
+                    }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
                   />
+                 
                 </div>
+                
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Arrival Time</label>
                   <input 
                     type="datetime-local" 
-                    defaultValue={selectedFlight.arrival_time ? new Date(selectedFlight.arrival_time).toISOString().slice(0, 16) : ''}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    name="arrival_time"
+                    value={editArrivalTime}
+                    onChange={(e) => setEditArrivalTime(e.target.value)}
+                    min={editDepartureTime}
+                    disabled={!editDepartureTime}
+                    className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      !editDepartureTime ? 'bg-gray-100 cursor-not-allowed' : ''
+                    }`}
+                    required
                   />
+                  {!editDepartureTime && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Please select departure time first
+                    </p>
+                  )}
+                  
                 </div>
+                
+                
               </div>
               
               <div className="flex justify-end space-x-4 pt-6">
@@ -474,16 +667,29 @@ const FlightsTab = ({ allFlights }) => {
                   Cancel
                 </button>
                 <button 
-                  onClick={() => {
-                    alert('Save functionality not implemented yet');
-                    closeModals();
+                  type="submit"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    
+                    if (!editDepartureTime || !editArrivalTime) {
+                      toast.warning('Please select both departure and arrival times');
+                      return;
+                    }
+                    
+                    if (new Date(editDepartureTime) >= new Date(editArrivalTime)) {
+                      toast.error('Arrival time must be after departure time');
+                      return;
+                    }
+                    
+                    const formData = new FormData(e.target.form);
+                    editFlightDb(formData);
                   }}
                   className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   Save Changes
                 </button>
               </div>
-            </div>
+            </form>
           </div>
         </div>
       )}
@@ -505,26 +711,19 @@ const FlightsTab = ({ allFlights }) => {
             <form className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Flight Number</label>
-                  <input 
-                    type="text" 
-                    placeholder="e.g., NF101"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    required
-                  />
-                </div>
-                
-                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Aircraft</label>
                   <select 
+                    name="aircraft_id"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
                     disabled={loadingAircraft}
+                    value={selectedAircraft}
+                    onChange={(e) => setSelectedAircraft(e.target.value)}
                   >
                     <option value="">
-                      {loadingAircraft ? 'Loading aircraft...' : 'Select aircraft'}
+                       Select aircraft
                     </option>
-                    {availableAircraft.map((aircraft) => (
+                    {availableAircraft && availableAircraft.map((aircraft) => (
                       <option key={aircraft.aircraft_id} value={aircraft.aircraft_id}>
                         {aircraft.model} - {aircraft.registration_number || `ID: ${aircraft.aircraft_id}`} 
                         ({aircraft.total_seats} seats)
@@ -536,61 +735,122 @@ const FlightsTab = ({ allFlights }) => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Origin Airport</label>
                   <select 
+                    name="origin_airport_id"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
                     disabled={loadingAirports}
+                    value={selectedOrigin}
+                    onChange={(e) => {
+                      const newOrigin = e.target.value;
+                      setSelectedOrigin(newOrigin);
+                      // Clear destination if it's the same as the new origin
+                      if (String(newOrigin) === String(selectedDestination)) {
+                        setSelectedDestination('');
+                      }
+                    }}
                   >
                     <option value="">
-                      {loadingAirports ? 'Loading airports...' : 'Select origin airport'}
+                       Select origin airport
                     </option>
-                    {availableAirports.map((airport) => (
+                    {availableAirports && availableAirports
+                      .filter(airport => {
+                        // Convert both to strings for comparison to avoid type issues
+                        const airportId = String(airport.airport_id);
+                        const selectedDestinationId = String(selectedDestination);
+                        return airportId !== selectedDestinationId;
+                      })
+                      .map((airport) => (
                       <option key={airport.airport_id} value={airport.airport_id}>
                         {airport.iata_code} - {airport.airport_name} ({airport.city}, {airport.country})
                       </option>
                     ))}
                   </select>
+                  
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Destination Airport</label>
                   <select 
+                    name="destination_airport_id"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
                     disabled={loadingAirports}
+                    value={selectedDestination}
+                    onChange={(e) => {
+                      const newDestination = e.target.value;
+                      setSelectedDestination(newDestination);
+                      // Clear origin if it's the same as the new destination
+                      if (String(newDestination) === String(selectedOrigin)) {
+                        setSelectedOrigin('');
+                      }
+                    }}
                   >
                     <option value="">
-                      {loadingAirports ? 'Loading airports...' : 'Select destination airport'}
+                       Select destination airport
                     </option>
-                    {availableAirports.map((airport) => (
+                    {availableAirports && availableAirports
+                      .filter(airport => {
+                        // Convert both to strings for comparison to avoid type issues
+                        const airportId = String(airport.airport_id);
+                        const selectedOriginId = String(selectedOrigin);
+                        return airportId !== selectedOriginId;
+                      })
+                      .map((airport) => (
                       <option key={airport.airport_id} value={airport.airport_id}>
                         {airport.iata_code} - {airport.airport_name} ({airport.city}, {airport.country})
                       </option>
                     ))}
                   </select>
+                  
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Departure Time</label>
                   <input 
                     type="datetime-local" 
+                    name="departure_time"
+                    value={departureTime}
+                    min={new Date().toISOString().slice(0, 16)}
+                    onChange={(e) => {
+                      setDepartureTime(e.target.value);
+                      // Clear arrival time if it's earlier than the new departure time
+                      if (arrivalTime && e.target.value && new Date(e.target.value) >= new Date(arrivalTime)) {
+                        setArrivalTime('');
+                      }
+                    }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
                   />
+                 
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Arrival Time</label>
                   <input 
                     type="datetime-local" 
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    name="arrival_time"
+                    value={arrivalTime}
+                    onChange={(e) => setArrivalTime(e.target.value)}
+                    min={departureTime}
+                    disabled={!departureTime}
+                    className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                      !departureTime ? 'bg-gray-100 cursor-not-allowed' : ''
+                    }`}
                     required
                   />
+                  {!departureTime && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Please select departure time first
+                    </p>
+                  )}
+                  
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Business Ticket Price ($)</label>
                   <input 
                     type="number" 
+                    name="business_ticket_price"
                     step="0.01"
                     placeholder="0.00"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -602,6 +862,7 @@ const FlightsTab = ({ allFlights }) => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Economy Ticket Price ($)</label>
                   <input 
                     type="number" 
+                    name="economy_ticket_price"
                     step="0.01"
                     placeholder="0.00"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -613,46 +874,21 @@ const FlightsTab = ({ allFlights }) => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Round Trip Discount (%)</label>
                   <input 
                     type="number" 
+                    name="round_trip_discount"
                     step="0.01"
+                    min="0"
+                    max="100"
                     placeholder="0.00"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Available Seats</label>
-                  <input 
-                    type="number" 
-                    placeholder="Total available seats"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Available Business Seats</label>
-                  <input 
-                    type="number" 
-                    placeholder="Business class seats"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Available Economy Seats</label>
-                  <input 
-                    type="number" 
-                    placeholder="Economy class seats"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    required
-                  />
+                 
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Baggage Limit (kg)</label>
                   <input 
                     type="number" 
+                    name="baggage_limit"
                     placeholder="e.g., 23"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
@@ -671,8 +907,47 @@ const FlightsTab = ({ allFlights }) => {
                   type="submit"
                   onClick={(e) => {
                     e.preventDefault();
-                    alert('Add flight functionality not implemented yet');
-                    closeModals();
+                    
+                    // Validate that origin and destination are different
+                    if (String(selectedOrigin) === String(selectedDestination)) {
+                      toast.error('Origin and destination airports cannot be the same!');
+                      return;
+                    }
+                    
+                    if (!selectedOrigin || !selectedDestination) {
+                      toast.warning('Please select both origin and destination airports');
+                      return;
+                    }
+                    
+                    if (!selectedAircraft) {
+                      toast.warning('Please select an aircraft');
+                      return;
+                    }
+                    
+                    if (!departureTime || !arrivalTime) {
+                      toast.warning('Please select both departure and arrival times');
+                      return;
+                    }
+                    
+                    if (new Date(departureTime) >= new Date(arrivalTime)) {
+                      toast.error('Arrival time must be after departure time');
+                      return;
+                    }
+                    
+                    const formData = new FormData(e.target.form);
+                    const roundTripDiscount = parseFloat(formData.get('round_trip_discount') || 0);
+                    
+                    if (roundTripDiscount > 100) {
+                      toast.error('Round trip discount cannot exceed 100%');
+                      return;
+                    }
+                    
+                    if (roundTripDiscount < 0) {
+                      toast.error('Round trip discount cannot be negative');
+                      return;
+                    }
+                    
+                    addFlightDb(formData);
                   }}
                   className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
@@ -683,6 +958,18 @@ const FlightsTab = ({ allFlights }) => {
           </div>
         </div>
       )}
+
+      {/* Cancel Flight Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showCancelConfirmation}
+        onClose={() => setShowCancelConfirmation(false)}
+        onConfirm={confirmCancelFlight}
+        title="Cancel Flight"
+        message={`Are you sure you want to cancel flight ${flightToCancel?.flight_number}? This action cannot be undone.`}
+        confirmText="Cancel Flight"
+        cancelText="Keep Flight"
+        type="danger"
+      />
 
     </div>
   );
