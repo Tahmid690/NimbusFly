@@ -14,6 +14,7 @@ router.get('/admin/booking/:booking_id', airlineadminMiddleware, adminController
 router.put('/admin/booking/:booking_id/status', airlineadminMiddleware, adminController.updateBookingStatus);
 router.get('/getpassenger/:airline_id',airlineadminMiddleware,adminController.getPassengers);
 router.put('/admin/changepassword/:admin_id', airlineadminMiddleware,airlineadminController.updatePassword);
+router.post('/forgotpassword',airlineadminController.forgotpassword);
 
 // Admin dashboard specific routes 
 router.get('/bookings/:airline_id', airlineadminMiddleware, airlineadminController.getAirlineBookings);

@@ -2,7 +2,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const pool = require('../config/database');
 const JWT_SECRET = 'bugi_na_bai_bugi_na'; // In production, use environment variable
-
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 const register = async (req,res)=>{
         try{
 
@@ -457,6 +458,46 @@ const getDashboardAnalytics = async (req, res) => {
   }
 };
 
+const forgotpassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const result = await pool.query(
+      'SELECT admin_id, email FROM airline_admin WHERE email = $1',
+      [email]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'No admin with that email' });
+    }
+    const newPlain = crypto.randomBytes(4).toString('hex'); 
+    const hashed = await bcrypt.hash(newPlain, 10);
+    await pool.query(
+      'UPDATE airline_admin SET password = $1 WHERE email = $2',
+      [hashed, email]
+    );
+
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: +process.env.SMTP_PORT,
+      secure: true, 
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      }
+    });
+    await transporter.sendMail({
+      from: `"NimbusFly Admin" <${process.env.SMTP_USER}>`,
+      to: email,
+      subject: "Your New Admin Password",
+      text: `Your password has been reset. Your new password is:\n\n${newPlain}\n\nPlease log in and change it immediately.`,
+    });
+
+    res.json({ success: true, message: 'A new password has been emailed to you.' });
+  } catch (err) {
+    console.error('forgotPassword error:', err);
+    res.status(500).json({ success: false, message: 'Unable to reset password' });
+  }
+};
+
 module.exports={
     register,
     login,
@@ -465,5 +506,6 @@ module.exports={
     deleteAdmin,
     getAirlineBookings,
     getAirlineFlights,
-    getDashboardAnalytics
+    getDashboardAnalytics,
+    forgotpassword
 }

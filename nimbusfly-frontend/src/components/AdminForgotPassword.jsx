@@ -6,6 +6,7 @@ function AdminForgotPassword() {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [success, setSuccess] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,10 +18,12 @@ function AdminForgotPassword() {
         email: email
       });
 
-      setMessage(response.data.message || 'Check your email for reset instructions.');
+      setMessage(response.data.message || 'Check your email for youe new password.');
+      setSuccess(response.data.success);
     } catch (error) {
       console.error(error);
-      setMessage('Something went wrong. Please try again.');
+      setMessage(error.response?.data?.message||'Something went wrong. Please try again.');
+      setSuccess(false);
     } finally {
       setIsLoading(false);
     }
@@ -82,7 +85,7 @@ function AdminForgotPassword() {
                       <span>Sending...</span>
                     </>
                   ) : (
-                    <span>Send Reset Link</span>
+                    <span>Send New Password</span>
                   )}
                 </div>
               </button>
@@ -90,7 +93,7 @@ function AdminForgotPassword() {
 
             {message && (
               <div className={`mt-6 p-4 rounded-xl text-center backdrop-blur-sm border transition-all duration-300 ${
-                message.includes('Check') 
+                success
                   ? 'bg-green-500/20 text-green-100 border-green-400/30' 
                   : 'bg-red-500/20 text-red-100 border-red-400/30'
               }`}>

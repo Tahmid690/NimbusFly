@@ -12,6 +12,7 @@ const ticket=require('./routes/ticket')
 const payment=require('./routes/payment')
 const seat=require('./routes/seat')
 const admin=require('./routes/airline_admin')
+require('dotenv').config();
 const app = express()
 
 app.use(express.json());
@@ -21,7 +22,7 @@ app.use(cors({
   credentials: true
 }));
 
-
+console.log('Your SMTP_HOST:', process.env.SMTP_HOST);
 app.use('/auth', authRoutes);
 app.use('/airlines',airline);
 app.use('/flights',flight);
