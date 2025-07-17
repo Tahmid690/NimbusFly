@@ -15,10 +15,11 @@ const TicketConfirmation = () => {
   const [isDownloading, setIsDownloading] = useState(false);
   const [bookingData, setBookingData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [passengerInfo, setPassengerInfo] = useState([]);
   
   // Get booking data from navigation state
   const { bookingId, passengers, flight, paymentData, tripType, regenerateTicket } = location.state || {};
-  
+  console.log('TicketConfirmation location state:', location.state);
   // Fetch booking data when regenerating ticket
   useEffect(() => {
     console.log('TicketConfirmation useEffect triggered');
@@ -97,7 +98,7 @@ const TicketConfirmation = () => {
       console.log('getPassengers (regenerated):', result);
       return result;
     }
-    console.log('getPassengers (original):', passengers || []);
+    // console.log('getPassengers (original):', passengers || []);
     return passengers || [];
   };
 
@@ -128,7 +129,7 @@ const TicketConfirmation = () => {
       console.log('getFlights (regenerated):', result);
       return result;
     }
-    console.log('getFlights (original):', flight ? [flight] : []);
+    // console.log('getFlights (original):', flight ? [flight] : []);
     return flight ? [flight] : [];
   };
 
@@ -318,6 +319,34 @@ const TicketConfirmation = () => {
       generateQRCode();
     }
   }, [bookingDetails.bookingReference, bookingData, regenerateTicket]);
+
+  useEffect(() => {
+    const fetchPassengerInfo = async () => {
+      // console.log('vitore');
+      if (bookingId) {
+        // console.log('aro vitore');
+        try {
+          const response = await axios.get(`http://localhost:3000/bookings/passenger/${bookingId}`);
+          if (response.data.success) {
+            // console.log('vitorer respose sotti ',response.data.data) 
+            setPassengerInfo(response.data.data);
+            // console.log('pass ',passengerInfo);
+            console.log('Fetched passenger info:', response.data.passengerInfo);
+          } else {
+            console.error('Failed to fetch passenger info:', response.data.message);
+            alert('Failed to load passenger info: ' + (response.data.message || 'Unknown error'));
+          }
+        } catch (error) {
+          console.error('Error fetching passenger info:', error);
+          alert('Failed to load passenger info. Please try again later.');
+        }
+      }
+    };
+    if (bookingId) {
+      fetchPassengerInfo();
+    }
+  }, [bookingId]);
+  
 
   // Helper function to generate QR code for specific passenger and flight
   const generateQRCodeForPassenger = async (passenger, currentFlight, seatAssignment) => {
@@ -723,7 +752,7 @@ const downloadBoardingPass = async () => {
       return hasData;
     }
     const hasData = passengers && flight;
-    console.log('hasValidData (original):', hasData, 'passengers:', passengers, 'flight:', flight);
+    // console.log('hasValidData (original):', hasData, 'passengers:', passengers, 'flight:', flight);
     return hasData;
   };
 
@@ -783,9 +812,7 @@ const downloadBoardingPass = async () => {
             </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Booking Confirmed!</h1>
             <p className="text-gray-600">Your flight has been successfully booked</p>
-            <p className="text-lg font-semibold text-blue-600 mt-2">
-              Confirmation Number: {bookingDetails.confirmationNumber}
-            </p>
+          
           </div>
         </div>
 
@@ -799,7 +826,7 @@ const downloadBoardingPass = async () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-gray-500">Booking Reference</p>
-                    <p className="font-semibold">{bookingDetails.bookingReference}</p>
+                    <p className="font-semibold">{"NF"+(bookingId.toString()).padStart(5,'0')}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Booking Date</p>
@@ -874,7 +901,8 @@ const downloadBoardingPass = async () => {
               <div className="bg-white rounded-3xl shadow-lg p-6">
                 <h2 className="text-lg font-bold text-gray-900 mb-4">Passenger Details</h2>
                 <div className="space-y-4">
-                  {getPassengers().map((passenger, index) => (
+                  {console.log('jnsjn ',passengerInfo)}
+                  {passengerInfo.map((passenger, index) => (
                     <div key={index} className="p-4 bg-gray-50 rounded-xl">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center space-x-4">
@@ -887,7 +915,7 @@ const downloadBoardingPass = async () => {
                             <p className="font-semibold">
                               {passenger.title} {passenger.first_name} {passenger.last_name}
                             </p>
-                            <p className="text-sm text-gray-500">Adult</p>
+                            <p className="text-sm text-gray-500">{passenger.origin + " - " + passenger.destination}</p>
                           </div>
                         </div>
                         <div className="text-right">
@@ -898,37 +926,15 @@ const downloadBoardingPass = async () => {
                       
                       {/* Seat Information */}
                       <div className="mt-3 ml-14">
-                        {regenerateTicket && passenger.seats ? (
-                          // Show all seat assignments for regenerated tickets
-                          <div className="space-y-2">
-                            {passenger.seats.map((seat, seatIndex) => (
-                              <div key={seatIndex} className="flex items-center justify-between p-2 bg-white rounded-lg border border-gray-200">
-                                <div className="flex items-center space-x-3">
-                                  <span className="text-sm font-medium text-gray-700">
-                                    Flight {seat.flight_number}:
-                                  </span>
-                                  <span className="text-sm font-semibold text-blue-600">
-                                    Seat {seat.seat_number}
-                                  </span>
-                                  <span className="text-xs text-gray-500">
-                                    ({seat.seat_class})
-                                  </span>
-                                </div>
-                                <span className="text-xs text-gray-400">
-                                  {formatTime(seat.departure_time)}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
+                        { (
                           // Show single seat assignment for new bookings
                           <div className="flex items-center space-x-2">
                             <span className="text-sm text-gray-500">Seat:</span>
-                            <span className="text-sm font-semibold text-blue-600">
-                              {passenger.seat_number || generateSeatAssignment(index, passenger.seat_class || getFlights()[0]?.seatClass || 'Economy')}
+                            <span className="text-sm text-gray-600">
+                              {passenger.seatno}
                             </span>
                             <span className="text-xs text-gray-500">
-                              ({passenger.seat_class || getFlights()[0]?.seatClass || 'Economy'})
+                              ({passenger.seatclass})
                             </span>
                           </div>
                         )}
@@ -1019,29 +1025,8 @@ const downloadBoardingPass = async () => {
                 <div className="bg-white rounded-3xl shadow-lg p-6">
                   <h3 className="text-lg font-bold text-gray-900 mb-4">Quick Actions</h3>
                   <div className="space-y-3">
-                    <button className="w-full text-left p-3 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors">
-                      <div className="flex items-center space-x-3">
-                        <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                        </svg>
-                        <div>
-                          <p className="font-semibold text-gray-900">Manage Booking</p>
-                          <p className="text-xs text-gray-500">Change seats, add services</p>
-                        </div>
-                      </div>
-                    </button>
                     
-                    <button className="w-full text-left p-3 bg-green-50 rounded-xl hover:bg-green-100 transition-colors">
-                      <div className="flex items-center space-x-3">
-                        <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <div>
-                          <p className="font-semibold text-gray-900">Online Check-in</p>
-                          <p className="text-xs text-gray-500">Available 24h before flight</p>
-                        </div>
-                      </div>
-                    </button>
+                    
                     
                     <button 
                       onClick={() => navigate('/dashboard')}

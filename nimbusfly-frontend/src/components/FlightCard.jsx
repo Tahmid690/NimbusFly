@@ -61,6 +61,7 @@ const FlightCard = ({ flight, origin, destination, adult, child, Origin_Airport,
             adult:adult,
             seatClass:seatClass
         }
+        console.log("Booking Data:", flight);
         navigate('/booking',{state : {data}});
     }
 

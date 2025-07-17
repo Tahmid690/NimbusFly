@@ -243,3 +243,21 @@ CREATE TRIGGER flight_cancellation_booking_trigger
     AFTER UPDATE OF status ON flights
     FOR EACH ROW
     EXECUTE FUNCTION handle_flight_cancellation();
+
+
+
+CREATE OR REPLACE FUNCTION mark_seat_as_booked()
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE seats 
+    SET is_booked = TRUE 
+    WHERE seat_id = NEW.seat_id;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER seat_booking_trigger
+    AFTER INSERT ON ticket
+    FOR EACH ROW
+    EXECUTE FUNCTION mark_seat_as_booked();

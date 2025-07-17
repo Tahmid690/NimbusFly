@@ -7,8 +7,10 @@ import PaymentForm from "./PaymentForm";
 import BillingAddress from "./BillingAddress";
 import axios from "axios";
 import { CheckCircle, Shield, CreditCard, Users, AlertCircle, Loader2 } from "lucide-react";
+import { useToast, ToastProvider } from './AdminDashboard/components/UI/Toast';
+import { set } from "lodash";
 
-const PaymentPage = () => {
+const PaymentPageContent = () => {
   const [user_id, setuser_id] = useState(null);
   const [paymentData, setPaymentData] = useState({
     method: 'card',
@@ -29,8 +31,8 @@ const PaymentPage = () => {
   });
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
+  const toast = useToast();
   
   const location = useLocation();
   const navigate = useNavigate();
@@ -143,15 +145,13 @@ const PaymentPage = () => {
   };
 
   const handlePayment = async () => {
-    setError(null);
-    
     if (!validatePaymentData()) {
-      setError("Please fix the errors below and try again.");
+      toast.error("Please fix the errors below and try again.");
       return;
     }
 
     setLoading(true);
-    console.log(flightData);
+    console.log("Processing payment with data:");
     try {
       // Comprehensive payment payload that matches backend API schema
       // console.log(flightData)
@@ -194,23 +194,25 @@ const PaymentPage = () => {
         },
         total_amount: calculateTotal()
       };
-      
+      console.log("Payment Payload:", paymentPayload);
       // Process payment and create booking through backend
       try {
+        console.log("Sending payment request to backend...");
         const response = await axios.post('http://localhost:3000/payments/process', paymentPayload);
+        console.log("Getting payment request to backend...");
         
         if (response.data.success) {
-          // Navigate to confirmation page with complete booking details
+          console.log("Payment processed successfully:", response.data.data);
           navigate('/confirmation', { 
             state: { 
-              bookingId: response.data.booking_id,
-              transactionId: response.data.transaction_id,
+              bookingId: response.data.data.booking_id,
+              transactionId: response.data.data.transaction_id,
               passengers,
               flight: flightData,
-              tripType: flightData.tripType, // Pass the trip type
-              tickets: response.data.tickets || [],
+              tripType: flightData.tripType, 
+              tickets: response.data.data.tickets || [],
               paymentData: {
-                ...response.data,
+                ...response.data.data,
                 amount: calculateTotal(),
                 method: paymentData.method,
                 payment_date: new Date().toISOString(),
@@ -220,23 +222,26 @@ const PaymentPage = () => {
           });
           return;
         } else {
-          throw new Error(response.data.message || 'Payment processing failed');
+          console.log("Payment processing error:", response.data);
+          throw new Error(response.data.error || 'Payment processing failed');
         }
       } catch (backendError) {
-        console.error("Backend error:", backendError);
-        
-        // If backend is not available, show error instead of simulating
+        console.log("Backend error:", backendError);
         if (backendError.code === 'ECONNREFUSED' || backendError.message.includes('Network Error')) {
-          setError('Unable to connect to payment server. Please try again later.');
+          toast.error('Unable to connect to payment server. Please try again later.');
         } else {
-          setError(backendError.response?.data?.message || 'Payment processing failed. Please try again.');
+          console.log("Payment processing error:", backendError);
+          toast.error(backendError.response?.data?.message || 'Payment processing failed. Please try again.');
+          setTimeout(() => {
+            navigate('/');
+          }, 1000);
         }
         return;
       }
 
     } catch (error) {
       console.error("Payment error:", error);
-      setError(error.message || "Payment failed. Please try again.");
+      toast.error(error.message || "Payment failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -266,19 +271,6 @@ const PaymentPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-6">
-            {/* Enhanced Error Display */}
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
-                <div className="flex items-center space-x-3">
-                  <AlertCircle className="w-5 h-5 text-red-500" />
-                  <div>
-                    <h3 className="text-sm font-medium text-red-800">Payment Error</h3>
-                    <p className="text-sm text-red-700 mt-1">{error}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-            
             <FlightSummary flight={flightData} />
             
             {/* Enhanced Payment Method Selection */}
@@ -503,6 +495,14 @@ const PaymentPage = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+const PaymentPage = () => {
+  return (
+    <ToastProvider>
+      <PaymentPageContent />
+    </ToastProvider>
   );
 };
 

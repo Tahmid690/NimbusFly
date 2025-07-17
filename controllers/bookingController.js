@@ -342,6 +342,47 @@ const getBookingDetails = async (req, res) => {
   }
 };
 
+const passengerusingbooking = async (req, res) => {
+  try {
+    const booking_id = parseInt(req.params.id);
+
+    if (isNaN(booking_id)) {
+      return res.status(400).json({ success: false, message: 'Invalid booking ID' });
+    }
+
+    const result = await pool.query(`
+      select p.*,s.seat_number as seatno,s.seat_class as seatclass,(
+          select a.iata_code
+          from airports a
+          where a.airport_id=f.origin_airport_id 
+      ) as origin,(
+          select a.iata_code
+          from airports a
+          where a.airport_id=f.destination_airport_id
+      ) as destination
+      from passengers p
+      join bookings b on b.customer_id=p.customer_id
+      join ticket t on b.booking_id=t.booking_id and t.passenger_id=p.passenger_id
+      join seats s on s.seat_id=t.seat_id
+      join flights f on f.flight_id=s.flight_id
+      where b.booking_id=$1
+    `, [booking_id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'No passengers found for this booking' });
+    }
+    res.json({
+      success: true,
+      data: result.rows
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch passengers for booking',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   getAllBookings,
   getCustomerBooking,
@@ -349,5 +390,6 @@ module.exports = {
   createBooking,
   updateBooking,
   deleteBooking,
-  getBookingDetails
+  getBookingDetails,
+  passengerusingbooking
 };
