@@ -261,3 +261,66 @@ CREATE TRIGGER seat_booking_trigger
     AFTER INSERT ON ticket
     FOR EACH ROW
     EXECUTE FUNCTION mark_seat_as_booked();
+
+
+-- 1. Trigger Function
+CREATE OR REPLACE FUNCTION update_flight_seat_count()
+RETURNS TRIGGER AS $$
+DECLARE
+    seat_class TEXT;
+    seat_delta INT;
+BEGIN
+    IF NEW.is_booked <> OLD.is_booked THEN
+        seat_class := NEW.seat_class;
+        seat_delta := CASE 
+                        WHEN NEW.is_booked = TRUE THEN -1 
+                        ELSE 1 
+                     END;
+
+        UPDATE flights
+        SET 
+            available_seats = available_seats + seat_delta,
+            available_busi_seats = available_busi_seats + 
+                CASE WHEN seat_class = 'Business' THEN seat_delta ELSE 0 END,
+            available_econ_seats = available_econ_seats + 
+                CASE WHEN seat_class = 'Economy' THEN seat_delta ELSE 0 END
+        WHERE aircraft_id = NEW.aircraft_id;
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_update_seat_counts
+AFTER UPDATE ON seats
+FOR EACH ROW
+EXECUTE FUNCTION update_flight_seat_count();
+
+
+CREATE OR REPLACE FUNCTION unbook_seats_on_booking_cancel()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.payment_status = 'CANCELLED' AND OLD.payment_status!='CANCELLED' THEN
+        UPDATE seats
+        SET is_booked = FALSE
+        WHERE seat_id IN (
+            SELECT t.seat_id
+            FROM ticket t
+            WHERE t.booking_id = NEW.booking_id
+        );
+
+        UPDATE payments
+        SET status = 'CANCELLED'
+        WHERE booking_id = NEW.booking_id;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_unbook_seats_on_cancelled_booking
+AFTER UPDATE ON bookings
+FOR EACH ROW
+EXECUTE FUNCTION unbook_seats_on_booking_cancel();
+
+

@@ -383,6 +383,25 @@ const passengerusingbooking = async (req, res) => {
   }
 };
 
+const cancelBooking = async(req,res) => {
+  const booking_id = parseInt(req.params.id);
+  try{
+    const result = await pool.query(`
+    UPDATE bookings
+    SET payment_status = 'CANCELLED'
+    WHERE booking_id = $1
+    `,[booking_id]);
+    await pool.query('COMMIT');
+    res.status(200).json({ success: true, message: `Booking ${booking_id} cancelled successfully.` });
+  } 
+  catch (error) {
+    await pool.query('ROLLBACK');
+    console.error('Error cancelling booking:', error);
+    res.status(500).json({ success: false, message: 'Failed to cancel booking.', error: error.message });
+  } 
+
+}
+
 module.exports = {
   getAllBookings,
   getCustomerBooking,
@@ -391,5 +410,6 @@ module.exports = {
   updateBooking,
   deleteBooking,
   getBookingDetails,
-  passengerusingbooking
+  passengerusingbooking,
+  cancelBooking
 };

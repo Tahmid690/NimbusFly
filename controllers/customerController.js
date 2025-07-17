@@ -1,4 +1,5 @@
 const pool = require('../config/database');
+const bcrypt = require('bcryptjs');
 
 // Get customer profile by ID
 const getCustomerProfile = async (req, res) => {
@@ -193,8 +194,125 @@ const getCustomerStats = async (req, res) => {
   }
 };
 
+
+const updateCustomerPassword = async (req, res) => {
+  try {
+    const { customer_id } = req.params; // Get customer ID from URL params
+    const { current_password, new_password, confirm_password } = req.body;
+
+    // Input validation
+    if (!customer_id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Customer ID is required'
+      });
+    }
+
+    if (!current_password || !new_password || !confirm_password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current password, new password, and confirmation are required'
+      });
+    }
+
+    // Check if new passwords match
+    if (new_password !== confirm_password) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password and confirmation do not match'
+      });
+    }
+
+    // Password strength validation
+    if (new_password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password must be at least 6 characters long'
+      });
+    }
+
+    // Additional password strength check (optional)
+    // const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
+    // if (!passwordRegex.test(new_password)) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
+    //   });
+    // }
+
+    // Get current customer data
+    const customerQuery = 'SELECT customer_id, email, password FROM customer WHERE customer_id = $1';
+    const customerResult = await pool.query(customerQuery, [customer_id]);
+
+    if (customerResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Customer not found'
+      });
+    }
+
+    const customer = customerResult.rows[0];
+
+    // Verify current password
+    const isCurrentPasswordValid = await bcrypt.compare(current_password, customer.password);
+    
+    if (!isCurrentPasswordValid) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current password is incorrect'
+      });
+    }
+
+    // Check if new password is different from current password
+    const isSamePassword = await bcrypt.compare(new_password, customer.password);
+    
+    if (isSamePassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password must be different from current password'
+      });
+    }
+
+    // Hash the new password
+    const saltRounds = 12;
+    const hashedNewPassword = await bcrypt.hash(new_password, saltRounds);
+
+    // Update password in database
+    const updateQuery = `
+      UPDATE customer 
+      SET password = $1 
+      WHERE customer_id = $2
+      RETURNING customer_id, email, first_name, last_name
+    `;
+    
+    const updateResult = await pool.query(updateQuery, [hashedNewPassword, customer_id]);
+
+    // Success response
+    res.status(200).json({
+      success: true,
+      message: 'Password updated successfully',
+      data: {
+        customer_id: updateResult.rows[0].customer_id,
+        email: updateResult.rows[0].email,
+        name: `${updateResult.rows[0].first_name} ${updateResult.rows[0].last_name}`,
+        updated_at: new Date().toISOString()
+      }
+    });
+
+  } catch (error) {
+    console.error('Password update error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message
+    });
+  }
+};
+
+
 module.exports = {
   getCustomerProfile,
   updateCustomerProfile,
-  getCustomerStats
+  getCustomerStats,
+  updateCustomerPassword
 };

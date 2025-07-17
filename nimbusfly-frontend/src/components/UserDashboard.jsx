@@ -6,6 +6,7 @@ import axios from 'axios';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import QRCode from 'qrcode';
+import { useToast, ToastProvider } from './AdminDashboard/components/UI/Toast';
 import { 
   Calendar, 
   MapPin, 
@@ -25,12 +26,16 @@ import {
   Phone,
   X,
   Clock,
-  Users
+  Users,
+  Ban,
+  Key,
+  EyeOff
 } from 'lucide-react';
 
-const UserDashboard = () => {
+const UserDashboardContent = () => {
   const { user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState('bookings');
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -52,7 +57,22 @@ const UserDashboard = () => {
   });
   const [customerProfile, setCustomerProfile] = useState(null);
   const [customerStats, setCustomerStats] = useState(null);
-  const [profileLoading, setProfileLoading] = useState(false);
+  const [profileLoading] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [bookingToCancel, setBookingToCancel] = useState(null);
+  const [cancellingBooking, setCancellingBooking] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
+    current_password: '',
+    new_password: '',
+    confirm_password: ''
+  });
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    new: false,
+    confirm: false
+  });
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -125,7 +145,7 @@ const UserDashboard = () => {
       }
     } catch (error) {
       console.error('Error fetching booking details:', error);
-      alert('Failed to load booking details. Please try again.');
+      toast.error('Failed to load booking details. Please try again.');
     } finally {
       setBookingDetailsLoading(false);
     }
@@ -140,7 +160,7 @@ const UserDashboard = () => {
       // Fetch booking details
       const response = await axios.get(`http://localhost:3000/bookings/${bookingId}/details`);
       if (!response.data.success) {
-        alert('Failed to load booking data for ticket generation.');
+        toast.error('Failed to load booking data for ticket generation.');
         return;
       }
       
@@ -151,7 +171,7 @@ const UserDashboard = () => {
       
     } catch (error) {
       console.error('Error downloading ticket:', error);
-      alert('Failed to download ticket. Please try again.');
+      toast.error('Failed to download ticket. Please try again.');
     } finally {
       setBookingDetailsLoading(false);
     }
@@ -187,7 +207,7 @@ const UserDashboard = () => {
       });
       
       if (response.data.success) {
-        alert('Profile updated successfully!');
+        toast.success('Profile updated successfully!');
         setCustomerProfile(response.data.data);
         setShowEditProfile(false);
         
@@ -201,12 +221,12 @@ const UserDashboard = () => {
           console.error('Error refreshing profile:', profileError);
         }
       } else {
-        alert(response.data.message || 'Failed to update profile.');
+        toast.error(response.data.message || 'Failed to update profile.');
       }
     } catch (error) {
       console.error('Error updating profile:', error);
       const errorMessage = error.response?.data?.message || 'Failed to update profile. Please try again.';
-      alert(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setEditingProfile(false);
     }
@@ -630,6 +650,101 @@ const UserDashboard = () => {
     }
   };
 
+  // Handle cancel booking
+  const handleCancelBooking = async (bookingId) => {
+    try {
+      setCancellingBooking(true);
+      const response = await axios.post(`http://localhost:3000/bookings/cancel/${bookingId}`);
+      
+      if (response.data.success) {
+        toast.success('Booking cancelled successfully!');
+        setShowCancelModal(false);
+        setBookingToCancel(null);
+        
+        // Refresh bookings list
+        const bookingsResponse = await axios.get(`http://localhost:3000/bookings/customer/${user.customer_id}`);
+        if (bookingsResponse.data.success) {
+          setBookings(bookingsResponse.data.data || []);
+        }
+      } else {
+        toast.error(response.data.message || 'Failed to cancel booking.');
+      }
+    } catch (error) {
+      console.error('Error cancelling booking:', error);
+      toast.error('Failed to cancel booking. Please try again.');
+    } finally {
+      setCancellingBooking(false);
+    }
+  };
+
+  const openCancelModal = (booking) => {
+    setBookingToCancel(booking);
+    setShowCancelModal(true);
+  };
+
+  // Handle change password
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    
+    if (passwordForm.new_password !== passwordForm.confirm_password) {
+      toast.error('New password and confirmation do not match');
+      return;
+    }
+    
+    if (passwordForm.new_password.length < 6) {
+      toast.error('New password must be at least 6 characters long');
+      return;
+    }
+    
+    try {
+      setChangingPassword(true);
+      const response = await axios.put(`http://localhost:3000/customer/updt-password/${user.customer_id}`, {
+        current_password: passwordForm.current_password,
+        new_password: passwordForm.new_password,
+        confirm_password: passwordForm.confirm_password
+      });
+      
+      if (response.data.success) {
+        toast.success('Password changed successfully!');
+        setShowChangePassword(false);
+        setPasswordForm({
+          current_password: '',
+          new_password: '',
+          confirm_password: ''
+        });
+      } else {
+        toast.error(response.data.message || 'Failed to change password.');
+      }
+    } catch (error) {
+      console.error('Error changing password:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to change password. Please try again.';
+      toast.error(errorMessage);
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
+  const openChangePasswordModal = () => {
+    setPasswordForm({
+      current_password: '',
+      new_password: '',
+      confirm_password: ''
+    });
+    setShowPasswords({
+      current: false,
+      new: false,
+      confirm: false
+    });
+    setShowChangePassword(true);
+  };
+
+  const togglePasswordVisibility = (field) => {
+    setShowPasswords(prev => ({
+      ...prev,
+      [field]: !prev[field]
+    }));
+  };
+
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case 'confirmed': return 'text-green-700 bg-green-100';
@@ -993,6 +1108,16 @@ const UserDashboard = () => {
                                 <Download className="w-4 h-4" />
                                 <span>{bookingDetailsLoading ? 'Generating...' : 'Download Ticket'}</span>
                               </button>
+                              {booking.payment_status?.toLowerCase() !== 'cancelled' && (
+                                <button 
+                                  onClick={() => openCancelModal(booking)}
+                                  disabled={cancellingBooking}
+                                  className="text-red-600 hover:text-red-700 font-medium text-sm flex items-center space-x-1 transition-colors duration-200 disabled:opacity-50"
+                                >
+                                  <Ban className="w-4 h-4" />
+                                  <span>Cancel</span>
+                                </button>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -1032,13 +1157,22 @@ const UserDashboard = () => {
                           Born: {new Date(customerProfile.date_of_birth).toLocaleDateString()}
                         </p>
                       )}
-                      <button 
-                        onClick={handleEditProfile}
-                        className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105"
-                      >
-                        <Edit3 className="w-4 h-4 inline mr-2" />
-                        Edit Profile
-                      </button>
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <button 
+                          onClick={handleEditProfile}
+                          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105"
+                        >
+                          <Edit3 className="w-4 h-4 inline mr-2" />
+                          Edit Profile
+                        </button>
+                        <button 
+                          onClick={openChangePasswordModal}
+                          className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105"
+                        >
+                          <Key className="w-4 h-4 inline mr-2" />
+                          Change Password
+                        </button>
+                      </div>
                     </div>
 
                     {/* Contact Information */}
@@ -1501,7 +1635,192 @@ const UserDashboard = () => {
           </div>
         </div>
       )}
+
+      {/* Cancel Booking Modal */}
+      {showCancelModal && bookingToCancel && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-red-600 via-red-700 to-red-800 text-white p-6 rounded-t-2xl flex items-center justify-between">
+              <h2 className="text-xl font-bold">Cancel Booking</h2>
+              <button
+                onClick={() => setShowCancelModal(false)}
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors duration-200"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6">
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Ban className="w-8 h-8 text-red-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Are you sure?</h3>
+                <p className="text-gray-600">
+                  You are about to cancel booking #{bookingToCancel.booking_id}. This action cannot be undone.
+                </p>
+              </div>
+
+              <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Route:</span>
+                  <span className="font-medium">{bookingToCancel.routes}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm mt-2">
+                  <span className="text-gray-600">Total Amount:</span>
+                  <span className="font-medium">${parseFloat(bookingToCancel.total_amount || 0).toFixed(2)}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm mt-2">
+                  <span className="text-gray-600">Passengers:</span>
+                  <span className="font-medium">{bookingToCancel.total_passengers}</span>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="flex items-center justify-end space-x-3">
+                <button
+                  onClick={() => setShowCancelModal(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium transition-colors duration-200"
+                >
+                  Keep Booking
+                </button>
+                <button
+                  onClick={() => handleCancelBooking(bookingToCancel.booking_id)}
+                  disabled={cancellingBooking}
+                  className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-6 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:transform-none flex items-center space-x-2"
+                >
+                  {cancellingBooking && <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>}
+                  <span>{cancellingBooking ? 'Cancelling...' : 'Cancel Booking'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Change Password Modal */}
+      {showChangePassword && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-green-600 via-green-700 to-emerald-600 text-white p-6 rounded-t-2xl flex items-center justify-between">
+              <h2 className="text-xl font-bold">Change Password</h2>
+              <button
+                onClick={() => setShowChangePassword(false)}
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors duration-200"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <form onSubmit={handleChangePassword} className="p-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Current Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPasswords.current ? 'text' : 'password'}
+                      value={passwordForm.current_password}
+                      onChange={(e) => setPasswordForm({...passwordForm, current_password: e.target.value})}
+                      className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => togglePasswordVisibility('current')}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                    >
+                      {showPasswords.current ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    New Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPasswords.new ? 'text' : 'password'}
+                      value={passwordForm.new_password}
+                      onChange={(e) => setPasswordForm({...passwordForm, new_password: e.target.value})}
+                      className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      required
+                      minLength={6}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => togglePasswordVisibility('new')}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                    >
+                      {showPasswords.new ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Must be at least 6 characters with uppercase, lowercase, number, and special character
+                  </p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Confirm New Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPasswords.confirm ? 'text' : 'password'}
+                      value={passwordForm.confirm_password}
+                      onChange={(e) => setPasswordForm({...passwordForm, confirm_password: e.target.value})}
+                      className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      required
+                      minLength={6}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => togglePasswordVisibility('confirm')}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                    >
+                      {showPasswords.confirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="flex items-center justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => setShowChangePassword(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium transition-colors duration-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={changingPassword}
+                  className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:transform-none flex items-center space-x-2"
+                >
+                  {changingPassword && <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>}
+                  <span>{changingPassword ? 'Changing...' : 'Change Password'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
+  );
+};
+
+const UserDashboard = () => {
+  return (
+    <ToastProvider>
+      <UserDashboardContent />
+    </ToastProvider>
   );
 };
 
