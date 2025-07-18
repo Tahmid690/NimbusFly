@@ -132,6 +132,9 @@ const PaymentPageContent = () => {
     if (paymentData.method === 'mobile' && !paymentData.mobileNumber) {
       errors.mobileNumber = "Please enter mobile number";
     }
+    if (paymentData.method === 'mobile' && paymentData.mobileNumber.length < 11) {
+      errors.mobileNumber = "Please enter a valid mobile number";
+    }
     
     if (!billingAddress.sameAsPassenger) {
       if (!billingAddress.firstName) errors.firstName = "First name is required";
@@ -342,7 +345,7 @@ const PaymentPageContent = () => {
                     className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mt-0.5"
                   />
                   <label htmlFor="terms" className="text-sm text-gray-700 leading-5">
-                    I agree to the <a href="#" className="text-blue-600 hover:underline font-medium">Terms and Conditions</a> and <a href="#" className="text-blue-600 hover:underline font-medium">Privacy Policy</a>. I understand that my booking is subject to the airline's terms and conditions.
+                    I agree to the Terms and Conditions and Privacy Policy. I understand that my booking is subject to the airline's terms and conditions.
                   </label>
                 </div>
                 

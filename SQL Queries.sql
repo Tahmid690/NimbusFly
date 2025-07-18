@@ -77,7 +77,7 @@ DECLARE
     aircraft_status_val VARCHAR;
     min_turnaround_minutes INTEGER := 60; 
 BEGIN
-    IF NEW.departure_time > NOW() THEN
+    IF NEW.departure_time > NOW() AND (NEW.departure_time!=OLD.departure_time OR NEW.arrival_time!=OLD.arrival_time) THEN
         IF NEW.arrival_time - NEW.departure_time < INTERVAL '30 minutes' THEN
             RAISE EXCEPTION 'Flight duration must be at least 30 minutes';
         END IF;

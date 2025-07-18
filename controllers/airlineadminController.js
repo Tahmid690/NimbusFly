@@ -469,7 +469,7 @@ const forgotpassword = async (req, res) => {
     if (result.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'No admin with that email' });
     }
-    const newPlain = crypto.randomBytes(4).toString('hex'); 
+    const newPlain = crypto.randomBytes(4).toString('hex');
     const hashed = await bcrypt.hash(newPlain, 10);
     await pool.query(
       'UPDATE airline_admin SET password = $1 WHERE email = $2',
