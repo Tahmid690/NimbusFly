@@ -16,6 +16,9 @@ const TicketConfirmation = () => {
   const [bookingData, setBookingData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [passengerInfo, setPassengerInfo] = useState([]);
+
+
+  
   
   // Get booking data from navigation state
   const { bookingId, passengers, flight, paymentData, tripType, regenerateTicket } = location.state || {};

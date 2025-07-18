@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronDown, Heart, Plane, Clock, Users, Luggage, Star, Wifi, Coffee, Search, Filter, SlidersHorizontal, MapPin, Calendar, CreditCard, Shield, Utensils, Monitor, Headphones, User, AlertCircle, CheckCircle, XCircle, Info, Zap, Award } from 'lucide-react';
+import { ChevronDown, Heart, Plane, Clock, Users, Luggage, Star, Wifi, Coffee, Search, Filter, SlidersHorizontal, MapPin, Calendar, CreditCard, Shield, Utensils, Monitor, Headphones, User, AlertCircle, CheckCircle, XCircle, Info, Zap, Award, RotateCcw, Timer } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const FlightSummary = ({ flight }) => {
@@ -39,11 +39,61 @@ const FlightSummary = ({ flight }) => {
         return `${hours}h ${minutes}m`;
     };
 
+    const formatLayoverTime = (interval) => {
+        if (!interval) return '';
+        
+        // Handle different data types
+        if (typeof interval === 'object' && interval !== null) {
+            // PostgreSQL interval object
+            if (interval.hours !== undefined || interval.minutes !== undefined) {
+                const hours = interval.hours || 0;
+                const minutes = interval.minutes || 0;
+                if (hours === 0) return `${minutes}m`;
+                if (minutes === 0) return `${hours}h`;
+                return `${hours}h ${minutes}m`;
+            }
+            // Try to extract from object properties
+            return JSON.stringify(interval);
+        }
+        
+        // Handle string format
+        if (typeof interval === 'string') {
+            // Parse PostgreSQL interval string format (e.g., "02:30:00" or "2 hours 30 minutes")
+            const timeMatch = interval.match(/(\d+):(\d+):(\d+)/);
+            if (timeMatch) {
+                const hours = parseInt(timeMatch[1]);
+                const minutes = parseInt(timeMatch[2]);
+                if (hours === 0) return `${minutes}m`;
+                if (minutes === 0) return `${hours}h`;
+                return `${hours}h ${minutes}m`;
+            }
+            
+            // Parse text format
+            const hoursMatch = interval.match(/(\d+)\s*hours?/i);
+            const minutesMatch = interval.match(/(\d+)\s*minutes?/i);
+            const hours = hoursMatch ? parseInt(hoursMatch[1]) : 0;
+            const minutes = minutesMatch ? parseInt(minutesMatch[1]) : 0;
+            
+            if (hours === 0 && minutes === 0) return interval; // Return as is if no match
+            if (hours === 0) return `${minutes}m`;
+            if (minutes === 0) return `${hours}h`;
+            return `${hours}h ${minutes}m`;
+        }
+        
+        // Fallback for other types
+        return String(interval);
+    };
+    
     const departureTime = formatTime(flightData.departure_time);
     const arrivalTime = formatTime(flightData.arrival_time);
     const departureDate = formatDate(flightData.departure_time);
     const arrivalDate = formatDate(flightData.arrival_time);
     const duration = calculateDuration(flightData.departure_time, flightData.arrival_time);
+
+    const isTransitFlight = flightData.has_transit === true || flightData.flight_type === 'connecting';
+    const transitAirport = flightData.transit_airport;
+    const layoverTime = formatLayoverTime(flightData.layover_time);
+
 
     const rt_departureTime = formatTime(flightData.return_departure_time);
     const rt_arrivalTime = formatTime(flightData.return_arrival_time);
@@ -106,34 +156,65 @@ const FlightSummary = ({ flight }) => {
                                 </div>
 
                                 <div className="flex-1 mx-4 lg:mx-6 relative">
-                                    <div className="absolute -top-11 left-1/2 transform -translate-x-1/2">
-                                        <div className="bg-white border-2 border-sky-200 px-2  rounded-full shadow-lg">
-                                            <div className="text-xs lg:text-sm font-bold text-sky-700 flex items-center space-x-1">
-                                                <Clock className="w-3 h-3" />
-                                                <span>{duration}</span>
-                                            </div>
+                                <div className="absolute -top-11 left-1/2 transform -translate-x-1/2">
+                                    <div className="bg-white border-2 border-sky-200 px-2  rounded-full shadow-lg">
+                                        <div className="text-xs lg:text-sm font-bold text-sky-700 flex items-center space-x-1">
+                                            <Clock className="w-3 h-3" />
+                                            <span>{duration}</span>
                                         </div>
                                     </div>
+                                </div>
 
-                                    <div className="relative flex items-center">
-                                        <div className="h-0.5 lg:h-1 bg-gradient-to-r from-sky-200 via-sky-400 to-sky-200 flex-1 rounded-full shadow-sm"></div>
+                                <div className="relative flex items-center">
+                                    <div className="h-0.5 lg:h-1 bg-gradient-to-r from-sky-200 via-sky-400 to-sky-200 flex-1 rounded-full shadow-sm"></div>
 
+                                    {isTransitFlight ? (
+                                        <>
+                                            {/* First flight segment */}
+                                            <div className="absolute left-[25%] top-1/2 transform -translate-x-1/2 -translate-y-1/2 group-hover:scale-110 transition-all duration-700">
+                                                <div className="w-4 h-4 lg:w-6 lg:h-6 bg-gradient-to-br from-sky-500 to-blue-700 rounded-full flex items-center justify-center shadow-lg ring-1 ring-white">
+                                                    <Plane className="w-2 h-2 lg:w-2.5 lg:h-2.5 text-white transform rotate-90" />
+                                                </div>
+                                            </div>
+                                            
+                                            {/* Transit stop */}
+                                            <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 group-hover:scale-125 transition-all duration-700">
+                                                <div className="w-6 h-6 lg:w-8 lg:h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center shadow-xl ring-2 ring-white">
+                                                    <RotateCcw className="w-2.5 h-2.5 lg:w-3.5 lg:h-3.5 text-white" />
+                                                </div>
+                                            </div>
+                                            
+                                            {/* Second flight segment */}
+                                            <div className="absolute left-[75%] top-1/2 transform -translate-x-1/2 -translate-y-1/2 group-hover:scale-110 transition-all duration-700">
+                                                <div className="w-4 h-4 lg:w-6 lg:h-6 bg-gradient-to-br from-sky-500 to-blue-700 rounded-full flex items-center justify-center shadow-lg ring-1 ring-white">
+                                                    <Plane className="w-2 h-2 lg:w-2.5 lg:h-2.5 text-white transform rotate-90" />
+                                                </div>
+                                            </div>
+                                        </>
+                                    ) : (
                                         <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 group-hover:scale-125 transition-all duration-700">
                                             <div className={`w-6 h-6 lg:w-8 lg:h-8 bg-gradient-to-br from-sky-500 to-blue-700 rounded-full flex items-center justify-center shadow-xl ring-2 ring-white`}>
                                                 <Plane className="w-2.5 h-2.5 lg:w-3.5 lg:h-3.5 text-white transform rotate-90" />
                                             </div>
                                         </div>
-                                    </div>
-
-                                    <br />
-
-                                    <div className="absolute -bottom-4 lg:-bottom-5 left-1/2 transform -translate-x-1/2">
-                                        <div className="text-xs text-emerald-700 font-bold bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-200">
-                                            Direct Flight
-                                        </div>
-                                    </div>
+                                    )}
                                 </div>
 
+                                <br />
+
+                                <div className="absolute -bottom-4 lg:-bottom-5 left-1/2 transform -translate-x-1/2">
+                                    {isTransitFlight ? (
+                                        <div className="text-xs text-orange-700 font-bold bg-orange-100 px-1 py-0.5 rounded-full border border-orange-200 flex items-center space-x-1">
+                                            <Timer className="w-2.5 h-2.5" />
+                                            <span>1 Stop</span>
+                                        </div>
+                                    ) : (
+                                        <div className="text-xs text-emerald-700 font-bold bg-emerald-100 px-1 py-0.5 rounded-full border border-emerald-200">
+                                            Direct Flight
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                                 <div className="text-center">
                                     <div className="text-xl lg:text-2xl font-bold text-gray-900 mb-1">{arrivalTime}</div>
                                     <div className="text-xs lg:text-sm font-bold text-sky-700 bg-sky-100 px-2 lg:px-3 py-1 rounded-full">

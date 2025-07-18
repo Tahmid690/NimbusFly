@@ -38,6 +38,7 @@ const PaymentPageContent = () => {
   const navigate = useNavigate();
   
   const { passengers, flight } = location.state || {};
+  // console.log("PaymentPage location state:", location.state);
   
   // Fallback to localStorage if not passed through state (for backward compatibility)
   const flightData = flight || JSON.parse(localStorage.getItem("selectedFlight") || "{}");
@@ -204,6 +205,7 @@ const PaymentPageContent = () => {
         if (response.data.success) {
           console.log("Payment processed successfully:", response.data.data);
           navigate('/confirmation', { 
+            replace: true,
             state: { 
               bookingId: response.data.data.booking_id,
               transactionId: response.data.data.transaction_id,

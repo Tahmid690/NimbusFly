@@ -50,6 +50,13 @@ const processPayment = async (req, res) => {
       payment_method, 
       total_amount 
     } = req.body;
+    console.log("Payment data received:", {
+      customer_id,
+      passengers,
+      flight_data,
+      payment_method,
+      total_amount
+    });
 
     // =============================================================================
     // STEP 1: BASIC VALIDATION
@@ -112,6 +119,13 @@ const processPayment = async (req, res) => {
       returnFlight = await getFlightByNumber(flight_data.return_flight_number);
     }
 
+    let transitFlight = null;
+    // console.log('baire');
+    if (flight_data.has_transit === true && flight_data.transit_flight_number) {
+      // console.log('vitore');
+      transitFlight = await getFlightByNumber(flight_data.transit_flight_number);
+    }
+
     // =============================================================================
     // STEP 3: CHECK SEAT AVAILABILITY
     // =============================================================================
@@ -132,6 +146,9 @@ const processPayment = async (req, res) => {
     checkSeats(outboundFlight, flight_data.flight_number);
     if (returnFlight) {
       checkSeats(returnFlight, flight_data.return_flight_number);
+    }
+    if (transitFlight) {
+      checkSeats(transitFlight, flight_data.transit_flight_number);
     }
 
     // =============================================================================
@@ -301,6 +318,10 @@ const processPayment = async (req, res) => {
     if (returnFlight) {
       const returnTickets = await createTicketsForFlight(returnFlight, flight_data.return_flight_number);
       allTickets.push(...returnTickets);
+    }
+    if (transitFlight) {
+      const transitTickets = await createTicketsForFlight(transitFlight, flight_data.transit_flight_number);
+      allTickets.push(...transitTickets);
     }
 
     // =============================================================================
