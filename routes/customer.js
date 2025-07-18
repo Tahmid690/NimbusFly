@@ -10,5 +10,6 @@ router.put('/:customer_id/profile', customerController.updateCustomerProfile);
 router.put('/updt-password/:customer_id', customerController.updateCustomerPassword);
 // Get customer statistics
 router.get('/:customer_id/stats', customerController.getCustomerStats);
+router.post('/forgotpassword',customerController.forgotpassword);
 
 module.exports = router;

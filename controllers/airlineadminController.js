@@ -459,6 +459,16 @@ const getDashboardAnalytics = async (req, res) => {
   }
 };
 
+function generateRandomString() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!%@#&';
+  const bytes = crypto.randomBytes(8);
+  let result = '';
+  for (let i = 0; i < bytes.length; i++) {
+    result += chars[bytes[i] % chars.length];
+  }
+  return result;
+}
+
 const forgotpassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -467,9 +477,9 @@ const forgotpassword = async (req, res) => {
       [email]
     );
     if (result.rows.length === 0) {
-      return res.status(404).json({ success: false, message: 'No admin with that email' });
+      return res.status(404).json({ success: false, message: 'The email you entered is not correct' });
     }
-    const newPlain = crypto.randomBytes(4).toString('hex');
+    const newPlain = generateRandomString(); 
     const hashed = await bcrypt.hash(newPlain, 10);
     await pool.query(
       'UPDATE airline_admin SET password = $1 WHERE email = $2',

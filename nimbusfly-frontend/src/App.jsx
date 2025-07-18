@@ -23,7 +23,7 @@ import AboutUs from './components/AboutUs'
 import { Contact } from 'lucide-react'
 import ContactUs from './components/ContactUs'
 import AdminForgotPassword from './components/AdminForgotPassword'
-
+import UserForgotPassword from './components/UserForgotPassword'
 function App() {
   console.log("App component is rendering");
   
@@ -117,6 +117,15 @@ function App() {
                 <AdminPublicRoute>
                   <AdminForgotPassword />
                 </AdminPublicRoute>
+              } 
+            />
+
+            <Route 
+              path="/forgotpassword" 
+              element={
+                <PublicRoute>
+                  <UserForgotPassword />
+                </PublicRoute>
               } 
             />
 
