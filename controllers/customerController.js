@@ -1,7 +1,8 @@
 const pool = require('../config/database');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 
-// Get customer profile by ID
 const getCustomerProfile = async (req, res) => {
   try {
     const customer_id = parseInt(req.params.customer_id);
@@ -319,9 +320,61 @@ const updateCustomerPassword = async (req, res) => {
 };
 
 
+function generateRandomString() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!%@#&';
+  const bytes = crypto.randomBytes(8);
+  let result = '';
+  for (let i = 0; i < bytes.length; i++) {
+    result += chars[bytes[i] % chars.length];
+  }
+  return result;
+}
+
+const forgotpassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const result = await pool.query(
+      'SELECT  email FROM customer WHERE email = $1',
+      [email]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'The email you entered is not correct' });
+    }
+    const newPlain = generateRandomString(); 
+    const hashed = await bcrypt.hash(newPlain, 10);
+    await pool.query(
+      'UPDATE customer SET password = $1 WHERE email = $2',
+      [hashed, email]
+    );
+
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: +process.env.SMTP_PORT,
+      secure: true, 
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      }
+    });
+    await transporter.sendMail({
+      from: `"NimbusFly Admin" <${process.env.SMTP_USER}>`,
+      to: email,
+      subject: "Your New User Password",
+      text: `Your password has been reset. Your new password is:\n\n${newPlain}\n\nPlease log in and change it immediately.`,
+    });
+
+    res.json({ success: true, message: 'A new password has been emailed to you.' });
+  } catch (err) {
+    console.error('forgotPassword error:', err);
+    res.status(500).json({ success: false, message: 'Unable to reset password' });
+  }
+};
+
+
 module.exports = {
   getCustomerProfile,
   updateCustomerProfile,
   getCustomerStats,
-  updateCustomerPassword
+  updateCustomerPassword,
+  forgotpassword
 };
