@@ -426,7 +426,6 @@ const getDashboardAnalytics = async (req, res) => {
       JOIN airports dest_airport ON f.destination_airport_id = dest_airport.airport_id
       JOIN aircraft ac ON f.aircraft_id = ac.aircraft_id
       JOIN airlines al ON ac.airline_id = al.airline_id
-      JOIN ticket t ON f.flight_id = t.flight_id
       WHERE al.airline_id = $1 AND f.departure_time > NOW()
       GROUP BY f.flight_id, f.flight_number, f.departure_time, f.arrival_time, origin_airport.iata_code, dest_airport.iata_code, ac.total_seats
       ORDER BY f.departure_time ASC

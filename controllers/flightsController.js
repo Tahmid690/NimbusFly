@@ -192,10 +192,10 @@ const searchFlights = async (req, res) => {
         1 as segment_count
         
     FROM flights f
-        INNER JOIN aircraft ac ON ac.aircraft_id = f.aircraft_id
-        INNER JOIN airlines a ON ac.airline_id = a.airline_id
-        INNER JOIN airports apo ON apo.airport_id = f.origin_airport_id
-        INNER JOIN airports apd ON apd.airport_id = f.destination_airport_id
+        JOIN aircraft ac ON ac.aircraft_id = f.aircraft_id
+        JOIN airlines a ON ac.airline_id = a.airline_id
+        JOIN airports apo ON apo.airport_id = f.origin_airport_id
+        JOIN airports apd ON apd.airport_id = f.destination_airport_id
     WHERE 
         apo.iata_code = $1 
         AND apd.iata_code = $2 
@@ -239,15 +239,15 @@ const searchFlights = async (req, res) => {
         2 as segment_count
         
     FROM flights f1
-        INNER JOIN aircraft ac1 ON ac1.aircraft_id = f1.aircraft_id
-        INNER JOIN airlines a1 ON ac1.airline_id = a1.airline_id
-        INNER JOIN airports apo ON apo.airport_id = f1.origin_airport_id
-        INNER JOIN airports apt ON apt.airport_id = f1.destination_airport_id
+        JOIN aircraft ac1 ON ac1.aircraft_id = f1.aircraft_id
+        JOIN airlines a1 ON ac1.airline_id = a1.airline_id
+        JOIN airports apo ON apo.airport_id = f1.origin_airport_id
+        JOIN airports apt ON apt.airport_id = f1.destination_airport_id
         
-        INNER JOIN flights f2 ON f2.origin_airport_id = f1.destination_airport_id
-        INNER JOIN aircraft ac2 ON ac2.aircraft_id = f2.aircraft_id
-        INNER JOIN airlines a2 ON ac2.airline_id = a2.airline_id
-        INNER JOIN airports apd ON apd.airport_id = f2.destination_airport_id
+        JOIN flights f2 ON f2.origin_airport_id = f1.destination_airport_id
+        JOIN aircraft ac2 ON ac2.aircraft_id = f2.aircraft_id
+        JOIN airlines a2 ON ac2.airline_id = a2.airline_id
+        JOIN airports apd ON apd.airport_id = f2.destination_airport_id
         
     WHERE 
         apo.iata_code = $1 
@@ -332,15 +332,15 @@ const searchFlights = async (req, res) => {
         'round-trip' as trip_type
         
     FROM flights f1
-        INNER JOIN aircraft ac1 ON ac1.aircraft_id = f1.aircraft_id
-        INNER JOIN airlines a1 ON ac1.airline_id = a1.airline_id
-        INNER JOIN airports apo1 ON apo1.airport_id = f1.origin_airport_id
-        INNER JOIN airports apd1 ON apd1.airport_id = f1.destination_airport_id
+        JOIN aircraft ac1 ON ac1.aircraft_id = f1.aircraft_id
+        JOIN airlines a1 ON ac1.airline_id = a1.airline_id
+        JOIN airports apo1 ON apo1.airport_id = f1.origin_airport_id
+        JOIN airports apd1 ON apd1.airport_id = f1.destination_airport_id
         
-        INNER JOIN flights f2 ON f2.origin_airport_id = f1.destination_airport_id 
+        JOIN flights f2 ON f2.origin_airport_id = f1.destination_airport_id 
                               AND f2.destination_airport_id = f1.origin_airport_id
-        INNER JOIN aircraft ac2 ON ac2.aircraft_id = f2.aircraft_id
-        INNER JOIN airlines a2 ON ac2.airline_id = a2.airline_id
+        JOIN aircraft ac2 ON ac2.aircraft_id = f2.aircraft_id
+        JOIN airlines a2 ON ac2.airline_id = a2.airline_id
                               AND a2.airline_id = a1.airline_id  
         
     WHERE 

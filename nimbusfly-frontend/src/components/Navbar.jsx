@@ -46,7 +46,9 @@ const Navbar = ({flg,page_name}) => {
                 }`}>
                 <div className="container mx-auto px-6 lg:px-8">
                     <div className="flex items-center justify-between h-20">
-                        <div className="flex items-center space-x-4 group cursor-pointer">
+                        <div className="flex items-center space-x-4 group cursor-pointer"
+                            onClick={() => navigate('/')}
+                        >
                             <div className="relative">
                                 <div className="absolute inset-0 bg-blue-500/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                                 <img
@@ -163,7 +165,7 @@ const Navbar = ({flg,page_name}) => {
                                         >
                                             <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></span>
                                             <span className="relative flex items-center space-x-2">
-                                                <span>Get Started</span>
+                                                <span>Login / Register</span>
                                             </span>
                                         </button>
                                     </Link>

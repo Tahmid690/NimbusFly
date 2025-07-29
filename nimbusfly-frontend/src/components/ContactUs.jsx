@@ -68,13 +68,13 @@ const handleSubmit = async (e) => {
     {
       icon: Mail,
       title: "Email Us",
-      content: "nimbusflyteam@gmail.com",
+      content: "nimbusfly7688@gmail.com",
       description: "Send us an email anytime"
     },
     {
       icon: Phone,
       title: "Call Us",
-      content: "+880 1234-567890",
+      content: "+880 1816-569881",
       description: "Available during business hours"
     },
     {
@@ -95,17 +95,17 @@ const handleSubmit = async (e) => {
     {
       name: "Md. Tahmid Hossain",
       id: "2205009",
-      email: "tahmid.hossain@example.com",
+      email: "tahmidhossain690@gmail.com",
       role: "Full Stack Developer",
       github: "https://github.com/tahmid690",
-      linkedin: "https://linkedin.com/in/tahmid"
+      linkedin: "https://www.linkedin.com/in/md-tahmid-hossain-a7a497282/"
     },
     {
       name: "Khandker Tanvir Hossen",
       id: "2205013", 
-      email: "tanvir.hossen@example.com",
+      email: "tanvirzihad88@gmail.com",
       role: "Full Stack Developer",
-      github: "https://github.com/tanvirzihad",
+      github: "https://www.linkedin.com/in/tanvir-zihad-5a1366366/",
 
       linkedin: "https://linkedin.com/in/tanvir"
     }
@@ -126,9 +126,9 @@ const handleSubmit = async (e) => {
         <div className="relative container mx-auto px-6 py-20 mt-15">
           <div className="text-center">
             <div className="flex justify-center mb-6">
-              <div className="bg-white bg-opacity-20 p-4 rounded-full backdrop-blur-sm">
+              {/* <div className="bg-white bg-opacity-20 p-4 rounded-full backdrop-blur-sm"> */}
                 <Mail size={48} className="text-white" />
-              </div>
+              {/* </div> */}
             </div>
             <h1 className="text-5xl font-bold mb-4">Contact Us</h1>
             <p className="text-xl text-blue-100 max-w-2xl mx-auto">

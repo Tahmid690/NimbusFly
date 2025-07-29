@@ -963,8 +963,6 @@ const UserDashboardContent = () => {
                         className="px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 bg-white"
                       >
                         <option value="all">All Status</option>
-                        <option value="confirmed">Confirmed</option>
-                        <option value="pending">Pending</option>
                         <option value="cancelled">Cancelled</option>
                       </select>
                     </div>

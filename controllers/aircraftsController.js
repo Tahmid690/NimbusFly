@@ -194,6 +194,14 @@ const createAircraft = async (req, res) => {
         message: 'Max range must be a non-negative number'
       });
     }
+
+    if (total_seats <= 0 || econ_seats < 0 || busi_seats < 0 || (econ_seats + busi_seats > total_seats)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid seat configuration'
+      });
+    }
+
     
     // Check if airline exists
     const airlineExists = await pool.query(
@@ -310,6 +318,12 @@ const updateAircraft = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Max range must be a non-negative number'
+      });
+    }
+     if (total_seats <= 0 || econ_seats < 0 || busi_seats < 0 || (econ_seats + busi_seats > total_seats)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid seat configuration'
       });
     }
     

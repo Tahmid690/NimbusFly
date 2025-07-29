@@ -42,7 +42,7 @@ const AboutUs = () => {
         <div className="relative container mx-auto px-6 py-20 mt-20">
           <div className="text-center">
             <div className="flex justify-center mb-6">
-              <div className="bg-white bg-opacity-20 p-4 rounded-full backdrop-blur-sm">
+              {/* <div className="bg-white bg-opacity-20 p-4 rounded-full backdrop-blur-sm"> */}
                 {/* <Plane size={48} className="text-white" /> */}
                 <img
                                     src="/lgp.png"
@@ -50,7 +50,7 @@ const AboutUs = () => {
                                     className="h-12 w-auto relative z-10 transition-transform duration-300 group-hover:scale-105"
                                 />
               </div>
-            </div>
+            {/* </div> */}
             <h1 className="text-5xl font-bold mb-4">About NimbusFly</h1>
             <p className="text-xl text-blue-100 max-w-2xl mx-auto">
               Your comprehensive airplane ticket management solution, crafted with precision and innovation

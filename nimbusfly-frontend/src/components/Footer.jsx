@@ -10,14 +10,7 @@ const Footer = () => {
           <div className="md:col-span-2">
             <h2 className="text-2xl font-bold mb-2">NimbusFly</h2>
             <p className="text-gray-400 mb-4">Your journey, our passion.</p>
-            <div className="flex">
-              <input 
-                type="email" 
-                placeholder="Your email for newsletter" 
-                className="flex-1 px-4 py-2 rounded-l-md text-gray-900 focus:outline-none"
-              />
-             
-            </div>
+            
           </div>
 
           {/* Quick Links */}
@@ -35,6 +28,7 @@ const Footer = () => {
             <h3 className="text-sm font-semibold text-gray-400 tracking-wider uppercase mb-4">Airline Management</h3>
             <ul className="space-y-2">
               <li><a href="/admin/login" className="text-gray-300 hover:text-blue-400 transition-colors">Airline Login</a></li>
+              <li><a href="/airline-apply" className="text-gray-300 hover:text-blue-400 transition-colors">Airline Register</a></li>
             </ul>
           </div>
         </div>

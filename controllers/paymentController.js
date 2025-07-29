@@ -58,10 +58,6 @@ const processPayment = async (req, res) => {
       total_amount
     });
 
-    // =============================================================================
-    // STEP 1: BASIC VALIDATION
-    // =============================================================================
-    
     if (!customer_id) {
       return res.status(400).json({ 
         success: false, 
@@ -175,9 +171,6 @@ const processPayment = async (req, res) => {
     
     const db_booking_id = bookingResult.rows[0].booking_id;
 
-    // =============================================================================
-    // STEP 5: PROCESS PASSENGERS
-    // =============================================================================
     
     const passengerIds = [];
     const passengerInfo = [];
@@ -187,7 +180,6 @@ const processPayment = async (req, res) => {
         throw new Error('All passengers must have passport number, first name, and last name');
       }
 
-      // Check if passenger exists
       const existingQuery = `SELECT passenger_id FROM passengers WHERE passport_number = $1`;
       const existingResult = await client.query(existingQuery, [passenger.passport_number]);
       

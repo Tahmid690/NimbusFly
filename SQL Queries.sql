@@ -1,21 +1,3 @@
--- Update current aircraft rows with available seat counts
-UPDATE flights AS a
-SET
-    available_busi_seats = s.avail_busi,
-    available_econ_seats  = s.avail_econ,
-    available_seats = s.avail_busi + s.avail_econ
-FROM (
-    SELECT
-        aircraft_id,
-        COUNT(*) FILTER (WHERE seat_class = 'Business' AND NOT is_booked) AS avail_busi,
-        COUNT(*) FILTER (WHERE seat_class = 'Economy'  AND NOT is_booked) AS avail_econ
-    FROM seats
-    GROUP BY aircraft_id
-) AS s
-WHERE a.aircraft_id = s.aircraft_id;
-
-
-    
 -- Update Seat in Seats Table and Flight Table Trigger
 
 CREATE OR REPLACE FUNCTION create_flight_seats()
@@ -69,7 +51,6 @@ CREATE TRIGGER flight_seats_creation_trigger
 
 
 -- Resolving Schduling Conflicts with Aircrafts
-
 CREATE OR REPLACE FUNCTION validate_aircraft_scheduling()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -77,7 +58,11 @@ DECLARE
     aircraft_status_val VARCHAR;
     min_turnaround_minutes INTEGER := 60; 
 BEGIN
-    IF NEW.departure_time > NOW() AND (NEW.departure_time!=OLD.departure_time OR NEW.arrival_time!=OLD.arrival_time) THEN
+    IF NEW.departure_time > NOW() AND (
+        OLD IS NULL OR 
+        NEW.departure_time IS DISTINCT FROM OLD.departure_time OR 
+        NEW.arrival_time IS DISTINCT FROM OLD.arrival_time
+    ) THEN
         IF NEW.arrival_time - NEW.departure_time < INTERVAL '30 minutes' THEN
             RAISE EXCEPTION 'Flight duration must be at least 30 minutes';
         END IF;
@@ -103,11 +88,13 @@ BEGIN
             (NEW.arrival_time <= f.departure_time AND 
             NEW.arrival_time > f.departure_time - INTERVAL '1 hour')
         );
+        
         IF conflict_count > 0 THEN
             RAISE EXCEPTION 'Aircraft % has scheduling conflict. Minimum % minutes turnaround required between flights.', 
                             NEW.aircraft_id, min_turnaround_minutes;
         END IF; 
     END IF;
+    
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -116,7 +103,6 @@ CREATE TRIGGER aircraft_scheduling_validation_trigger
     BEFORE INSERT OR UPDATE ON flights
     FOR EACH ROW
     EXECUTE FUNCTION validate_aircraft_scheduling();
-
 
 --Flight Number Generation Trigger
 
@@ -155,26 +141,6 @@ CREATE TRIGGER flight_number_generation_trigger
     BEFORE INSERT ON flights
     FOR EACH ROW
     EXECUTE FUNCTION generate_flight_number();
-
---total seats
-
-CREATE OR REPLACE FUNCTION aircraft_total_seats_balance()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF NEW.total_seats != (NEW.econ_seats + NEW.busi_seats) THEN
-        RAISE EXCEPTION 'Summation of business seats and economy seats must be equal to total seats';
-    END IF;
-    IF NEW.econ_seats < 0 OR NEW.busi_seats < 0 THEN
-        RAISE EXCEPTION 'Seat counts cannot be negative';
-    END IF;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER aircraft_seat_calculation_trigger
-    BEFORE INSERT OR UPDATE ON aircraft
-    FOR EACH ROW
-    EXECUTE FUNCTION aircraft_total_seats_balance();
 
 
 -- Edit Check
@@ -323,4 +289,33 @@ AFTER UPDATE ON bookings
 FOR EACH ROW
 EXECUTE FUNCTION unbook_seats_on_booking_cancel();
 
+
+
+
+CREATE INDEX idx_flights_search ON flights (origin_airport_id, destination_airport_id, departure_time, status);
+CREATE INDEX idx_flights_departure_time ON flights (departure_time);
+CREATE INDEX idx_flights_status ON flights (status);
+CREATE INDEX idx_airports_iata_code ON airports (iata_code);
+CREATE INDEX idx_airports_city_country ON airports (city, country);
+CREATE INDEX idx_customer_email ON customer (email);
+CREATE INDEX idx_customer_phone ON customer (phone_number);
+CREATE INDEX idx_bookings_customer_date ON bookings (customer_id, booking_date DESC);
+CREATE INDEX idx_bookings_payment_status ON bookings (payment_status);
+CREATE INDEX idx_ticket_booking_id ON ticket (booking_id);
+CREATE INDEX idx_ticket_flight_passenger ON ticket (flight_id, passenger_id);
+CREATE INDEX idx_passengers_customer_id ON passengers (customer_id);
+CREATE INDEX idx_seats_aircraft_class ON seats (aircraft_id, seat_class, is_booked);
+CREATE INDEX idx_seats_flight_available ON seats (flight_id, is_booked);
+CREATE INDEX idx_aircraft_airline ON aircraft (airline_id, status);
+CREATE INDEX idx_payments_booking_status ON payments (booking_id, status);
+CREATE INDEX idx_payments_transaction_id ON payments (transaction_id);
+CREATE INDEX idx_airline_admin_email ON airline_admin (email);
+CREATE INDEX idx_flights_availability ON flights (origin_airport_id, destination_airport_id, departure_time, available_seats, status) 
+WHERE status = true AND available_seats > 0;
+CREATE INDEX idx_customer_bookings_history ON bookings (customer_id, booking_date DESC, payment_status);
+CREATE INDEX idx_flight_seat_occupancy ON seats (flight_id, seat_class, is_booked);
+CREATE INDEX idx_active_flights ON flights (departure_time, origin_airport_id, destination_airport_id) 
+WHERE status = true;
+CREATE INDEX idx_available_seats ON seats (aircraft_id, seat_class) 
+WHERE is_booked = false;
 

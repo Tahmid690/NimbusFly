@@ -24,10 +24,14 @@ import { Contact } from 'lucide-react'
 import ContactUs from './components/ContactUs'
 import AdminForgotPassword from './components/AdminForgotPassword'
 import UserForgotPassword from './components/UserForgotPassword'
+import AirlineApply from './components/AirlineApply'
+import { ToastProvider } from './components/AdminDashboard/components/UI/Toast'
+
 function App() {
   console.log("App component is rendering");
   
   return (
+    <ToastProvider>
     <div className="flex flex-col min-h-screen">
       <AuthProvider>
          <AdminAuthProvider>
@@ -47,6 +51,13 @@ function App() {
               path="/about-us"
               element={
                   <AboutUs/>
+              }
+            />
+
+            <Route 
+              path="/airline-apply"
+              element={
+                  <AirlineApply/>
               }
             />
 
@@ -156,6 +167,7 @@ function App() {
         </AdminAuthProvider>
       </AuthProvider>
     </div>
+    </ToastProvider>
   )
 }
 
