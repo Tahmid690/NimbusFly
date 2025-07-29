@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { 
   Plane, 
   Mail, 
@@ -19,9 +20,11 @@ const ContactUs = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    subject: '',
     message: ''
   });
+ const [message, setMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [success, setSuccess] = useState(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -31,13 +34,35 @@ const ContactUs = () => {
     }));
   };
 
-  const handleSubmit = () => {
-    // Handle form submission here
-    console.log('Form submitted:', formData);
-    // You can add your form submission logic here
-    alert('Thank you for your message! We\'ll get back to you soon.');
-    setFormData({ name: '', email: '', subject: '', message: '' });
-  };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+      setIsLoading(true);
+    setMessage('');            
+  console.log('Form data:', formData);
+
+    try {
+      const response = await axios.post('http://localhost:3000/contact/message', {
+        email: formData.email,
+        message:formData.message
+      });
+    console.log(response);
+      
+    if (response.data.success) {
+      alert('✅ ' + response.data.message);  
+      setFormData({ name: '', email: '', message: '' });
+    } else {
+      alert('⚠️ ' + response.data.message);
+    }
+    } catch (error) {
+      console.error(error);
+      setMessage(error.response?.data?.message||'Something went wrong. Please try again.');
+      setSuccess(false);
+    } finally {
+      setIsLoading(false);
+    }
+
+};
+
 
   const contactInfo = [
     {
@@ -181,24 +206,6 @@ const ContactUs = () => {
                   </div>
                 </div>
 
-                <div>
-                  <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
-                    Subject
-                  </label>
-                  <div className="relative">
-                    <MessageSquare className="absolute left-3 top-3 text-gray-400" size={20} />
-                    <input
-                      type="text"
-                      id="subject"
-                      name="subject"
-                      value={formData.subject}
-                      onChange={handleInputChange}
-                      className="w-full pl-10 pr-4 py-3 border border-sky-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-colors"
-                      placeholder="What's this about?"
-                      required
-                    />
-                  </div>
-                </div>
 
                 <div>
                   <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
@@ -222,7 +229,14 @@ const ContactUs = () => {
                   className="w-full bg-gradient-to-r from-sky-500 to-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-sky-600 hover:to-blue-700 transition-all duration-300 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl"
                 >
                   <Send size={20} />
-                  <span>Send Message</span>
+                  {isLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                      <span>Sending...</span>
+                    </>
+                  ) : (
+                    <span>Send</span>
+                  )}
                 </button>
               </div>
             </div>

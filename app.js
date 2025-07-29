@@ -12,10 +12,12 @@ const ticket=require('./routes/ticket')
 const payment=require('./routes/payment')
 const seat=require('./routes/seat')
 const admin=require('./routes/airline_admin')
+const contact=require('./routes/contact')
 require('dotenv').config();
 const app = express()
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use(cors({
   origin: 'http://localhost:5173', 
@@ -35,10 +37,10 @@ app.use('/tickets',ticket);
 app.use('/payments',payment);
 app.use('/seats',seat);
 app.use('/admin',admin)
+app.use('/contact',contact);
 app.get('/',(req,res)=>{
     res.send('<h1> NimbusFly </h1>'+'<p> We Lift, You Fly </p>');
 });
-
 app.use((req, res) => {
   res.status(404).json({
     success: false,
