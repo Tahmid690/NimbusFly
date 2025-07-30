@@ -1,4 +1,4 @@
--- Update Seat in Seats Table and Flight Table Trigger
+-- Update Seat in Seats Table and Flight Table when new flight is added Trigger
 
 CREATE OR REPLACE FUNCTION create_flight_seats()
 RETURNS TRIGGER AS $$
@@ -50,7 +50,7 @@ CREATE TRIGGER flight_seats_creation_trigger
     EXECUTE FUNCTION create_flight_seats();
 
 
--- Resolving Schduling Conflicts with Aircrafts
+-- Resolving Schduling Conflicts ans status check with Aircrafts when flight is added
 CREATE OR REPLACE FUNCTION validate_aircraft_scheduling()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -143,7 +143,7 @@ CREATE TRIGGER flight_number_generation_trigger
     EXECUTE FUNCTION generate_flight_number();
 
 
--- Edit Check
+-- flight update  Edit Check
 
 CREATE OR REPLACE FUNCTION update_flight_status()
 RETURNS TRIGGER AS $$
@@ -168,7 +168,7 @@ CREATE TRIGGER flight_status_management_trigger
     EXECUTE FUNCTION update_flight_status();
 
 
---flight cacellation
+--payemnt and booking status update on flight cacellation
 
 CREATE OR REPLACE FUNCTION handle_flight_cancellation()
 RETURNS TRIGGER AS $$
@@ -210,6 +210,8 @@ CREATE TRIGGER flight_cancellation_booking_trigger
     FOR EACH ROW
     EXECUTE FUNCTION handle_flight_cancellation();
 
+
+--check wheather aircraft for scheduled flight is used
 
 CREATE OR REPLACE FUNCTION check_aircraft_scheduled_flights()
 RETURNS TRIGGER AS $$
@@ -255,6 +257,8 @@ CREATE TRIGGER prevent_aircraft_status_change_with_scheduled_flights
     FOR EACH ROW
     EXECUTE FUNCTION check_aircraft_scheduled_flights();
 
+
+--when new ticket is inserted,correponding seat is booked
 
 CREATE OR REPLACE FUNCTION mark_seat_as_booked()
 RETURNS TRIGGER AS $$
@@ -306,6 +310,9 @@ AFTER UPDATE ON seats
 FOR EACH ROW
 EXECUTE FUNCTION update_flight_seat_count();
 
+
+
+--unbook seat when a booking is cancelled
 
 CREATE OR REPLACE FUNCTION unbook_seats_on_booking_cancel()
 RETURNS TRIGGER AS $$
@@ -362,4 +369,3 @@ CREATE INDEX idx_active_flights ON flights (departure_time, origin_airport_id, d
 WHERE status = true;
 CREATE INDEX idx_available_seats ON seats (aircraft_id, seat_class) 
 WHERE is_booked = false;
-

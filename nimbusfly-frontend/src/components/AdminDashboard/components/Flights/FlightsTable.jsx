@@ -87,7 +87,7 @@ const FlightsTable = ({
                   >
                     <Edit3 className="w-5 h-5" />
                   </button>
-                  {flight.flight_status !== 'Cancelled' && (
+                  {flight.flight_status !== 'Cancelled' && flight.flight_status !== 'Completed' && (
                     <button 
                       onClick={() => handleCancelFlight(flight)}
                       className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
