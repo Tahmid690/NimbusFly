@@ -4,6 +4,8 @@ import GlowCard from '../UI/GlowCard';
 import { Shield, User, Eye, EyeOff, Lock, Mail, Building, AlertCircle, CheckCircle } from 'lucide-react';
 import axios from 'axios';
 
+const API_BASE = import.meta.env.VITE_API_URL;
+
 const SettingsTab = ({ admin }) => {
   console.log(admin);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
@@ -62,7 +64,7 @@ const SettingsTab = ({ admin }) => {
     setIsLoading(true);
     try {
       const response = await axios.put(
-        `http://localhost:3000/admin/admin/changepassword/${admin.admin_id}`,
+        `${API_BASE}/admin/admin/changepassword/${admin.admin_id}`,
         {
           oldpassword: passwordForm.currentPassword,
           newpassword: passwordForm.newPassword

@@ -7,6 +7,8 @@ import StatCard from '../Dashboard/StatCard';
 import { DollarSign, Calendar, CheckCircle, Clock, Download, Filter, RefreshCw, ChevronDown } from 'lucide-react';
 import axios from 'axios';
 
+const API_BASE = import.meta.env.VITE_API_URL;
+
 const BookingsTab = ({ allBookings, searchQuery }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('all');
@@ -37,7 +39,7 @@ const BookingsTab = ({ allBookings, searchQuery }) => {
       if (status !== 'all') params.append('status', status);
       if (search) params.append('search', search);
 
-      const response = await axios.get(`http://localhost:3000/admin/admin/bookings?${params}`, {
+      const response = await axios.get(`${API_BASE}/admin/admin/bookings?${params}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
       });
         console.log("response ",response);
@@ -98,7 +100,7 @@ const BookingsTab = ({ allBookings, searchQuery }) => {
   const handleUpdateStatus = async (bookingId, newStatus) => {
     try {
       const response = await axios.put(
-        `http://localhost:3000/admin/admin/booking/${bookingId}/status`,
+        `${API_BASE}/admin/admin/booking/${bookingId}/status`,
         { payment_status: newStatus },
         { headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` } }
       );

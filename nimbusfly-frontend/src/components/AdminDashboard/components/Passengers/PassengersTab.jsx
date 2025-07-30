@@ -7,6 +7,8 @@ import { useAdminAuth } from '../../../Authnication/AdminContext';
 import axios from 'axios';
 import { Users, UserCheck, UserX, Clock, Download, Filter, ChevronDown } from 'lucide-react';
 
+const API_BASE = import.meta.env.VITE_API_URL;
+
 const PassengersTab = ({ allBookings, searchQuery }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('all');
@@ -107,7 +109,7 @@ const PassengersTab = ({ allBookings, searchQuery }) => {
   const fetchPassengers = async () => {
     try {
       const  response  = await axios.get(
-        `http://localhost:3000/admin/getpassenger/${admin.airline_id}`, 
+        `${API_BASE}/admin/getpassenger/${admin.airline_id}`, 
         { headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` } }
       );
       setPassengers(response.data.data); 

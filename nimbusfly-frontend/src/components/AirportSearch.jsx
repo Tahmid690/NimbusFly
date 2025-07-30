@@ -3,13 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { Users, ArrowLeftRight } from 'lucide-react';
 import { Car } from "lucide-react";
 
+const API_BASE = import.meta.env.VITE_API_URL;
+
 const fetch_airport = async (query, selectedAirport, setResults, abortController) => {
     try {
         if (query) {
             let cd = "";
             if (selectedAirport) cd = selectedAirport.iata_code;
             // Fixed: Added missing backtick for template literal
-            const res = await fetch(`http://localhost:3000/airports/search_name?query=${query}&iata_code=${cd}`, { 
+            const res = await fetch(`${API_BASE}/airports/search_name?query=${query}&iata_code=${cd}`, { 
                 signal: abortController.signal 
             });
             const data = await res.json();

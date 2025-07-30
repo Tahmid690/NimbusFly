@@ -3,6 +3,8 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "./Authnication/AuthContext";
 
+const API_BASE = import.meta.env.VITE_API_URL;
+
 function LoginForm() {
   const [isLogin, setIsLogin] = useState(true);
 
@@ -37,7 +39,7 @@ function LoginForm() {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/auth/user/login",
+        `${API_BASE}/auth/user/login`,
         {
           email: email,
           password: password,
@@ -74,7 +76,7 @@ function LoginForm() {
       const { confirmPassword, ...registerData } = formData;
 
       const response = await axios.post(
-        "http://localhost:3000/auth/user/register",
+        `${API_BASE}/auth/user/register`,
         registerData
       );
       console.log("Registration successful!", response.data);

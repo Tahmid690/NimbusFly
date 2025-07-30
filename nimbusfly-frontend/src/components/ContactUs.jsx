@@ -15,8 +15,10 @@ import {
   Users
 } from 'lucide-react';
 import Navbar from './Navbar';
+import { useToast } from './AdminDashboard/components/UI/Toast';
 
 const ContactUs = () => {
+  const toast = useToast();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -46,12 +48,13 @@ const handleSubmit = async (e) => {
         message:formData.message
       });
     console.log(response);
-      
+     
     if (response.data.success) {
-      alert('✅ ' + response.data.message);  
+      // alert('✅ ' + response.data.message);
+      toast.success(response.data.message,1000);
       setFormData({ name: '', email: '', message: '' });
     } else {
-      alert('⚠️ ' + response.data.message);
+      toast.error(response.data.message,1000);
     }
     } catch (error) {
       console.error(error);

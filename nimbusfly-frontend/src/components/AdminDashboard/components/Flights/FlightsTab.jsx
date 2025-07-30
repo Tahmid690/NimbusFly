@@ -10,6 +10,8 @@ import { useToast } from '../UI/Toast';
 import ConfirmationModal from '../UI/ConfirmationModal';
 import axios from 'axios';
 
+const API_BASE = import.meta.env.VITE_API_URL;
+
 const FlightsTab = ({ allFlights,admin }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('all');
@@ -144,7 +146,7 @@ const FlightsTab = ({ allFlights,admin }) => {
 
     try {
       const response = await axios.put(
-        `http://localhost:3000/flights/cancel/${flightToCancel.flight_id}`,
+        `${API_BASE}/flights/cancel/${flightToCancel.flight_id}`,
         { flight_status: 'Cancelled' },
         {
           headers: {
@@ -209,7 +211,7 @@ const FlightsTab = ({ allFlights,admin }) => {
 
     try {
       const response = await axios.post(
-        'http://localhost:3000/flights/add',
+        `${API_BASE}/flights/add`,
         flightData,
         {
           headers: {
@@ -254,7 +256,7 @@ const FlightsTab = ({ allFlights,admin }) => {
 
     try {
       const response = await axios.put(
-        `http://localhost:3000/flights/updt/${selectedFlight.flight_id}`,
+        `${API_BASE}/flights/updt/${selectedFlight.flight_id}`,
         flightData,
         {
           headers: {
@@ -285,7 +287,7 @@ const FlightsTab = ({ allFlights,admin }) => {
     
     setLoadingAircraft(true);
     try {
-      const response = await axios.get(`http://localhost:3000/aircraft/airline/${admin.airline_id}`, {
+      const response = await axios.get(`${API_BASE}/aircraft/airline/${admin.airline_id}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
       });
       if (response.data.success) {
@@ -303,7 +305,7 @@ const FlightsTab = ({ allFlights,admin }) => {
   const fetchAvailableAirports = async () => {
     setLoadingAirports(true);
     try {
-      const response = await axios.get('http://localhost:3000/airports', {
+      const response = await axios.get(`${API_BASE}/airports`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
       });
       if (response.data.success) {

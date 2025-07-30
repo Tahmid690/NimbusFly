@@ -7,6 +7,8 @@ import Passengerform from "./Passengerform";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { CreditCard, Users } from "lucide-react";
+
+const API_BASE = import.meta.env.VITE_API_URL;
 const BookingDetails = () => {
   const [user_id, setuser_id] = useState(null);
   const [savedpassenger, setsavedpassenger] = useState(null);
@@ -24,7 +26,7 @@ const BookingDetails = () => {
 
     const fetchsavedpass = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/passenger/customer/${det.customer_id}`);
+        const response = await axios.get(`${API_BASE}/passenger/customer/${det.customer_id}`);
         console.log("Fetch successful: ", response);
         setsavedpassenger(response.data.data);
         console.log(response.data.data);

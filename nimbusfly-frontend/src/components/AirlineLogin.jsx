@@ -3,6 +3,8 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { useAdminAuth } from "./Authnication/AdminContext";
 
+const API_BASE = import.meta.env.VITE_API_URL;
+
 function AdminLoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,7 +24,7 @@ function AdminLoginForm() {
 
     try {
       console.log("Attempting admin login with:", { email, password });
-      const response = await axios.post("http://localhost:3000/admin/login", {
+      const response = await axios.post(`${API_BASE}/admin/login`, {
         email: email,
         password: password,
       });

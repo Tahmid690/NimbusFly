@@ -7,6 +7,8 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import QRCode from 'qrcode';
 import { useToast, ToastProvider } from './AdminDashboard/components/UI/Toast';
+
+const API_BASE = import.meta.env.VITE_API_URL;
 import { 
   Calendar, 
   MapPin, 
@@ -89,7 +91,7 @@ const UserDashboardContent = () => {
         setError(null);
         if (user?.customer_id) {
           // Fetch bookings
-          const bookingsResponse = await axios.get(`http://localhost:3000/bookings/customer/${user.customer_id}`);
+          const bookingsResponse = await axios.get(`${API_BASE}/bookings/customer/${user.customer_id}`);
           console.log(bookingsResponse);
           if (bookingsResponse.data.success) {
             setBookings(bookingsResponse.data.data || []);
@@ -100,7 +102,7 @@ const UserDashboardContent = () => {
           
           // Fetch customer profile
           try {
-            const profileResponse = await axios.get(`http://localhost:3000/customer/${user.customer_id}/profile`);
+            const profileResponse = await axios.get(`${API_BASE}/customer/${user.customer_id}/profile`);
             if (profileResponse.data.success) {
               setCustomerProfile(profileResponse.data.data);
             }
@@ -110,7 +112,7 @@ const UserDashboardContent = () => {
 
           // Fetch customer statistics
           try {
-            const statsResponse = await axios.get(`http://localhost:3000/customer/${user.customer_id}/stats`);
+            const statsResponse = await axios.get(`${API_BASE}/customer/${user.customer_id}/stats`);
             if (statsResponse.data.success) {
               setCustomerStats(statsResponse.data.data);
             }
@@ -138,7 +140,7 @@ const UserDashboardContent = () => {
   const fetchBookingDetails = async (bookingId) => {
     try {
       setBookingDetailsLoading(true);
-      const response = await axios.get(`http://localhost:3000/bookings/${bookingId}/details`);
+      const response = await axios.get(`${API_BASE}/bookings/${bookingId}/details`);
       if (response.data.success) {
         setSelectedBooking(response.data.data);
         setShowBookingDetails(true);
@@ -158,7 +160,7 @@ const UserDashboardContent = () => {
       setBookingDetailsLoading(true);
       
       // Fetch booking details
-      const response = await axios.get(`http://localhost:3000/bookings/${bookingId}/details`);
+      const response = await axios.get(`${API_BASE}/bookings/${bookingId}/details`);
       if (!response.data.success) {
         toast.error('Failed to load booking data for ticket generation.');
         return;
@@ -197,7 +199,7 @@ const UserDashboardContent = () => {
     setEditingProfile(true);
     
     try {
-      const response = await axios.put(`http://localhost:3000/customer/${user.customer_id}/profile`, {
+      const response = await axios.put(`${API_BASE}/customer/${user.customer_id}/profile`, {
         first_name: profileForm.first_name,
         last_name: profileForm.last_name,
         email: profileForm.email,
@@ -213,7 +215,7 @@ const UserDashboardContent = () => {
         
         // Re-fetch profile data to ensure consistency
         try {
-          const profileResponse = await axios.get(`http://localhost:3000/customer/${user.customer_id}/profile`);
+          const profileResponse = await axios.get(`${API_BASE}/customer/${user.customer_id}/profile`);
           if (profileResponse.data.success) {
             setCustomerProfile(profileResponse.data.data);
           }
@@ -654,7 +656,7 @@ const UserDashboardContent = () => {
   const handleCancelBooking = async (bookingId) => {
     try {
       setCancellingBooking(true);
-      const response = await axios.post(`http://localhost:3000/bookings/cancel/${bookingId}`);
+      const response = await axios.post(`${API_BASE}/bookings/cancel/${bookingId}`);
       
       if (response.data.success) {
         toast.success('Booking cancelled successfully!');
@@ -662,7 +664,7 @@ const UserDashboardContent = () => {
         setBookingToCancel(null);
         
         // Refresh bookings list
-        const bookingsResponse = await axios.get(`http://localhost:3000/bookings/customer/${user.customer_id}`);
+        const bookingsResponse = await axios.get(`${API_BASE}/bookings/customer/${user.customer_id}`);
         if (bookingsResponse.data.success) {
           setBookings(bookingsResponse.data.data || []);
         }
@@ -698,7 +700,7 @@ const UserDashboardContent = () => {
     
     try {
       setChangingPassword(true);
-      const response = await axios.put(`http://localhost:3000/customer/updt-password/${user.customer_id}`, {
+      const response = await axios.put(`${API_BASE}/customer/updt-password/${user.customer_id}`, {
         current_password: passwordForm.current_password,
         new_password: passwordForm.new_password,
         confirm_password: passwordForm.confirm_password

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAdminAuth } from '../Authnication/AdminContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+
+const API_BASE = import.meta.env.VITE_API_URL;
 import {
   Calendar,
   Users,
@@ -62,7 +64,7 @@ const AdminBookings = () => {
         setError(null);
         
         if (admin?.airline_id) {
-          const response = await axios.get(`http://localhost:3000/admin/bookings/${admin.airline_id}`);
+          const response = await axios.get(`${API_BASE}/admin/bookings/${admin.airline_id}`);
           if (response.data.success) {
             const bookingsData = response.data.data || [];
             setBookings(bookingsData);
@@ -109,7 +111,7 @@ const AdminBookings = () => {
 
   const fetchBookingDetails = async (bookingId) => {
     try {
-      const response = await axios.get(`http://localhost:3000/bookings/${bookingId}/details`);
+      const response = await axios.get(`${API_BASE}/bookings/${bookingId}/details`);
       if (response.data.success) {
         setSelectedBooking(response.data.data);
         setShowBookingDetails(true);

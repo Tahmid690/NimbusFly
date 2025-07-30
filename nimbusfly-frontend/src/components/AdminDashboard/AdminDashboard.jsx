@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Plus } from 'lucide-react';
 
+const API_BASE = import.meta.env.VITE_API_URL;
+
 // Import local components
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
@@ -57,7 +59,7 @@ const AdminDashboard = () => {
     if (!admin?.airline_id) return;
     try {
       setDataLoading(true);
-      const response = await axios.get(`http://localhost:3000${endpoint}`, {
+      const response = await axios.get(`${API_BASE}${endpoint}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
       });
       if (response.data.success) {

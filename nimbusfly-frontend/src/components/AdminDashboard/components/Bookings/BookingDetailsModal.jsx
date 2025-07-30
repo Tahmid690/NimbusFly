@@ -8,6 +8,8 @@ const BookingDetailsModal = ({ booking, isOpen, onClose, onStatusUpdate }) => {
   const [error, setError] = useState(null);
   const [updating, setUpdating] = useState(false);
 
+  const API_BASE = import.meta.env.VITE_API_URL;
+
   useEffect(() => {
     if (isOpen && booking) {
       fetchBookingDetails();
@@ -19,7 +21,7 @@ const BookingDetailsModal = ({ booking, isOpen, onClose, onStatusUpdate }) => {
     setError(null);
     try {
       console.log('Fetching booking details for ID:', booking.booking_id);
-      const response = await axios.get(`http://localhost:3000/admin/admin/booking/${booking.booking_id}`, {
+      const response = await axios.get(`${API_BASE}/admin/admin/booking/${booking.booking_id}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
       });
       

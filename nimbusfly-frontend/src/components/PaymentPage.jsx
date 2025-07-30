@@ -10,6 +10,8 @@ import { CheckCircle, Shield, CreditCard, Users, AlertCircle, Loader2 } from "lu
 import { useToast, ToastProvider } from './AdminDashboard/components/UI/Toast';
 import { set } from "lodash";
 
+const API_BASE = import.meta.env.VITE_API_URL;
+
 const PaymentPageContent = () => {
   const [user_id, setuser_id] = useState(null);
   const [paymentData, setPaymentData] = useState({
@@ -202,7 +204,7 @@ const PaymentPageContent = () => {
       // Process payment and create booking through backend
       try {
         console.log("Sending payment request to backend...");
-        const response = await axios.post('http://localhost:3000/payments/process', paymentPayload);
+        const response = await axios.post(`${API_BASE}/payments/process`, paymentPayload);
         console.log("Getting payment request to backend...");
         
         if (response.data.success) {

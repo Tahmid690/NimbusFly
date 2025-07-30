@@ -8,6 +8,8 @@ import PriceRange from './Bookingfilter/Pricerange';
 import Flightscedule from './Bookingfilter/Flightschedule';
  import Airlinefilter from  './Bookingfilter/Airlinefilter';
  import '../App.css'
+
+const API_BASE = import.meta.env.VITE_API_URL;
 const LoadingScreen = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 flex items-center justify-center relative overflow-hidden">
@@ -151,24 +153,24 @@ function FlightResults() {
 
             console.log('Search params:', searchParams.toString());
             
-            const apiUrl = `http://localhost:3000/flights/search?${searchParams.toString()}&orderType=${selectedOption}`;
+            const apiUrl = `${API_BASE}/flights/search?${searchParams.toString()}&orderType=${selectedOption}`;
             const response = await fetch(apiUrl);
             const data = await response.json();
 
             // Fetch city and airport information
-            const oct = await fetch(`http://localhost:3000/airports/city?iata=${currentSearchData.origin}`);
+            const oct = await fetch(`${API_BASE}/airports/city?iata=${currentSearchData.origin}`);
             const pct = await oct.json();
             setOriginCity(pct);
             
-            const dct = await fetch(`http://localhost:3000/airports/city?iata=${currentSearchData.destination}`);
+            const dct = await fetch(`${API_BASE}/airports/city?iata=${currentSearchData.destination}`);
             const qct = await dct.json();
             setDestinationCity(qct);
             // console.log(qct);
-            const oap = await (await fetch(`http://localhost:3000/airports/iata?iata_code=${currentSearchData.origin}`)).json();
+            const oap = await (await fetch(`${API_BASE}/airports/iata?iata_code=${currentSearchData.origin}`)).json();
             setOrigin_Airport(oap[0]);
             setoriginportid(oap[0].airport_id);
             
-            const dap = await (await fetch(`http://localhost:3000/airports/iata?iata_code=${currentSearchData.destination}`)).json();
+            const dap = await (await fetch(`${API_BASE}/airports/iata?iata_code=${currentSearchData.destination}`)).json();
             setDest_Airport(dap[0]);
             setdesportid(dap[0].airport_id);
                 //                  console.log(oap[0].airport_id);
