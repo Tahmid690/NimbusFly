@@ -211,6 +211,50 @@ CREATE TRIGGER flight_cancellation_booking_trigger
     EXECUTE FUNCTION handle_flight_cancellation();
 
 
+CREATE OR REPLACE FUNCTION check_aircraft_scheduled_flights()
+RETURNS TRIGGER AS $$
+DECLARE
+    scheduled_flight_count INTEGER;
+    flight_details RECORD;
+BEGIN
+    IF NEW.status IN ('Maintenance', 'Retired') THEN
+        SELECT COUNT(*) INTO scheduled_flight_count
+        FROM flights f
+        WHERE f.aircraft_id = NEW.aircraft_id
+          AND f.departure_time > NOW()
+          AND f.status = true;
+        
+        IF scheduled_flight_count > 0 THEN
+            SELECT f.flight_number, f.departure_time, a_origin.airport_name as origin, a_dest.airport_name as destination
+            INTO flight_details
+            FROM flights f
+            JOIN airports a_origin ON f.origin_airport_id = a_origin.airport_id
+            JOIN airports a_dest ON f.destination_airport_id = a_dest.airport_id
+            WHERE f.aircraft_id = NEW.aircraft_id
+              AND f.departure_time > NOW()
+              AND f.status = true
+            ORDER BY f.departure_time
+            LIMIT 1;
+            
+            RAISE EXCEPTION 'Cannot change aircraft status to %. Aircraft has % scheduled flight(s). Next flight: % departing at % from % to %',
+                NEW.status,
+                scheduled_flight_count,
+                flight_details.flight_number,
+                flight_details.departure_time,
+                flight_details.origin,
+                flight_details.destination;
+        END IF;
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER prevent_aircraft_status_change_with_scheduled_flights
+    BEFORE UPDATE OF status ON aircraft
+    FOR EACH ROW
+    EXECUTE FUNCTION check_aircraft_scheduled_flights();
+
 
 CREATE OR REPLACE FUNCTION mark_seat_as_booked()
 RETURNS TRIGGER AS $$

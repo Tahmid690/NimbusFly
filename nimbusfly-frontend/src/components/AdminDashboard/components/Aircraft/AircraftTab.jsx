@@ -17,6 +17,8 @@ const AircraftTab = ({ allAircraft, admin }) => {
   const aircraftPerPage = 15;
   const toast = useToast();
 
+  const API_BASE = import.meta.env.VITE_API_URL;
+
   // Calculate aircraft statistics
   const aircraftStats = useMemo(() => {
     if (!allAircraft.length) return {};
@@ -143,7 +145,7 @@ const AircraftTab = ({ allAircraft, admin }) => {
 
     try {
       const response = await axios.post(
-        'http://localhost:3000/aircraft/add',
+        `${API_BASE}/aircraft/add`,
         aircraftData,
         {
           headers: {
@@ -194,7 +196,7 @@ const AircraftTab = ({ allAircraft, admin }) => {
 
     try {
       const response = await axios.put(
-        `http://localhost:3000/aircraft/update/${selectedAircraft.aircraft_id}`,
+        `${API_BASE}/aircraft/update/${selectedAircraft.aircraft_id}`,
         aircraftData,
         {
           headers: {
