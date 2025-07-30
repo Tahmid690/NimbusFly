@@ -86,9 +86,6 @@ const processPayment = async (req, res) => {
       });
     }
 
-    // =============================================================================
-    // STEP 2: GET FLIGHT DETAILS BY FLIGHT NUMBER
-    // =============================================================================
     
     const getFlightByNumber = async (flightNumber) => {
       const query = `
@@ -106,10 +103,8 @@ const processPayment = async (req, res) => {
       return result.rows[0];
     };
 
-    // Get outbound flight
     const outboundFlight = await getFlightByNumber(flight_data.flight_number);
     
-    // Get return flight if round-trip
     let returnFlight = null;
     if (flight_data.trip_type === 'ROUND-WAY' && flight_data.return_flight_number) {
       returnFlight = await getFlightByNumber(flight_data.return_flight_number);
@@ -122,10 +117,6 @@ const processPayment = async (req, res) => {
       transitFlight = await getFlightByNumber(flight_data.transit_flight_number);
     }
 
-    // =============================================================================
-    // STEP 3: CHECK SEAT AVAILABILITY
-    // =============================================================================
-    
     const requiredSeats = flight_data.adult_count + flight_data.child_count;
     const seatClass = flight_data.seat_class || 'Economy';
     
@@ -146,17 +137,12 @@ const processPayment = async (req, res) => {
     if (transitFlight) {
       checkSeats(transitFlight, flight_data.transit_flight_number);
     }
-
-    // =============================================================================
-    // STEP 4: START TRANSACTION AND CREATE RECORDS
-    // =============================================================================
     
+
     await client.query('BEGIN');
 
-    // Generate IDs
     const transaction_id = `TXN${Date.now()}${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
 
-    // Create booking
     const bookingQuery = `
       INSERT INTO bookings (customer_id, booking_date, total_amount, payment_status, trip_type) 
       VALUES ($1, NOW(), $2, 'PAID', $3) 
@@ -187,7 +173,6 @@ const processPayment = async (req, res) => {
       let passengerin;
       
       if (existingResult.rows.length === 0) {
-        // Create new passenger
         const insertQuery = `
           INSERT INTO passengers (customer_id, first_name, last_name, date_of_birth, passport_number, nationality, title)
           VALUES ($1, $2, $3, $4, $5, $6, $7) 
@@ -206,7 +191,6 @@ const processPayment = async (req, res) => {
         
         passengerId = passengerResult.rows[0].passenger_id;
       } else {
-        // Update existing passenger
         const updateQuery = `
           UPDATE passengers 
           SET first_name = $1, last_name = $2, date_of_birth = $3, nationality = $4, title = $5
@@ -230,9 +214,6 @@ const processPayment = async (req, res) => {
       passengerIds.push(passengerId);
     }
 
-    // =============================================================================
-    // STEP 6: CREATE PAYMENT RECORD
-    // =============================================================================
     
     const paymentQuery = `
       INSERT INTO payments (booking_id, payment_method, transaction_id, payment_date, status) 
@@ -246,14 +227,10 @@ const processPayment = async (req, res) => {
       transaction_id
     ]);
 
-    // =============================================================================
-    // STEP 7: ASSIGN SEATS AND CREATE TICKETS
-    // =============================================================================
     
     const createTicketsForFlight = async (flightInfo, flightNumber) => {
       const tickets = [];
       
-      // Get available seats for this flight
       const seatQuery = `
         SELECT seat_id, seat_number 
         FROM seats 
@@ -272,7 +249,6 @@ const processPayment = async (req, res) => {
         throw new Error(`Could not find enough seats for flight ${flightNumber}`);
       }
 
-      // Create tickets for each passenger
       for (let i = 0; i < passengerIds.length; i++) {
         const seat = seatResult.rows[i];
 
@@ -301,12 +277,10 @@ const processPayment = async (req, res) => {
       return tickets;
     };
 
-    // Create tickets for outbound flight
     const outboundTickets = await createTicketsForFlight(outboundFlight, flight_data.flight_number);
     let allTickets = [...outboundTickets];
     console.log("Outbound tickets created:", allTickets);
 
-    // Create tickets for return flight if round-trip
     if (returnFlight) {
       const returnTickets = await createTicketsForFlight(returnFlight, flight_data.return_flight_number);
       allTickets.push(...returnTickets);
@@ -316,13 +290,9 @@ const processPayment = async (req, res) => {
       allTickets.push(...transitTickets);
     }
 
-    // =============================================================================
-    // STEP 8: COMMIT TRANSACTION AND RESPOND
-    // =============================================================================
     
     await client.query('COMMIT');
 
-    // Success response
     res.status(201).json({
       success: true,
       message: 'Payment processed successfully',
@@ -349,7 +319,6 @@ const processPayment = async (req, res) => {
     });
 
   } catch (error) {
-    // Rollback on error
     await client.query('ROLLBACK');
     
     console.error('Payment processing error:', error);
@@ -368,6 +337,7 @@ const processPayment = async (req, res) => {
     client.release();
   }
 };
+
 // 3. PUT /payments/:id/status
 const updatePaymentStatus = async (req, res) => {
   try {

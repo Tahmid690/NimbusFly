@@ -1,6 +1,5 @@
 const pool = require('../config/database');
 
-// Get all bookings with customer and flight information
 const getAllBookings = async (req, res) => {
   try {
     const result = await pool.query(`
@@ -267,7 +266,6 @@ const deleteBooking = async (req, res) => {
   }
 };
 
-// Get detailed booking information with flights, passengers, and tickets
 const getBookingDetails = async (req, res) => {
   try {
     const booking_id = parseInt(req.params.id);
@@ -276,7 +274,6 @@ const getBookingDetails = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid booking ID' });
     }
 
-    // Get booking info
     const bookingResult = await pool.query(`
       SELECT 
         bk.*,
@@ -292,7 +289,6 @@ const getBookingDetails = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Booking not found' });
     }
 
-    // Get tickets with flight and passenger details
     const ticketsResult = await pool.query(`
       SELECT 
         t.*,
