@@ -7,9 +7,11 @@ import Passengerform from "./Passengerform";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { CreditCard, Users } from "lucide-react";
+import { useToast } from './AdminDashboard/components/UI/Toast';
 
 const API_BASE = import.meta.env.VITE_API_URL;
 const BookingDetails = () => {
+  const  toast  = useToast();
   const [user_id, setuser_id] = useState(null);
   const [savedpassenger, setsavedpassenger] = useState(null);
   const location = useLocation();
@@ -79,19 +81,54 @@ const BookingDetails = () => {
   const getnewpassenger = () => {
     return passengers.filter(passenger => passenger.is_new);
   };
+  // const handlecontinue = async () => {
+  //   try {
+  //     console.log(passengers);
+  //     const newp = getnewpassenger();
+  //     console.log(newp);
+
+
+  
+  //     navigate('/payment',{state:{passengers, flight: flight.data}});
+
+  //   } catch (err) {
+  //     console.log("Err saving passenger, ", err.response?.data || err.message)
+  //   }
+
+  // }
+
   const handlecontinue = async () => {
     try {
       console.log(passengers);
+      
+      if (!passengers || passengers.length === 0) {
+        throw new Error("No passengers found");
+      }
+      
+      passengers.forEach((passenger, index) => {
+        Object.entries(passenger).forEach(([key, value]) => {
+          if (value === null || value === undefined || value === '') {
+            if(key!=='title') throw new Error(`Passenger ${index + 1}: ${key} cannot be null or empty`);
+          }
+        });
+      });
+      
       const newp = getnewpassenger();
       console.log(newp);
-  
-      navigate('/payment',{state:{passengers, flight: flight.data}});
+
+      navigate('/payment', {
+        state: {
+          passengers, 
+          flight: flight.data
+        }
+      });
 
     } catch (err) {
-      console.log("Err saving passenger, ", err.response?.data || err.message)
+      console.log("Err saving passenger, ", err.response?.data || err.message);
+      // alert(err.message);
+      toast.error(err.message);
     }
-
-  }
+}
 
   return (
     <>
