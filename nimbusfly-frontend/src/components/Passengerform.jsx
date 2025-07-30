@@ -131,6 +131,7 @@ const nationalities = [
                 onFocus={() => setTravelerDropdownOpen(true)}
                 className="w-full p-3 pl-10 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-300"
                 placeholder="Search or select traveler..."
+                required
               />
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               
@@ -234,6 +235,7 @@ const nationalities = [
                   onChange={(e) => handleInputChange('first_name', e.target.value)}
                   className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-300"
                   placeholder="Enter first name"
+                  required
                 />
               </div>
               <div>
@@ -246,6 +248,7 @@ const nationalities = [
                   onChange={(e) => handleInputChange('last_name', e.target.value)}
                   className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-300"
                   placeholder="Enter last name"
+                  required
                 />
               </div>
             </div>
@@ -261,6 +264,7 @@ const nationalities = [
                   value={passengerData.date_of_birth}
                   onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
                   className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-300"
+                  required
                 />
               </div>
               <div>
@@ -273,6 +277,7 @@ const nationalities = [
                   onChange={(e) => handleInputChange('passport_number', e.target.value)}
                   className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-300"
                   placeholder="Enter passport number"
+                  required
                 />
               </div>
             </div>
@@ -310,6 +315,7 @@ const nationalities = [
               checked={selected}
               id={`save-traveler-${index}`}
               className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 transition-all duration-200"
+              required
             />
             <label htmlFor={`save-traveler-${index}`} className="ml-2 text-sm text-blue-600 cursor-pointer hover:text-blue-700 transition-colors duration-200">
               Save this to my traveler list.
