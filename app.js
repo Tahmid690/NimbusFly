@@ -16,13 +16,22 @@ const contact=require('./routes/contact')
 require('dotenv').config();
 const app = express()
 
+app.use(cors({
+  origin: [process.env.FRONTEND_SERVER, "https://nimbus-fly.vercel.app"],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
+app.options("*", cors({
+  origin: "https://nimbus-fly.vercel.app",
+  credentials: true
+}));
+
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(cors({
-  origin: [process.env.FRONTEND_SERVER, "https://nimbus-fly.vercel.app"],
-  credentials: true
-}));
 
 console.log('Your SMTP_HOST:', process.env.SMTP_HOST);
 app.use('/auth', authRoutes);
