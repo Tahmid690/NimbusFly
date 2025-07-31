@@ -18,6 +18,7 @@ import Navbar from './Navbar';
 import { useToast } from './AdminDashboard/components/UI/Toast';
 
 const ContactUs = () => {
+  const API_BASE = import.meta.env.VITE_API_URL;
   const toast = useToast();
   const [formData, setFormData] = useState({
     name: '',
@@ -43,7 +44,7 @@ const handleSubmit = async (e) => {
   console.log('Form data:', formData);
 
     try {
-      const response = await axios.post('http://localhost:3000/contact/message', {
+      const response = await axios.post(`${API_BASE}/contact/message`, {
         email: formData.email,
         message:formData.message
       });
@@ -108,9 +109,9 @@ const handleSubmit = async (e) => {
       id: "2205013", 
       email: "tanvirzihad88@gmail.com",
       role: "Full Stack Developer",
-      github: "https://www.linkedin.com/in/tanvir-zihad-5a1366366/",
+      github: "https://github.com/TanvirZihad",
 
-      linkedin: "https://linkedin.com/in/tanvir"
+      linkedin: "https://www.linkedin.com/in/tanvir-zihad-5a1366366/"
     }
   ];
 
