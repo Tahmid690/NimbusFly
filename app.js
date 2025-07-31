@@ -23,10 +23,7 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
-app.options("*", cors({
-  origin: "https://nimbus-fly.vercel.app",
-  credentials: true
-}));
+
 
 
 app.use(express.json());
