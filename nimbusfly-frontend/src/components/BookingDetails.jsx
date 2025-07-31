@@ -108,7 +108,7 @@ const BookingDetails = () => {
       passengers.forEach((passenger, index) => {
         Object.entries(passenger).forEach(([key, value]) => {
           if (value === null || value === undefined || value === '') {
-            if(key!=='title' || key!=='selected_traveler') throw new Error(`Passenger ${index + 1}: ${key} cannot be null or empty`);
+            if(key!=='title' && key!=='selected_traveler') throw new Error(`Passenger ${index + 1}: ${key} cannot be null or empty`);
           }
         });
       });
