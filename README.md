@@ -77,8 +77,7 @@ NimbusFly is a full-featured airline ticket management system developed as a ter
 2. **Install dependencies**
    ```bash
    npm install
-   # Make sure concurrently is installed globally
-   npm install -g concurrently
+   npm run install:all
    ```
 
 3. **Environment Setup**
