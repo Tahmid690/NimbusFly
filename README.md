@@ -158,20 +158,49 @@ Experience NimbusFly in action:
 ## 📁 Project Structure
 
 ```
-NimbusFly/
-├── client/                 # React frontend
-│   ├── src/
-│   │   ├── components/     # Reusable components
-│   │   ├── pages/         # Page components
-│   │   ├── hooks/         # Custom hooks
-│   │   └── utils/         # Utility functions
-├── server/                # Node.js backend
-│   ├── routes/           # API routes
-│   ├── controllers/      # Business logic
-│   ├── models/          # Database models
-│   └── middleware/      # Custom middleware
-├── package.json
-└── README.md
+NIMBUSFLY/
+├── nimbusfly-backend/           # Node.js Backend
+│   ├── .claude/                 # Claude AI configuration
+│   ├── config/                  # Database & app configuration
+│   ├── controllers/             # Business logic controllers
+│   ├── middleware/              # Custom middleware functions
+│   ├── node_modules/            # Backend dependencies
+│   ├── routes/                  # API route definitions
+│   ├── .env                     # Environment variables
+│   ├── .gitignore              # Git ignore rules
+│   ├── app.js                  # Main application entry
+│   ├── package-lock.json       # Dependency lock file
+│   └── package.json            # Backend dependencies & scripts
+│
+├── nimbusfly-frontend/          # React Frontend
+│   ├── dist/                    # Production build output
+│   ├── node_modules/            # Frontend dependencies
+│   ├── public/                  # Static public assets
+│   ├── src/                     # Source code
+│   │   ├── assets/              # Images, icons, static files
+│   │   ├── components/          # Reusable React components
+│   │   ├── App.css             # Main application styles
+│   │   ├── App.jsx             # Root App component
+│   │   ├── index.css           # Global CSS styles
+│   │   └── main.jsx            # React app entry point
+│   ├── .env                     # Frontend environment variables
+│   ├── .gitignore              # Git ignore rules
+│   ├── eslint.config.js        # ESLint configuration
+│   ├── index.html              # Main HTML template
+│   ├── package-lock.json       # Dependency lock file
+│   ├── package.json            # Frontend dependencies & scripts
+│   ├── tailwind.config.js      # Tailwind CSS configuration
+│   ├── test-confirmation.html  # Test page
+│   ├── vercel.json             # Vercel deployment config
+│   └── vite.config.js          # Vite build configuration
+│
+├── node_modules/                # Root level dependencies
+├── .gitignore                   # Root git ignore
+├── package-lock.json            # Root dependency lock
+├── package.json                 # Root package with concurrently setup
+├── README.md                    # Project documentation
+├── schema.sql                   # Database schema file
+└── SQL Queries.sql                   # Database schema file
 ```
 
 ---
