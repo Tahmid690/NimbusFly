@@ -6,7 +6,11 @@
   "scripts": {
     "dev": "npm-run-all --parallel start:frontend start:backend",
     "start:frontend": "cd nimbusfly-frontend && npm run dev",
-    "start:backend": "cd nimbusfly-backend && nodemon app"
+    "start:backend": "cd nimbusfly-backend && nodemon app",
+    "install:all": "npm-run-all install:frontend install:backend",
+    "install:frontend": "cd nimbusfly-frontend && npm install",
+    "install:backend": "cd nimbusfly-backend && npm install"
+
   }
 
 }
