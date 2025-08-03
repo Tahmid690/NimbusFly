@@ -124,7 +124,7 @@ Experience NimbusFly in action:
 
 **👨‍💼 Admin Access**:
 - **Email**: `bimanbangla@nimbusfly.com`
-- **Password**: `bb603`
+- **Password**: `bbnimbus`
 
 ---
 
