@@ -130,9 +130,7 @@ Experience NimbusFly in action:
 
 ## 📸 Screenshots
 
-> **Note**: Add your screenshots here once available
 
-```markdown
 ![Home Page](/nimbusfly-frontend/public/homepage.png)
 *Modern, intuitive homepage with flight search*
 
@@ -144,7 +142,7 @@ Experience NimbusFly in action:
 
 ![Admin Dashboard](/nimbusfly-frontend/public/admindashboard.png)
 *Comprehensive airline management dashboard*
-```
+
 
 ---
 
