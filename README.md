@@ -85,12 +85,12 @@ NimbusFly is a full-featured airline ticket management system developed as a ter
    Create a `.env` file in the root directory:
    ```env
    # Database Configuration
-   DATABASE_PUBLIC_URL=supabase_connection_string
+   DATABASE_PUBLIC_URL=postgresql://postgres.bwbqdbuirtgadpcwyisv:KisuPariNa@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres
    PORT=3000
-   SMTP_HOST=smtp_details_for_mail
-   SMTP_PORT=smtp_details_for_mail
-   SMTP_USER=smtp_details_for_mail   
-   SMTP_PASS=smtp_details_for_mail
+   SMTP_HOST=smtp.gmail.com
+   SMTP_PORT=465
+   SMTP_USER=nimbusfly7688@gmail.com   
+   SMTP_PASS="dkix jxrp yteh umau"
    ADMIN_EMAIL=tanvirzihad1988@gmail.com
    ADMIN_EMAIL2=tahmidhossain690@gmail.com
    FRONTEND_SERVER="http://localhost:5173"
@@ -189,13 +189,13 @@ This project was developed as a term project for CSE 216: Database Sessional Cou
 
 **Md. Tahmid Hossain**
 - 📧 Contact: [tahmidhossain690@gmail.com]
-- 🔗 LinkedIn: [Your LinkedIn]
-- 🐙 GitHub: [Your GitHub]
+- 🔗 LinkedIn: [Md. Tahmid Hossain](https://www.linkedin.com/in/md-tahmid-hossain-a7a497282/)
+- 🐙 GitHub: [Tahmid690](https://github.com/tahmid690)
 
 **Tanvir Hossen Zihad**
 - 📧 Contact: [tanvirzihad1988@gmail.com]
-- 🔗 LinkedIn: [Your LinkedIn]
-- 🐙 GitHub: [Your GitHub]
+- 🔗 LinkedIn: [Tanvir Zihad](https://www.linkedin.com/in/tanvir-zihad-5a1366366/)
+- 🐙 GitHub: [TanvirZihad](https://github.com/TanvirZihad)
 
 ---
 
@@ -212,6 +212,6 @@ This project was developed as a term project for CSE 216: Database Sessional Cou
 
 **⭐ If you found this project interesting, please consider giving it a star!**
 
-[![GitHub stars](https://img.shields.io/github/stars/yourusername/NimbusFly?style=social)](https://github.com/tahmid690/NimbusFly)
+[![GitHub stars](https://img.shields.io/github/stars/tahmid690/NimbusFly?style=social)](https://github.com/tahmid690/NimbusFly)
 
 </div>
