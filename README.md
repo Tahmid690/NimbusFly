@@ -133,16 +133,16 @@ Experience NimbusFly in action:
 > **Note**: Add your screenshots here once available
 
 ```markdown
-![Home Page](path/to/homepage-screenshot.png)
+![Home Page](/nimbusfly-frontend/public/homepage.png)
 *Modern, intuitive homepage with flight search*
 
-![Flight Results](path/to/results-screenshot.png)  
+![Flight Results](/nimbusfly-frontend/public/flightsearch.png)  
 *Advanced filtering and sorting options*
 
-![Booking Process](path/to/booking-screenshot.png)
-*Seamless multi-passenger booking experience*
+![User Dashboard](/nimbusfly-frontend/public/userdashboard.png)
+*Seamless user experience*
 
-![Admin Dashboard](path/to/admin-screenshot.png)
+![Admin Dashboard](/nimbusfly-frontend/public/admindashboard.png)
 *Comprehensive airline management dashboard*
 ```
 
