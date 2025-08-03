@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![NimbusFly Logo]([https://via.placeholder.com/200x100/4F46E5/FFFFFF?text=NimbusFly](https://github.com/Tahmid690/NimbusFly/blob/main/nimbusfly-frontend/public/lgp.png))
+![NimbusFly Logo](/nimbusfly-frontend/public/lgp.png)
 
 **A comprehensive airplane ticket management system with stunning frontend and powerful backend**
 
