@@ -55,7 +55,7 @@ NimbusFly is a full-featured airline ticket management system developed as a ter
 | Frontend | Backend | Database | Styling | Deployment |
 |----------|---------|----------|---------|------------|
 | ![React](https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=black) | ![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat&logo=node.js&logoColor=white) | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat&logo=postgresql&logoColor=white) | ![Tailwind](https://img.shields.io/badge/Tailwind-06B6D4?style=flat&logo=tailwindcss&logoColor=white) | ![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat&logo=vercel&logoColor=white) |
-| React.js | Express.js | Supabase | Tailwind CSS | Render |
+| React.js | Express.js | Supabase | Tailwind CSS | Vercel |
 
 ---
 
@@ -85,14 +85,19 @@ NimbusFly is a full-featured airline ticket management system developed as a ter
    Create a `.env` file in the root directory:
    ```env
    # Database Configuration
-   DATABASE_URL=your_supabase_connection_string
-   
-   # JWT Secret
-   JWT_SECRET=your_jwt_secret_key
-   
-   # Other environment variables
-   PORT=5000
-   NODE_ENV=development
+   DATABASE_PUBLIC_URL=supabase_connection_string
+   PORT=3000
+   SMTP_HOST=smtp_details_for_mail
+   SMTP_PORT=smtp_details_for_mail
+   SMTP_USER=smtp_details_for_mail   
+   SMTP_PASS=smtp_details_for_mail
+   ADMIN_EMAIL=tanvirzihad1988@gmail.com
+   ADMIN_EMAIL2=tahmidhossain690@gmail.com
+   FRONTEND_SERVER="http://localhost:5173"
+   ```
+   Create a `.env` file in the nimbusfly-frontend directory:
+   ```env
+   VITE_API_URL="http://localhost:3000"
    ```
 
 4. **Run the application**
@@ -102,7 +107,7 @@ NimbusFly is a full-featured airline ticket management system developed as a ter
 
    This command runs both frontend and backend concurrently. The application will be available at:
    - **Frontend**: `http://localhost:3000`
-   - **Backend**: `http://localhost:5000`
+   - **Backend**: `http://localhost:5173`
 
 ---
 
@@ -182,9 +187,13 @@ This project was developed as a term project for CSE 216: Database Sessional Cou
 
 ## 👨‍💻 Developer
 
+**Md. Tahmid Hossain**
+- 📧 Contact: [tahmidhossain690@gmail.com]
+- 🔗 LinkedIn: [Your LinkedIn]
+- 🐙 GitHub: [Your GitHub]
+
 **Tanvir Hossen Zihad**
-- 🎓 CSE 216: Database Sessional Course Project
-- 📧 Contact: [Your Email]
+- 📧 Contact: [tanvirzihad1988@gmail.com]
 - 🔗 LinkedIn: [Your LinkedIn]
 - 🐙 GitHub: [Your GitHub]
 
@@ -193,7 +202,7 @@ This project was developed as a term project for CSE 216: Database Sessional Cou
 ## 🙏 Acknowledgments
 
 - **Course**: CSE 216 - Database Sessional Course
-- **University**: [Your University Name]
+- **University**: Bangladesh University of Engineering and Technology
 - **Technologies**: React, Node.js, PostgreSQL, Tailwind CSS
 - **Deployment**: Vercel & Render
 
@@ -203,6 +212,6 @@ This project was developed as a term project for CSE 216: Database Sessional Cou
 
 **⭐ If you found this project interesting, please consider giving it a star!**
 
-[![GitHub stars](https://img.shields.io/github/stars/yourusername/NimbusFly?style=social)](https://github.com/yourusername/NimbusFly)
+[![GitHub stars](https://img.shields.io/github/stars/yourusername/NimbusFly?style=social)](https://github.com/tahmid690/NimbusFly)
 
 </div>
